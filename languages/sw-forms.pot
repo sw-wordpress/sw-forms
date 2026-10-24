@@ -1,0 +1,655 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the SW Forms package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: SW Forms\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-24 17:47+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: src/WordPress/Actions/EmailNotifications.php:37
+msgid "Condition not met."
+msgstr ""
+
+#: src/WordPress/Actions/EmailNotifications.php:42
+msgid "No valid recipient address."
+msgstr ""
+
+#. translators: %s: comma separated e-mail addresses
+#: src/WordPress/Actions/EmailNotifications.php:89
+#, php-format
+msgid "Sent to %s."
+msgstr ""
+
+#: src/WordPress/Actions/EmailNotifications.php:90
+msgid "wp_mail() reported an error. Check the mail configuration of the site."
+msgstr ""
+
+#: src/WordPress/Admin/AdminPage.php:30 src/WordPress/Admin/AdminPage.php:31
+msgid "SW Forms"
+msgstr ""
+
+#: src/WordPress/Admin/AdminPage.php:42
+msgid "You do not have permission to access this page."
+msgstr ""
+
+#: src/WordPress/Admin/AdminPage.php:45
+msgid ""
+"The SW Forms admin interface has not been built. Install the release package "
+"or run \"npm run build\" in apps/admin."
+msgstr ""
+
+#: src/WordPress/Admin/AdminPage.php:48
+msgid "SW Forms requires JavaScript."
+msgstr ""
+
+#: src/WordPress/Fields/AbstractFieldType.php:167
+#: src/WordPress/Fields/CheckboxField.php:235
+msgid "(required)"
+msgstr ""
+
+#: src/WordPress/Fields/CheckboxField.php:23
+msgid "Checkbox"
+msgstr ""
+
+#: src/WordPress/Fields/CheckboxField.php:44
+msgid "Mode"
+msgstr ""
+
+#: src/WordPress/Fields/CheckboxField.php:49
+msgid "List of options"
+msgstr ""
+
+#: src/WordPress/Fields/CheckboxField.php:53
+msgid "Single checkbox (e.g. consent)"
+msgstr ""
+
+#: src/WordPress/Fields/CheckboxField.php:61
+msgid "Checkbox text"
+msgstr ""
+
+#: src/WordPress/Fields/CheckboxField.php:62
+msgid "Shown next to the box. Links are allowed. Empty: the label is used."
+msgstr ""
+
+#: src/WordPress/Fields/CheckboxField.php:70
+#: src/WordPress/Fields/CheckboxField.php:79
+msgid "Checked by default"
+msgstr ""
+
+#: src/WordPress/Fields/CheckboxField.php:89
+msgid "Minimum selections"
+msgstr ""
+
+#: src/WordPress/Fields/CheckboxField.php:99
+msgid "Maximum selections"
+msgstr ""
+
+#: src/WordPress/Fields/CheckboxField.php:170
+msgid "Yes"
+msgstr ""
+
+#: src/WordPress/Fields/CheckboxField.php:170
+msgid "No"
+msgstr ""
+
+#: src/WordPress/Fields/ChoiceField.php:28
+msgid "Options"
+msgstr ""
+
+#: src/WordPress/Fields/ChoiceField.php:31
+msgid "Option 1"
+msgstr ""
+
+#: src/WordPress/Fields/ChoiceField.php:35
+msgid "Option 2"
+msgstr ""
+
+#: src/WordPress/Fields/ChoiceField.php:51
+msgid "Arrangement"
+msgstr ""
+
+#: src/WordPress/Fields/ChoiceField.php:56
+msgid "One below the other"
+msgstr ""
+
+#: src/WordPress/Fields/ChoiceField.php:60
+msgid "Side by side"
+msgstr ""
+
+#: src/WordPress/Fields/ColumnsField.php:24
+msgid "Columns"
+msgstr ""
+
+#: src/WordPress/Fields/ColumnsField.php:53
+msgid "Gap between columns"
+msgstr ""
+
+#: src/WordPress/Fields/ColumnsField.php:58
+msgid "Small"
+msgstr ""
+
+#: src/WordPress/Fields/ColumnsField.php:62
+msgid "Medium"
+msgstr ""
+
+#: src/WordPress/Fields/ColumnsField.php:66
+msgid "Large"
+msgstr ""
+
+#: src/WordPress/Fields/ColumnsField.php:74
+msgid "Stack columns on narrow screens"
+msgstr ""
+
+#: src/WordPress/Fields/ColumnsField.php:79
+msgid "Below 480 px"
+msgstr ""
+
+#: src/WordPress/Fields/ColumnsField.php:83
+msgid "Below 720 px"
+msgstr ""
+
+#: src/WordPress/Fields/ColumnsField.php:87
+msgid "Never"
+msgstr ""
+
+#: src/WordPress/Fields/ColumnsField.php:95
+msgid "Reverse order when stacked"
+msgstr ""
+
+#: src/WordPress/Fields/GroupField.php:24
+msgid "Group"
+msgstr ""
+
+#: src/WordPress/Fields/GroupField.php:53
+msgid "Repeatable (visitors can add rows)"
+msgstr ""
+
+#: src/WordPress/Fields/GroupField.php:63
+msgid "Minimum rows"
+msgstr ""
+
+#: src/WordPress/Fields/GroupField.php:74
+msgid "Maximum rows"
+msgstr ""
+
+#: src/WordPress/Fields/GroupField.php:82
+msgid "Text of the \"add\" button"
+msgstr ""
+
+#: src/WordPress/Fields/GroupField.php:83
+msgid "Add entry"
+msgstr ""
+
+#. translators: 1: group label, 2: row number
+#: src/WordPress/Fields/GroupField.php:161
+#, php-format
+msgid "Remove %1$s %2$s"
+msgstr ""
+
+#: src/WordPress/Fields/InputField.php:24
+msgid "Input"
+msgstr ""
+
+#: src/WordPress/Fields/InputField.php:49
+msgid "Input type"
+msgstr ""
+
+#: src/WordPress/Fields/InputField.php:54
+msgid "Text"
+msgstr ""
+
+#: src/WordPress/Fields/InputField.php:58
+msgid "Email"
+msgstr ""
+
+#: src/WordPress/Fields/InputField.php:62
+msgid "Phone"
+msgstr ""
+
+#: src/WordPress/Fields/InputField.php:66
+msgid "URL"
+msgstr ""
+
+#: src/WordPress/Fields/InputField.php:70
+msgid "Number"
+msgstr ""
+
+#: src/WordPress/Fields/InputField.php:74
+msgid "Date"
+msgstr ""
+
+#: src/WordPress/Fields/InputField.php:78
+msgid "Password"
+msgstr ""
+
+#: src/WordPress/Fields/InputField.php:82
+msgid "Hidden"
+msgstr ""
+
+#: src/WordPress/Fields/InputField.php:90
+#: src/WordPress/Fields/TextareaField.php:39
+msgid "Placeholder"
+msgstr ""
+
+#: src/WordPress/Fields/InputField.php:97
+#: src/WordPress/Fields/TextareaField.php:46
+msgid "Default value"
+msgstr ""
+
+#: src/WordPress/Fields/InputField.php:98
+msgid "Supports {user:email}, {user:display_name} and {get:parameter}."
+msgstr ""
+
+#: src/WordPress/Fields/InputField.php:107
+#: src/WordPress/Fields/TextareaField.php:55
+msgid "Minimum length"
+msgstr ""
+
+#: src/WordPress/Fields/InputField.php:117
+#: src/WordPress/Fields/TextareaField.php:64
+msgid "Maximum length"
+msgstr ""
+
+#: src/WordPress/Fields/InputField.php:125
+msgid "Minimum"
+msgstr ""
+
+#: src/WordPress/Fields/InputField.php:133
+msgid "Maximum"
+msgstr ""
+
+#: src/WordPress/Fields/InputField.php:142
+msgid "Step"
+msgstr ""
+
+#: src/WordPress/Fields/InputField.php:150
+msgid "Pattern (regular expression)"
+msgstr ""
+
+#: src/WordPress/Fields/InputField.php:151
+msgid "The whole value must match, e.g. [0-9]{5} for a German postal code."
+msgstr ""
+
+#: src/WordPress/Fields/InputField.php:159
+msgid "Message when the pattern does not match"
+msgstr ""
+
+#: src/WordPress/Fields/InputField.php:167
+msgid "Autocomplete hint"
+msgstr ""
+
+#: src/WordPress/Fields/InputField.php:168
+msgid "e.g. given-name, family-name, email, postal-code"
+msgstr ""
+
+#: src/WordPress/Fields/RadioField.php:25
+msgid "Radio buttons"
+msgstr ""
+
+#: src/WordPress/Fields/RadioField.php:39
+#: src/WordPress/Fields/SelectField.php:54
+msgid "Selected by default (option value)"
+msgstr ""
+
+#: src/WordPress/Fields/RadioField.php:46
+msgid "Offer \"Other\" with free text"
+msgstr ""
+
+#: src/WordPress/Fields/RadioField.php:53
+msgid "Label of \"Other\""
+msgstr ""
+
+#: src/WordPress/Fields/RadioField.php:54
+msgid "Other"
+msgstr ""
+
+#: src/WordPress/Fields/SelectField.php:21
+msgid "Select"
+msgstr ""
+
+#: src/WordPress/Fields/SelectField.php:39
+msgid "Allow multiple selections"
+msgstr ""
+
+#: src/WordPress/Fields/SelectField.php:46
+msgid "Empty choice text"
+msgstr ""
+
+#: src/WordPress/Fields/SelectField.php:47
+msgid "Please choose"
+msgstr ""
+
+#: src/WordPress/Fields/TextareaField.php:22
+msgid "Text area"
+msgstr ""
+
+#: src/WordPress/Fields/TextareaField.php:74
+msgid "Visible rows"
+msgstr ""
+
+#: src/WordPress/Forms/FormService.php:78
+#: src/WordPress/Forms/FormService.php:108
+msgid "Untitled form"
+msgstr ""
+
+#. translators: %s: title of the copied form
+#: src/WordPress/Forms/FormService.php:144
+#: src/WordPress/Forms/FormService.php:146
+#, php-format
+msgid "%s (copy)"
+msgstr ""
+
+#: src/WordPress/Forms/FormSettings.php:36
+#: src/WordPress/Frontend/FormView.php:88
+msgid "Submit"
+msgstr ""
+
+#: src/WordPress/Forms/FormSettings.php:40
+msgid "Thank you! Your message has been sent."
+msgstr ""
+
+#: src/WordPress/Forms/FormSettings.php:62
+msgid "Admin notification"
+msgstr ""
+
+#: src/WordPress/Forms/FormSettings.php:65
+msgid "New entry: {form:title}"
+msgstr ""
+
+#: src/WordPress/Forms/FormSettings.php:79
+msgid "Notification"
+msgstr ""
+
+#: src/WordPress/Frontend/FormView.php:32
+msgid "SW Forms: this form does not exist."
+msgstr ""
+
+#: src/WordPress/Frontend/FormView.php:36
+msgid "SW Forms: this form has not been saved yet."
+msgstr ""
+
+#: src/WordPress/Frontend/FormView.php:39
+msgid "SW Forms: this form is inactive."
+msgstr ""
+
+#: src/WordPress/Frontend/FormView.php:67
+msgid "Sending…"
+msgstr ""
+
+#: src/WordPress/Frontend/FormView.php:68
+msgid "The form could not be sent. Please check your connection and try again."
+msgstr ""
+
+#: src/WordPress/Frontend/FormView.php:69
+msgid "Please correct the following fields:"
+msgstr ""
+
+#: src/WordPress/Frontend/FormView.php:85
+msgid "Leave this field empty"
+msgstr ""
+
+#: src/WordPress/Frontend/Preview.php:38
+#: src/WordPress/Rest/SubmitController.php:43
+msgid "You are not allowed to preview this form."
+msgstr ""
+
+#: src/WordPress/Rest/EntriesController.php:122
+#: src/WordPress/Rest/FormsController.php:292
+msgid "Form not found."
+msgstr ""
+
+#: src/WordPress/Rest/EntriesController.php:168
+#: src/WordPress/Rest/EntriesController.php:188
+#: src/WordPress/Rest/EntriesController.php:207
+msgid "Entry not found."
+msgstr ""
+
+#: src/WordPress/Rest/FormsController.php:159
+msgid "The form could not be saved. Please fix the marked problems."
+msgstr ""
+
+#: src/WordPress/Submission/SubmissionService.php:45
+msgid "This form does not exist."
+msgstr ""
+
+#: src/WordPress/Submission/SubmissionService.php:49
+msgid "This form is currently not available."
+msgstr ""
+
+#: src/WordPress/Submission/SubmissionService.php:88
+msgid "Please correct the marked fields."
+msgstr ""
+
+#: src/WordPress/Submission/SubmissionService.php:96
+msgid "Preview: all entries are valid. Nothing was stored or sent."
+msgstr ""
+
+#: src/WordPress/Submission/SubmissionService.php:122
+msgid "Your entry could not be saved. Please try again later."
+msgstr ""
+
+#: src/WordPress/Submission/SubmissionService.php:194
+msgid "The page was open for a long time. Please submit the form again."
+msgstr ""
+
+#: src/WordPress/Submission/SubmissionService.php:195
+msgid "That was very fast. Please wait a moment and submit again."
+msgstr ""
+
+#: src/WordPress/Submission/SubmissionService.php:196
+msgid "This form has already been submitted."
+msgstr ""
+
+#: src/WordPress/Submission/SubmissionService.php:197
+msgid "Too many submissions. Please try again in a few minutes."
+msgstr ""
+
+#: src/WordPress/Submission/SubmissionService.php:198
+msgid "The form could not be verified. Please reload the page and try again."
+msgstr ""
+
+#: src/WordPress/Support/Messages.php:19
+msgid "This field is required."
+msgstr ""
+
+#: src/WordPress/Support/Messages.php:20
+msgid "Please enter a valid email address."
+msgstr ""
+
+#: src/WordPress/Support/Messages.php:21
+msgid "Please enter a valid web address starting with http:// or https://."
+msgstr ""
+
+#: src/WordPress/Support/Messages.php:22
+msgid "Please enter a valid phone number."
+msgstr ""
+
+#: src/WordPress/Support/Messages.php:23
+msgid "Please enter a valid date."
+msgstr ""
+
+#: src/WordPress/Support/Messages.php:24
+msgid "Please enter a number."
+msgstr ""
+
+#. translators: %s: minimum value
+#: src/WordPress/Support/Messages.php:26
+#, php-format
+msgid "Please enter a value of at least %s."
+msgstr ""
+
+#. translators: %s: maximum value
+#: src/WordPress/Support/Messages.php:28
+#, php-format
+msgid "Please enter a value of at most %s."
+msgstr ""
+
+#. translators: %d: minimum number of characters
+#: src/WordPress/Support/Messages.php:30
+#, php-format
+msgid "Please enter at least %d character."
+msgid_plural "Please enter at least %d characters."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: maximum number of characters
+#: src/WordPress/Support/Messages.php:32
+#, php-format
+msgid "Please enter at most %d character."
+msgid_plural "Please enter at most %d characters."
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/WordPress/Support/Messages.php:33
+msgid "Please match the requested format."
+msgstr ""
+
+#: src/WordPress/Support/Messages.php:34
+msgid "Please choose one of the offered options."
+msgstr ""
+
+#. translators: %d: minimum number of selections
+#: src/WordPress/Support/Messages.php:36
+#, php-format
+msgid "Please select at least %d option."
+msgid_plural "Please select at least %d options."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: maximum number of selections
+#: src/WordPress/Support/Messages.php:38
+#, php-format
+msgid "Please select at most %d option."
+msgid_plural "Please select at most %d options."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: minimum number of rows
+#: src/WordPress/Support/Messages.php:40
+#, php-format
+msgid "Please add at least %d entry."
+msgid_plural "Please add at least %d entries."
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/WordPress/Support/Messages.php:41
+msgid "This value is invalid."
+msgstr ""
+
+#: src/WordPress/Support/Messages.php:51
+msgid "The form document is invalid."
+msgstr ""
+
+#: src/WordPress/Support/Messages.php:52
+msgid "An element is invalid."
+msgstr ""
+
+#: src/WordPress/Support/Messages.php:53
+msgid "An element has an invalid id."
+msgstr ""
+
+#: src/WordPress/Support/Messages.php:54
+msgid "Two elements share the same id."
+msgstr ""
+
+#. translators: %s: element type
+#: src/WordPress/Support/Messages.php:56
+#, php-format
+msgid "The element type \"%s\" is not available. Is an add-on missing?"
+msgstr ""
+
+#. translators: %s: field key
+#: src/WordPress/Support/Messages.php:58
+#, php-format
+msgid ""
+"The field name \"%s\" is invalid. Use letters, digits and underscores; start "
+"with a letter."
+msgstr ""
+
+#. translators: %s: field key
+#: src/WordPress/Support/Messages.php:60
+#, php-format
+msgid "The field name \"%s\" is used twice at the same level."
+msgstr ""
+
+#: src/WordPress/Support/Messages.php:61
+msgid "The label is invalid."
+msgstr ""
+
+#: src/WordPress/Support/Messages.php:62
+msgid "The contents of this container are invalid."
+msgstr ""
+
+#. translators: %d: maximum number of columns
+#: src/WordPress/Support/Messages.php:64
+#, php-format
+msgid "A column layout needs between 1 and %d columns."
+msgstr ""
+
+#: src/WordPress/Support/Messages.php:65
+msgid "Column widths must be between 1 and 12."
+msgstr ""
+
+#. translators: %d: maximum nesting depth
+#: src/WordPress/Support/Messages.php:67
+#, php-format
+msgid "Elements may be nested at most %d levels deep."
+msgstr ""
+
+#: src/WordPress/Support/Messages.php:68
+msgid "The conditional logic is invalid."
+msgstr ""
+
+#: src/WordPress/Support/Messages.php:69
+msgid "A condition is invalid."
+msgstr ""
+
+#: src/WordPress/Support/Messages.php:70
+msgid "A condition uses an unknown comparison."
+msgstr ""
+
+#: src/WordPress/Support/Messages.php:71
+msgid "A condition refers to a field that does not exist or has no value."
+msgstr ""
+
+#: src/WordPress/Support/Messages.php:72
+msgid "A condition cannot refer to the element itself."
+msgstr ""
+
+#: src/WordPress/Support/Messages.php:73
+msgid ""
+"A condition refers to a field inside a repeatable group. Only fields of the "
+"same row or outside the group can be used."
+msgstr ""
+
+#: src/WordPress/Support/Messages.php:74
+msgid "Conditions depend on each other in a circle."
+msgstr ""
+
+#: src/WordPress/Support/Messages.php:75
+msgid "The form contains an error."
+msgstr ""
+
+#. translators: 1: required PHP version, 2: current PHP version
+#: sw-forms.php:34
+#, php-format
+msgid "SW Forms requires PHP %1$s or newer. You are running PHP %2$s."
+msgstr ""
+
+#: sw-forms.php:51
+msgid ""
+"SW Forms: the vendor directory is missing. Install the release package or "
+"run \"composer install\"."
+msgstr ""

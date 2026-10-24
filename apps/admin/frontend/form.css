@@ -1,0 +1,330 @@
+/*
+ * SW Forms frontend styles. Deliberately light so the theme typography wins; everything is
+ * adjustable through the custom properties below (e.g. `.swf { --swf-accent: #c00; }`).
+ * Can be switched off completely in the plugin settings.
+ */
+.swf {
+  --swf-accent: #2563eb;
+  --swf-text: inherit;
+  --swf-muted: #5b6472;
+  --swf-border: #c7cdd6;
+  --swf-bg: #fff;
+  --swf-error: #b42318;
+  --swf-error-bg: #fef3f2;
+  --swf-success: #067647;
+  --swf-success-bg: #ecfdf3;
+  --swf-radius: 6px;
+  --swf-gap: 1.1rem;
+  --swf-input-padding: 0.6em 0.75em;
+  /*
+   * A size container reports no content width. In shrink-to-fit theme layouts (flex items,
+   * floats) it would collapse; the viewport based minimum keeps it usable there.
+   */
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: min(20rem, 100vw - 2rem);
+  container-type: inline-size;
+  color: var(--swf-text);
+}
+
+.swf *,
+.swf *::before,
+.swf *::after {
+  box-sizing: border-box;
+}
+
+.swf-form,
+.swf-fields,
+.swf-group__body,
+.swf-row__fields,
+.swf-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--swf-gap);
+}
+.swf-form {
+  margin: 0;
+}
+
+.swf [hidden] {
+  display: none !important;
+}
+
+/* ---------- fields ---------- */
+.swf-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.swf-label {
+  font-weight: 600;
+  padding: 0;
+}
+.swf-required {
+  color: var(--swf-error);
+  margin-left: 0.15em;
+}
+.swf-sr,
+.swf-hp {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.swf-description {
+  margin: 0;
+  font-size: 0.9em;
+  color: var(--swf-muted);
+}
+
+.swf-input,
+.swf-textarea,
+.swf-select {
+  width: 100%;
+  max-width: 100%;
+  padding: var(--swf-input-padding);
+  font: inherit;
+  color: inherit;
+  background: var(--swf-bg);
+  border: 1px solid var(--swf-border);
+  border-radius: var(--swf-radius);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.swf-textarea {
+  resize: vertical;
+}
+.swf-input:focus,
+.swf-textarea:focus,
+.swf-select:focus {
+  outline: none;
+  border-color: var(--swf-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--swf-accent) 25%, transparent);
+}
+
+/* ---------- choices ---------- */
+.swf-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+.swf-choices--horizontal {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+}
+.swf-choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+.swf-choice input[type='checkbox'],
+.swf-choice input[type='radio'] {
+  flex: none;
+  width: 1.1em;
+  height: 1.1em;
+  margin: 0.2em 0 0;
+  accent-color: var(--swf-accent);
+}
+.swf-choice label {
+  margin: 0;
+}
+.swf-choice--other {
+  flex-wrap: wrap;
+  align-items: center;
+}
+.swf-choice--other .swf-other-text {
+  flex: 1 1 12rem;
+  width: auto;
+}
+
+/* ---------- errors ---------- */
+.swf-field--error .swf-input,
+.swf-field--error .swf-textarea,
+.swf-field--error .swf-select {
+  border-color: var(--swf-error);
+}
+.swf-error-message {
+  margin: 0;
+  font-size: 0.9em;
+  font-weight: 600;
+  color: var(--swf-error);
+}
+.swf-summary {
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--swf-error);
+  border-left-width: 4px;
+  border-radius: var(--swf-radius);
+  background: var(--swf-error-bg);
+  color: var(--swf-error);
+}
+.swf-summary:focus {
+  outline: 2px solid var(--swf-error);
+  outline-offset: 2px;
+}
+.swf-summary--ok {
+  border-color: var(--swf-success);
+  background: var(--swf-success-bg);
+  color: var(--swf-success);
+}
+.swf-summary__title {
+  margin: 0;
+  font-weight: 700;
+}
+.swf-summary ul {
+  margin: 0.4rem 0 0;
+  padding-left: 1.2rem;
+}
+.swf-summary a {
+  color: inherit;
+}
+
+/* ---------- groups and repeaters ---------- */
+.swf-field--group {
+  padding: 1rem;
+  border: 1px solid var(--swf-border);
+  border-radius: var(--swf-radius);
+}
+.swf-field--group > .swf-label {
+  float: left;
+  width: 100%;
+  margin-bottom: 0.5rem;
+}
+.swf-field--group > .swf-label + * {
+  clear: both;
+}
+.swf-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.swf-row {
+  position: relative;
+  padding: 0.85rem 2.75rem 0.85rem 0.85rem;
+  border: 1px dashed var(--swf-border);
+  border-radius: var(--swf-radius);
+}
+.swf-row-remove {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: var(--swf-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.swf-row-remove:hover,
+.swf-row-remove:focus-visible {
+  color: var(--swf-error);
+  border-color: currentColor;
+}
+.swf-row-add {
+  align-self: flex-start;
+}
+
+/* ---------- columns ---------- */
+.swf-columns {
+  display: grid;
+  grid-template-columns: var(--swf-tracks, 1fr 1fr);
+  gap: var(--swf-gap);
+  align-items: start;
+}
+.swf-columns--gap-sm {
+  gap: calc(var(--swf-gap) * 0.5);
+}
+.swf-columns--gap-lg {
+  gap: calc(var(--swf-gap) * 1.75);
+}
+@container (max-width: 479px) {
+  .swf-columns--stack-sm,
+  .swf-columns--stack-md {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .swf-columns--reverse:is(.swf-columns--stack-sm, .swf-columns--stack-md) > .swf-col {
+    order: -1;
+  }
+  .swf-columns--reverse:is(.swf-columns--stack-sm, .swf-columns--stack-md) > .swf-col:first-child {
+    order: 0;
+  }
+}
+@container (min-width: 480px) and (max-width: 719px) {
+  .swf-columns--stack-md {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .swf-columns--reverse.swf-columns--stack-md {
+    display: flex;
+    flex-direction: column-reverse;
+  }
+}
+@container (max-width: 479px) {
+  .swf-columns--reverse:is(.swf-columns--stack-sm, .swf-columns--stack-md) {
+    display: flex;
+    flex-direction: column-reverse;
+  }
+}
+
+/* ---------- buttons and confirmation ---------- */
+.swf-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+.swf-button {
+  padding: 0.7em 1.4em;
+  font: inherit;
+  font-weight: 600;
+  color: #fff;
+  background: var(--swf-accent);
+  border: 0;
+  border-radius: var(--swf-radius);
+  cursor: pointer;
+}
+.swf-row-add {
+  color: var(--swf-accent);
+  background: transparent;
+  border: 1px solid var(--swf-accent);
+}
+.swf-button:hover {
+  filter: brightness(1.08);
+}
+.swf-button:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--swf-accent) 40%, transparent);
+  outline-offset: 2px;
+}
+.swf-button:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+.swf-confirmation {
+  padding: 1rem 1.25rem;
+  border-left: 4px solid var(--swf-success);
+  background: var(--swf-success-bg);
+  border-radius: var(--swf-radius);
+}
+.swf-notice {
+  padding: 0.75rem 1rem;
+  border: 1px dashed var(--swf-error);
+  color: var(--swf-error);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .swf * {
+    transition: none !important;
+  }
+}

@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<ruleset name="SWForms">
+    <description>PSR-12 for the framework independent core and tests (see AGENTS.md).</description>
+    <arg name="extensions" value="php"/>
+    <arg name="colors"/>
+    <arg value="sp"/>
+    <arg name="cache" value=".phpcs.cache"/>
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/node_modules/*</exclude-pattern>
+
+    <file>src/Core</file>
+    <file>tests</file>
+    <!-- WordPress style integration script (runs inside WordPress). -->
+    <exclude-pattern>tests/wp-smoke.php</exclude-pattern>
+    <rule ref="PSR12"/>
+    <rule ref="Generic.Files.LineLength">
+        <properties>
+            <property name="lineLimit" value="200"/>
+            <property name="absoluteLineLimit" value="0"/>
+        </properties>
+        <exclude-pattern>tests/*</exclude-pattern>
+    </rule>
+
+    <config name="testVersion" value="8.2-"/>
+    <rule ref="PHPCompatibility">
+        <exclude-pattern>tests/*</exclude-pattern>
+    </rule>
+</ruleset>

@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<ruleset name="SWForms WordPress adapter">
+    <description>WordPress Coding Standards for the WordPress adapter (see AGENTS.md).</description>
+    <arg name="extensions" value="php"/>
+    <arg name="colors"/>
+    <arg value="sp"/>
+    <arg name="cache" value=".phpcs-wp.cache"/>
+    <file>src/WordPress</file>
+    <file>includes</file>
+    <file>sw-forms.php</file>
+    <file>uninstall.php</file>
+
+    <config name="minimum_wp_version" value="6.4"/>
+    <config name="testVersion" value="8.2-"/>
+
+    <rule ref="WordPress">
+        <!-- Project decision: PSR-4 class names/files (PascalCase) in the namespaced adapter. -->
+        <exclude name="WordPress.Files.FileName"/>
+        <exclude name="Universal.Operators.DisallowShortTernary"/>
+        <!-- Core interfaces (camelCase) are implemented as dictated by the interface. -->
+        <exclude name="WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid"/>
+        <exclude name="WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase"/>
+        <exclude name="WordPress.NamingConventions.ValidVariableName.PropertyNotSnakeCase"/>
+        <exclude name="WordPress.NamingConventions.ValidVariableName.InterpolatedVariableNotSnakeCase"/>
+        <exclude name="WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase"/>
+        <!-- Typed signatures carry the contract; docblocks are required for hook payloads and public extension points. -->
+        <exclude name="WordPress.Security.EscapeOutput.ExceptionNotEscaped"/>
+        <exclude name="Squiz.Commenting.FunctionComment.Missing"/>
+        <exclude name="Squiz.Commenting.FunctionComment.MissingParamTag"/>
+        <exclude name="Squiz.Commenting.ClassComment.Missing"/>
+        <exclude name="Squiz.Commenting.VariableComment.Missing"/>
+        <exclude name="Squiz.Commenting.FunctionComment.MissingParamComment"/>
+        <exclude name="Squiz.Commenting.FunctionComment.ParamCommentFullStop"/>
+        <exclude name="Generic.Commenting.DocComment.MissingShort"/>
+        <exclude name="Squiz.Commenting.FileComment.SpacingAfterOpen"/>
+        <exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames"/>
+        <!-- Docblocks document only what the signature cannot express (array shapes, PHPStan style), so they are partial by design. -->
+        <exclude name="Squiz.Commenting.FunctionComment.ParamNameNoMatch"/>
+        <exclude name="Squiz.Commenting.FunctionComment.IncorrectTypeHint"/>
+    </rule>
+    <rule ref="WordPress.WP.I18n">
+        <properties>
+            <property name="text_domain" type="array"><element value="sw-forms"/></property>
+        </properties>
+    </rule>
+    <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+        <properties>
+            <property name="prefixes" type="array"><element value="swf_"/><element value="SWForms"/><element value="SWF_"/></property>
+        </properties>
+    </rule>
+    <rule ref="PHPCompatibilityWP"/>
+</ruleset>

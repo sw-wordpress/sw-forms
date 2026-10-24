@@ -1,0 +1,64 @@
+{
+    "name": "swforms/sw-forms",
+    "description": "SW Forms - drag and drop form builder for WordPress.",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "php": ">=8.2",
+        "ext-json": "*"
+    },
+    "require-dev": {
+        "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+        "phpcompatibility/phpcompatibility-wp": "^2.1",
+        "phpstan/phpstan": "^2.0",
+        "phpunit/phpunit": "^11.0",
+        "squizlabs/php_codesniffer": "^3.10",
+        "wp-coding-standards/wpcs": "^3.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "SWForms\\Core\\": "src/Core/",
+            "SWForms\\WordPress\\": "src/WordPress/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "SWForms\\Tests\\Unit\\": "tests/Unit/"
+        }
+    },
+    "extra": {
+        "mozart": {
+            "dep_namespace": "SWForms\\Dependencies\\",
+            "dep_directory": "/vendor-prefixed/",
+            "classmap_directory": "/vendor-prefixed/",
+            "classmap_prefix": "SWForms_",
+            "constant_prefix": "SWFORMS_",
+            "functions_prefix": "swforms_",
+            "generate_autoloader": true,
+            "delete_vendor_directories": true
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "optimize-autoloader": true,
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        },
+        "platform": {
+            "php": "8.2.0"
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "stan": "phpstan analyse --memory-limit=1G",
+        "cs": "phpcs --runtime-set ignore_warnings_on_exit 1",
+        "cs:wp": "phpcs --standard=phpcs-wordpress.xml.dist --runtime-set ignore_warnings_on_exit 1",
+        "cs:fix": "phpcbf",
+        "check": [
+            "@cs",
+            "@cs:wp",
+            "@stan",
+            "@test"
+        ]
+    }
+}

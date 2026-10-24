@@ -1,0 +1,525 @@
+/*
+ * SW Forms admin styles. Everything is namespaced with `swf-` / `.swf-root` so nothing
+ * leaks into wp-admin. Quasar's own CSS is scoped to `.swf-root` at build time
+ * (tools/postcssScope.ts).
+ */
+
+/* ---------- design tokens ---------- */
+.swf-root {
+  --swf-primary: #4f46e5;
+  --swf-primary-strong: #4338ca;
+  --swf-primary-soft: #eef2ff;
+  --swf-accent: #0d9488;
+  --swf-accent-bright: #14b8a6;
+  --swf-success: #16a34a;
+  --swf-warning: #f59e0b;
+  --swf-danger: #dc2626;
+  --swf-info: #0284c7;
+
+  --swf-success-text: #166534;
+  --swf-warning-text: #92400e;
+  --swf-danger-text: #b91c1c;
+  --swf-info-text: #075985;
+  --swf-neutral-text: #334155;
+  --swf-success-bg: #dcfce7;
+  --swf-warning-bg: #fef3c7;
+  --swf-danger-bg: #fee2e2;
+  --swf-info-bg: #e0f2fe;
+  --swf-neutral-bg: #eef1f6;
+  --swf-primary-text: #3730a3;
+  --swf-primary-bg: #e0e7ff;
+
+  --swf-bg: #f3f4fa;
+  --swf-surface: #ffffff;
+  --swf-surface-2: #f8f9fc;
+  --swf-surface-3: #eef0f7;
+  --swf-border: #e1e5ee;
+  --swf-text: #0f172a;
+  --swf-muted: #475569;
+  --swf-rail-bg: #ffffff;
+  --swf-focus: #4f46e5;
+  --swf-overlay: rgba(15, 23, 42, 0.45);
+
+  --swf-gradient: linear-gradient(135deg, #4f46e5 0%, #0d9488 100%);
+  --swf-gradient-soft: linear-gradient(
+    135deg,
+    rgba(79, 70, 229, 0.1) 0%,
+    rgba(20, 184, 166, 0.1) 100%
+  );
+
+  --swf-radius: 16px;
+  --swf-radius-sm: 10px;
+  --swf-shadow-1: 0 1px 2px rgba(15, 23, 42, 0.05), 0 2px 6px rgba(15, 23, 42, 0.04);
+  --swf-shadow-2:
+    0 1px 2px rgba(15, 23, 42, 0.04), 0 6px 16px rgba(15, 23, 42, 0.06),
+    0 18px 40px rgba(15, 23, 42, 0.05);
+  --swf-font: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --swf-mono: 'JetBrains Mono Variable', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* map to Quasar brand variables (set here instead of Quasar's runtime brand plugin) */
+  --q-primary: var(--swf-primary);
+  --q-secondary: var(--swf-accent);
+  --q-accent: var(--swf-accent-bright);
+  --q-positive: var(--swf-success);
+  --q-negative: var(--swf-danger);
+  --q-info: var(--swf-info);
+  --q-warning: var(--swf-warning);
+  --q-dark: var(--swf-surface);
+  --q-dark-page: var(--swf-bg);
+
+  color-scheme: light;
+  font-family: var(--swf-font);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--swf-text);
+  font-feature-settings: 'cv11', 'ss03';
+  -webkit-font-smoothing: antialiased;
+  box-sizing: border-box;
+  text-align: left;
+}
+
+.swf-root.swf-dark {
+  --swf-primary: #818cf8;
+  --swf-primary-strong: #a5b4fc;
+  --swf-primary-soft: rgba(129, 140, 248, 0.14);
+  --swf-accent: #2dd4bf;
+  --swf-accent-bright: #2dd4bf;
+  --swf-success: #4ade80;
+  --swf-warning: #fbbf24;
+  --swf-danger: #f87171;
+  --swf-info: #38bdf8;
+
+  --swf-success-text: #86efac;
+  --swf-warning-text: #fcd34d;
+  --swf-danger-text: #fca5a5;
+  --swf-info-text: #7dd3fc;
+  --swf-neutral-text: #cbd5e1;
+  --swf-primary-text: #c7d2fe;
+  --swf-success-bg: rgba(74, 222, 128, 0.14);
+  --swf-warning-bg: rgba(251, 191, 36, 0.14);
+  --swf-danger-bg: rgba(248, 113, 113, 0.16);
+  --swf-info-bg: rgba(56, 189, 248, 0.14);
+  --swf-neutral-bg: rgba(148, 163, 184, 0.16);
+  --swf-primary-bg: rgba(129, 140, 248, 0.2);
+
+  --swf-bg: #0a0f1f;
+  --swf-surface: #131a2e;
+  --swf-surface-2: #182038;
+  --swf-surface-3: #1f2946;
+  --swf-border: #263250;
+  --swf-text: #e8ecf8;
+  --swf-muted: #a3aecb;
+  --swf-rail-bg: #0e1427;
+  --swf-focus: #a5b4fc;
+  --swf-overlay: rgba(2, 6, 20, 0.65);
+
+  --swf-gradient: linear-gradient(135deg, #6366f1 0%, #14b8a6 100%);
+  --swf-gradient-soft: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.18) 0%,
+    rgba(20, 184, 166, 0.14) 100%
+  );
+  --swf-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --swf-shadow-2: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 30px rgba(0, 0, 0, 0.35);
+  color-scheme: dark;
+}
+
+/* ---------- isolation reset (wp-admin styles bleeding in) ---------- */
+.swf-root *,
+.swf-root *::before,
+.swf-root *::after {
+  box-sizing: border-box;
+}
+.swf-root h1,
+.swf-root h2,
+.swf-root h3,
+.swf-root h4,
+.swf-root h5,
+.swf-root h6,
+.swf-root p,
+.swf-root ul,
+.swf-root ol,
+.swf-root dl,
+.swf-root dd,
+.swf-root figure {
+  margin: 0;
+  padding: 0;
+  color: inherit;
+  font-family: inherit;
+  letter-spacing: normal;
+  text-transform: none;
+  line-height: 1.35;
+}
+.swf-root ul,
+.swf-root ol {
+  list-style: none;
+}
+.swf-root a {
+  color: var(--swf-primary);
+  text-decoration: none;
+}
+.swf-root a:hover {
+  text-decoration: underline;
+}
+.swf-root button,
+.swf-root input,
+.swf-root select,
+.swf-root textarea {
+  font-family: inherit;
+}
+.swf-root table {
+  border-collapse: collapse;
+  border-spacing: 0;
+  margin: 0;
+  width: 100%;
+  background: transparent;
+  border: 0;
+}
+.swf-root th,
+.swf-root td {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  vertical-align: middle;
+}
+.swf-root code {
+  font-family: var(--swf-mono);
+  font-size: 0.9em;
+  background: var(--swf-surface-3);
+  padding: 0.1em 0.4em;
+  border-radius: 6px;
+}
+.swf-root label {
+  display: inline;
+  margin: 0;
+  font-weight: inherit;
+}
+
+/* Standalone pseudo-roots created by Quasar for dialogs/menus/notifications */
+.swf-root.q-portal--dialog,
+.swf-root.q-portal--menu {
+  font-size: 15px;
+}
+
+/* ---------- WordPress integration ---------- */
+.swf-fullbleed {
+  margin: 0 0 0 -20px;
+}
+@media screen and (max-width: 782px) {
+  .swf-fullbleed {
+    margin-left: -10px;
+  }
+}
+body.swf-admin-page #wpfooter {
+  display: none;
+}
+body.swf-admin-page #wpbody-content {
+  padding-bottom: 0;
+}
+/* Quasar locks scroll with a class on body when a dialog is open */
+body.q-body--prevent-scroll {
+  overflow: hidden;
+}
+/* Dialogs/menus/notifications must sit above the WP admin bar (99999) and admin menu */
+.swf-root.q-portal--dialog .q-dialog,
+.swf-root.q-portal--menu .q-menu,
+.swf-root.q-portal--dialog .q-dialog__backdrop {
+  z-index: 100100;
+}
+.swf-root .q-notifications__list {
+  z-index: 100200;
+}
+.swf-root .q-menu,
+.swf-root.q-portal--menu .q-menu {
+  z-index: 100150;
+}
+.swf-root.q-portal--tooltip .q-tooltip,
+.swf-root .q-tooltip {
+  z-index: 100300;
+}
+
+/* ---------- utilities ---------- */
+.swf-sr-only {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.swf-num {
+  font-variant-numeric: tabular-nums;
+}
+.swf-muted {
+  color: var(--swf-muted);
+}
+.swf-mono {
+  font-family: var(--swf-mono);
+  font-size: 0.88em;
+}
+.swf-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.swf-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.swf-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.swf-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+}
+.swf-grid--wide {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+}
+.swf-eyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--swf-muted);
+}
+
+/* ---------- focus ---------- */
+.swf-root :focus-visible {
+  outline: 3px solid var(--swf-focus);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+.swf-root .q-btn:focus-visible,
+.swf-root .q-field:focus-within .q-field__control {
+  outline: 3px solid var(--swf-focus);
+  outline-offset: 1px;
+}
+.swf-root .q-field__native:focus-visible,
+.swf-root .q-field__input:focus-visible {
+  outline: none;
+}
+
+/* ---------- Quasar tuning ---------- */
+.swf-root .q-btn {
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  border-radius: 10px;
+}
+.swf-root .q-btn--standard.bg-primary,
+.swf-root .q-btn.swf-btn-gradient {
+  background: var(--swf-gradient) !important;
+}
+.swf-root .q-btn.bg-primary {
+  color: #fff !important;
+}
+.swf-root .q-field--outlined .q-field__control {
+  border-radius: 10px;
+}
+.swf-root .q-field--outlined .q-field__control:before {
+  border-color: var(--swf-border);
+}
+.swf-root .q-field--outlined:not(.q-field--readonly) .q-field__control:hover:before {
+  border-color: var(--swf-muted);
+}
+.swf-root .q-field__label,
+.swf-root .q-field__bottom {
+  color: var(--swf-muted);
+}
+.swf-root .q-field--dark .q-field__native,
+.swf-root .q-field--dark .q-field__prefix,
+.swf-root .q-field--dark .q-field__suffix,
+.swf-root .q-field--dark .q-field__input {
+  color: var(--swf-text);
+}
+.swf-root .q-card {
+  background: var(--swf-surface);
+  color: var(--swf-text);
+  box-shadow: var(--swf-shadow-2);
+  border-radius: var(--swf-radius);
+}
+.swf-root .q-menu {
+  background: var(--swf-surface);
+  color: var(--swf-text);
+  border: 1px solid var(--swf-border);
+  border-radius: 12px;
+  box-shadow: var(--swf-shadow-2);
+}
+.swf-root .q-item--active,
+.swf-root .q-item.q-router-link--active {
+  color: var(--swf-primary);
+}
+.swf-root .q-tooltip {
+  background: var(--swf-text);
+  color: var(--swf-surface);
+  font-size: 13px;
+  border-radius: 8px;
+}
+.swf-root .q-tab {
+  text-transform: none;
+  font-weight: 600;
+}
+.swf-root .q-tabs {
+  color: var(--swf-muted);
+}
+.swf-root .q-tab--active {
+  color: var(--swf-primary);
+}
+.swf-root .q-skeleton {
+  background: var(--swf-surface-3);
+}
+.swf-root .q-skeleton--type-text,
+.swf-root .q-skeleton--type-rect {
+  border-radius: 8px;
+}
+.swf-root .q-notification {
+  border-radius: 12px;
+  box-shadow: var(--swf-shadow-2);
+  font-size: 14px;
+}
+.swf-root .q-linear-progress {
+  border-radius: 999px;
+}
+.swf-root .q-toggle__label,
+.swf-root .q-checkbox__label {
+  font-size: 14px;
+}
+.swf-root .q-dialog__backdrop {
+  background: var(--swf-overlay);
+}
+.swf-root .q-drawer {
+  background: var(--swf-surface);
+}
+.swf-root .q-separator {
+  background: var(--swf-border);
+}
+
+/* ---------- native tables that stack on small screens ---------- */
+.swf-table {
+  font-variant-numeric: tabular-nums;
+}
+.swf-table th {
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--swf-muted);
+  border-bottom: 1px solid var(--swf-border);
+  white-space: nowrap;
+}
+.swf-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--swf-border);
+  font-size: 14px;
+}
+.swf-table tbody tr {
+  transition: background-color 0.15s ease;
+}
+.swf-table tbody tr:hover {
+  background: var(--swf-surface-2);
+}
+.swf-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+@media (max-width: 760px) {
+  .swf-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+  }
+  .swf-table,
+  .swf-table tbody,
+  .swf-table tr,
+  .swf-table td {
+    display: block;
+  }
+  .swf-table tr {
+    padding: 10px 6px;
+    border-bottom: 1px solid var(--swf-border);
+  }
+  .swf-table tbody tr:last-child {
+    border-bottom: 0;
+  }
+  .swf-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 8px;
+    border: 0;
+    text-align: right;
+  }
+  .swf-table td::before {
+    content: attr(data-label);
+    flex: none;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--swf-muted);
+    text-align: left;
+  }
+  .swf-table td[data-label=''] {
+    justify-content: flex-end;
+  }
+  .swf-table td[data-label='']::before {
+    display: none;
+  }
+}
+
+/* ---------- motion ---------- */
+@keyframes swf-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes swf-pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+@keyframes swf-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.swf-fade-enter-active,
+.swf-fade-leave-active {
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+}
+.swf-fade-enter-from {
+  opacity: 0;
+  transform: translateY(6px);
+}
+.swf-fade-leave-to {
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .swf-root *,
+  .swf-root *::before,
+  .swf-root *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

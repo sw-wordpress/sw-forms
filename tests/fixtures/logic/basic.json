@@ -1,0 +1,38 @@
+{
+  "description": "Show/hide, all/any, empty rule lists and missing values.",
+  "fields": [
+    { "id": "type", "type": "radio", "key": "type" },
+    { "id": "company", "type": "input", "key": "company",
+      "logic": { "action": "show", "match": "all", "rules": [{ "field": "type", "op": "is", "value": "business" }] } },
+    { "id": "private_note", "type": "textarea", "key": "private_note",
+      "logic": { "action": "hide", "match": "all", "rules": [{ "field": "type", "op": "is", "value": "business" }] } },
+    { "id": "either", "type": "input", "key": "either",
+      "logic": { "action": "show", "match": "any", "rules": [
+        { "field": "type", "op": "is", "value": "a" },
+        { "field": "type", "op": "is", "value": "b" }
+      ] } },
+    { "id": "both", "type": "input", "key": "both",
+      "logic": { "action": "show", "match": "all", "rules": [
+        { "field": "type", "op": "notempty" },
+        { "field": "company", "op": "contains", "value": "gmbh" }
+      ] } },
+    { "id": "no_rules", "type": "input", "key": "no_rules", "logic": { "action": "show", "match": "all", "rules": [] } }
+  ],
+  "cases": [
+    {
+      "name": "nothing filled",
+      "values": {},
+      "expected": { "type": true, "company": false, "private_note": true, "either": false, "both": false, "no_rules": true }
+    },
+    {
+      "name": "business",
+      "values": { "type": "business", "company": "ACME GmbH" },
+      "expected": { "company": true, "private_note": false, "either": false, "both": true }
+    },
+    {
+      "name": "any matches second rule",
+      "values": { "type": "B" },
+      "expected": { "either": true, "company": false, "both": false }
+    }
+  ]
+}

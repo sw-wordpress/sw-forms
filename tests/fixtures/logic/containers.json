@@ -1,0 +1,39 @@
+{
+  "description": "Groups and columns: a hidden container hides its descendants; columns carry their own logic.",
+  "fields": [
+    { "id": "toggle", "type": "checkbox", "key": "toggle" },
+    { "id": "layout", "type": "columns", "columns": [
+      { "id": "col_left", "width": 6, "children": [
+        { "id": "first", "type": "input", "key": "first" }
+      ] },
+      { "id": "col_right", "width": 6,
+        "logic": { "action": "show", "match": "all", "rules": [{ "field": "toggle", "op": "notempty" }] },
+        "children": [
+          { "id": "last", "type": "input", "key": "last" }
+        ] }
+    ] },
+    { "id": "address", "type": "group", "key": "address",
+      "logic": { "action": "hide", "match": "all", "rules": [{ "field": "first", "op": "empty" }] },
+      "children": [
+        { "id": "street", "type": "input", "key": "street" },
+        { "id": "inner", "type": "columns", "columns": [
+          { "id": "inner_col", "width": 12, "children": [ { "id": "city", "type": "input", "key": "city" } ] }
+        ] }
+      ] },
+    { "id": "after", "type": "input", "key": "after",
+      "logic": { "action": "show", "match": "all", "rules": [{ "field": "city", "op": "is", "value": "Berlin" }] } }
+  ],
+  "cases": [
+    {
+      "name": "everything hidden",
+      "values": { "city": "Berlin" },
+      "expected": { "layout": true, "col_left": true, "first": true, "col_right": false, "last": false,
+                    "address": false, "street": false, "inner": false, "inner_col": false, "city": false, "after": false }
+    },
+    {
+      "name": "everything visible",
+      "values": { "toggle": true, "first": "Max", "city": "berlin" },
+      "expected": { "col_right": true, "last": true, "address": true, "city": true, "after": true }
+    }
+  ]
+}

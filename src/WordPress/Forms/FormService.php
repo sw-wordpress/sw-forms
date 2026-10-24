@@ -1,0 +1,163 @@
+<?php
+/**
+ * Use cases around forms: create, validate, save (publish), draft, duplicate.
+ *
+ * @package SWForms
+ */
+
+declare(strict_types=1);
+
+namespace SWForms\WordPress\Forms;
+
+use SWForms\Core\Form\SchemaValidator;
+use SWForms\Core\Form\Tree;
+use SWForms\WordPress\Fields\FieldRegistry;
+use SWForms\WordPress\Support\Messages;
+
+final class FormService {
+
+	public function __construct(
+		private readonly FormRepository $forms,
+		private readonly FieldRegistry $registry,
+	) {}
+
+	public static function create_default(): self {
+		return new self( new FormRepository(), FieldRegistry::instance() );
+	}
+
+	public function repository(): FormRepository {
+		return $this->forms;
+	}
+
+	/**
+	 * @param array<string, mixed> $document
+	 * @return array{schemaVersion: int, fields: list<array<string, mixed>>, settings: array<string, mixed>}
+	 */
+	public function normalize( array $document ): array {
+		return ( new DocumentNormalizer( $this->registry ) )->normalize( $document );
+	}
+
+	/**
+	 * Validates a normalized document.
+	 *
+	 * @param array<string, mixed> $document
+	 * @return list<array{path: string, code: string, message: string}>
+	 */
+	public function validate( array $document ): array {
+		$errors = array();
+		foreach ( ( new SchemaValidator( $this->registry ) )->validate( $document ) as $error ) {
+			$errors[] = array(
+				'path'    => $error['path'],
+				'code'    => $error['code'],
+				'message' => Messages::schema( $error['code'], $error['params'] ),
+			);
+		}
+		if ( array() !== $errors ) {
+			return $errors;
+		}
+		// Conditions of notifications are evaluated at form level: only fields outside repeaters.
+		$tree          = Tree::build( $document['fields'], $this->registry );
+		$notifications = $document['settings']['notifications'] ?? array();
+		foreach ( is_array( $notifications ) ? $notifications : array() as $notification ) {
+			foreach ( $notification['logic']['rules'] ?? array() as $rule ) {
+				$field = (string) ( $rule['field'] ?? '' );
+				if ( ! $tree->isLeafData( $field ) || null !== $tree->scopeOf( $field ) ) {
+					$errors[] = array(
+						'path'    => 'notification:' . (string) $notification['id'],
+						'code'    => 'rule_unknown_field',
+						'message' => Messages::schema( 'rule_unknown_field' ),
+					);
+					break;
+				}
+			}
+		}
+		return $errors;
+	}
+
+	public function create( string $title ): int {
+		$title = '' === trim( $title ) ? __( 'Untitled form', 'sw-forms' ) : $title;
+		$id    = $this->forms->create( $title, DocumentNormalizer::blank() );
+		/**
+		 * Fires after a form was created.
+		 *
+		 * @since 0.1.0
+		 *
+		 * @param int $form_id Form id.
+		 */
+		do_action( 'swf_form_created', $id );
+		return $id;
+	}
+
+	/**
+	 * Validates and publishes. Returns the errors (nothing saved) or the new version.
+	 *
+	 * @param array<string, mixed> $document
+	 * @return array{errors: list<array{path: string, code: string, message: string}>, version: int, document: array<string, mixed>}
+	 */
+	public function save( int $id, string $title, array $document ): array {
+		$document = $this->normalize( $document );
+		$errors   = $this->validate( $document );
+		if ( array() !== $errors ) {
+			return array(
+				'errors'   => $errors,
+				'version'  => 0,
+				'document' => $document,
+			);
+		}
+		$title   = sanitize_text_field( $title );
+		$version = $this->forms->publish( $id, '' === $title ? __( 'Untitled form', 'sw-forms' ) : $title, $document );
+		/**
+		 * Fires after a form was saved (published).
+		 *
+		 * Failure policy: exceptions of callbacks are not caught; the form is already stored.
+		 *
+		 * @since 0.1.0
+		 *
+		 * @param int                  $form_id  Form id.
+		 * @param int                  $version  Current version.
+		 * @param array<string, mixed> $document Saved document.
+		 */
+		do_action( 'swf_form_saved', $id, $version, $document );
+		return array(
+			'errors'   => array(),
+			'version'  => $version,
+			'document' => $document,
+		);
+	}
+
+	/**
+	 * Autosave without validation (the preview renders the draft).
+	 *
+	 * @param array<string, mixed> $document
+	 */
+	public function save_draft( int $id, array $document ): void {
+		$this->forms->save_draft( $id, $this->normalize( $document ) );
+	}
+
+	public function duplicate( int $id ): int {
+		$form = $this->forms->find( $id );
+		if ( null === $form ) {
+			return 0;
+		}
+		$document = $form['draft'] ?? $this->forms->published( $id ) ?? DocumentNormalizer::blank();
+		/* translators: %s: title of the copied form */
+		$copy_id = $this->forms->create( sprintf( __( '%s (copy)', 'sw-forms' ), $form['title'] ), $document );
+		if ( array() === $this->validate( $this->normalize( $document ) ) ) {
+			$this->forms->publish( $copy_id, sprintf( __( '%s (copy)', 'sw-forms' ), $form['title'] ), $this->normalize( $document ) ); // phpcs:ignore WordPress.WP.I18n.MissingTranslatorsComment -- same string as above.
+		}
+		return $copy_id;
+	}
+
+	/**
+	 * The document the builder edits: the draft if there is one, otherwise the published version.
+	 *
+	 * @return array<string, mixed>
+	 */
+	public function editable_document( int $id ): array {
+		$form = $this->forms->find( $id );
+		if ( null === $form ) {
+			return DocumentNormalizer::blank();
+		}
+		return $form['draft'] ?? $this->forms->published( $id ) ?? DocumentNormalizer::blank();
+	}
+}

@@ -1,0 +1,24 @@
+{
+  "description": "A rule on a hidden field sees an empty value; hiding cascades through dependency chains.",
+  "fields": [
+    { "id": "a", "type": "checkbox", "key": "a" },
+    { "id": "b", "type": "input", "key": "b",
+      "logic": { "action": "show", "match": "all", "rules": [{ "field": "a", "op": "is", "value": "1" }] } },
+    { "id": "c", "type": "input", "key": "c",
+      "logic": { "action": "show", "match": "all", "rules": [{ "field": "b", "op": "notempty" }] } },
+    { "id": "d", "type": "input", "key": "d",
+      "logic": { "action": "show", "match": "all", "rules": [{ "field": "b", "op": "empty" }] } }
+  ],
+  "cases": [
+    {
+      "name": "chain open",
+      "values": { "a": true, "b": "x" },
+      "expected": { "b": true, "c": true, "d": false }
+    },
+    {
+      "name": "b hidden but still has a stale value",
+      "values": { "a": false, "b": "stale" },
+      "expected": { "b": false, "c": false, "d": true }
+    }
+  ]
+}

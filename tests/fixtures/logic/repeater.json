@@ -1,0 +1,32 @@
+{
+  "description": "Repeater rows: rules see their own row and enclosing scopes; results are reported per row.",
+  "fields": [
+    { "id": "mode", "type": "select", "key": "mode" },
+    { "id": "people", "type": "group", "key": "people", "settings": { "repeatable": true },
+      "logic": { "action": "show", "match": "all", "rules": [{ "field": "mode", "op": "isnot", "value": "none" }] },
+      "children": [
+        { "id": "name", "type": "input", "key": "name" },
+        { "id": "child", "type": "checkbox", "key": "child" },
+        { "id": "age", "type": "input", "key": "age",
+          "logic": { "action": "show", "match": "all", "rules": [{ "field": "child", "op": "is", "value": "1" }] } },
+        { "id": "diet", "type": "input", "key": "diet",
+          "logic": { "action": "show", "match": "all", "rules": [{ "field": "mode", "op": "is", "value": "dinner" }] } }
+      ] }
+  ],
+  "cases": [
+    {
+      "name": "per row visibility",
+      "values": { "mode": "dinner", "people": [ { "name": "A", "child": true }, { "name": "B", "child": false } ] },
+      "expected": {
+        "people": true,
+        "people[0].name": true, "people[0].age": true, "people[0].diet": true,
+        "people[1].name": true, "people[1].age": false, "people[1].diet": true
+      }
+    },
+    {
+      "name": "hidden repeater hides rows",
+      "values": { "mode": "none", "people": [ { "name": "A", "child": true } ] },
+      "expected": { "people": false, "people[0].name": false, "people[0].age": false }
+    }
+  ]
+}
