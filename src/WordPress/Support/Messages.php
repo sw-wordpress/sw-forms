@@ -24,6 +24,7 @@ final class Messages {
 			'url'          => __( 'Please enter a valid web address starting with http:// or https://.', 'sw-forms' ),
 			'tel'          => __( 'Please enter a valid phone number.', 'sw-forms' ),
 			'date'         => __( 'Please enter a valid date.', 'sw-forms' ),
+			'color' => __( 'Please choose a color in #RRGGBB format.', 'sw-forms' ),
 			'time'         => __( 'Please enter a valid time.', 'sw-forms' ),
 			'integer'      => __( 'Please enter a whole number.', 'sw-forms' ),
 			'step'         => __( 'Please use the configured interval.', 'sw-forms' ),

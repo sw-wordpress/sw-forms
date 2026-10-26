@@ -117,4 +117,6 @@ The `input` type supports `text`, `email`, `tel`, `url`, `number`, `date`, `time
 The settings schema may set `images: false` on an `options` setting to hide image URL
 controls (for example in calling-code lists).
 
-Remaining issue #2 work covers structured inputs, uploads, signatures and media capture.
+Built-in `range`, `rating`, `scale`, `color` and `tags` fields are documented in `docs/schema.md`.
+Remaining issue #2 work covers address/name, birthdate with age validation, date/time intervals,
+Likert matrices, uploads, signatures and media capture.
