@@ -21,6 +21,7 @@ final class Submission {
 	 * @param array<string, mixed> $values   Clean values keyed by element id.
 	 * @param array<string, mixed> $data     Public data keyed by field key.
 	 * @param int                  $entry_id 0 when entries are not stored.
+	 * @param array<string, mixed> $meta     Request context: `sourceUrl`.
 	 */
 	public function __construct(
 		public readonly array $form,
@@ -32,6 +33,7 @@ final class Submission {
 		public readonly array $data,
 		public readonly int $entry_id,
 		private readonly EntryRepository $entries,
+		public readonly array $meta = array(),
 	) {}
 
 	public function form_id(): int {

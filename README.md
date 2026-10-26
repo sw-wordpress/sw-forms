@@ -19,8 +19,12 @@ conditional logic, entries, e-mail notifications and an extension API.
 
 ```bash
 composer install
-cd apps/admin && npm install && npm run build   # admin SPA + frontend runtime
+make build   # admin SPA + frontend runtime
 ```
+
+Run `make build` from the plugin directory. Requires Make, Node.js >=18.18 and npm.
+Dependencies are installed automatically with `npm ci --include=dev` on the first build
+and whenever `apps/admin/package.json` or its lockfile changes.
 
 Requirements: PHP 8.2, WordPress 6.4. See `AGENTS.md` for checks and conventions.
 

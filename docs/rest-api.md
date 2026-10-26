@@ -5,9 +5,9 @@ Cookie authentication with the `wp_rest` nonce (`X-WP-Nonce`). Errors are `WP_Er
 
 | Method | Route | Capability | Notes |
 |--------|-------|------------|-------|
-| GET | `/forms` | `swf_manage_forms` or `swf_view_entries` | List with entry counters. |
+| GET | `/forms` | `swf_manage_forms` or `swf_view_entries` | List with entry counters and `webhookFailures`. |
 | POST | `/forms` | `swf_manage_forms` | `{title}` → form detail (201). |
-| GET | `/forms/{id}` | `swf_manage_forms` or `swf_view_entries` | Detail: editable `document` (draft or published), `publishedKeys`, `previewUrl`, `shortcode`. |
+| GET | `/forms/{id}` | `swf_manage_forms` or `swf_view_entries` | Detail: editable `document` (draft or published; webhooks with `hasSecret`/`hasValue` instead of secrets), `publishedKeys`, `previewUrl`, `shortcode`. |
 | PUT | `/forms/{id}` | `swf_manage_forms` | `{title, document}`: validate and publish. 422 `swf_invalid_form` with `data.errors[] = {path, code, message}`; the invalid document is kept as draft. |
 | PATCH | `/forms/{id}` | `swf_manage_forms` | `{status: active|inactive}` |
 | DELETE | `/forms/{id}` | `swf_manage_forms` | Deletes versions, entries and logs. |
@@ -16,11 +16,16 @@ Cookie authentication with the `wp_rest` nonce (`X-WP-Nonce`). Errors are `WP_Er
 | POST | `/forms/{id}/duplicate` | `swf_manage_forms` | |
 | GET | `/field-types` | `swf_manage_forms` | Type definitions incl. settings schema. |
 | GET | `/forms/{id}/entries` | `swf_view_entries` | `filter` (inbox, unread, starred, spam, trash), `search`, `page`, `per_page` (≤ 100), `order`. Returns `items`, `total`, `pages`, `counts`, `columns`. |
-| GET | `/entries/{id}` | `swf_view_entries` | Entry, labelled `fields` tree (from its form version), `log`. |
+| GET | `/entries/{id}` | `swf_view_entries` | Entry, labelled `fields` tree (from its form version), `log`, webhook `deliveries`. |
 | PATCH | `/entries/{id}` | `swf_manage_entries` | `{status?, starred?}` |
 | DELETE | `/entries/{id}` | `swf_manage_entries` | |
 | POST | `/entries/bulk` | `swf_manage_entries` | `{ids[], action}`: read, unread, star, unstar, spam, trash, restore, delete. |
-| GET/PUT | `/settings` | `swf_settings` | Global settings. |
+| GET/PUT | `/settings` | `swf_settings` | Global settings (incl. `webhook_alert_email`, `webhook_allowed_hosts`). |
+| POST | `/forms/{id}/webhooks/test` | `swf_manage_forms` | `{webhook, document?}`: sends example data synchronously with the given (unsaved) settings. Returns `success`, `status`, `message`, `durationMs`, `response`, `payload`. |
+| GET | `/forms/{id}/webhooks/deliveries` | `swf_manage_forms` | `status` (pending, success, failed, dismissed), `webhook`, `page`, `per_page`. Returns `items` (without payload), `total`, `pages`, `failures`. |
+| POST | `/forms/{id}/webhooks/deliveries/bulk` | `swf_manage_forms` | `{action: resend|dismiss}` for all failed deliveries. |
+| POST | `/webhooks/deliveries/{id}/resend` | `swf_manage_forms` or `swf_manage_entries` | Queue again (same event id). 409 while pending, 410 without stored data. |
+| POST | `/webhooks/deliveries/{id}/dismiss` | `swf_manage_forms` or `swf_manage_entries` | Acknowledge a failure. |
 | POST | `/forms/{id}/submit` | public | Form fields as multipart/urlencoded (`swf[...]`, `swf_token`, honeypot). 200 `success`, 422 `invalid` with `errors` per path, 400/404/429 `error` with `code` (`expired`, `too_fast`, `duplicate`, `rate_limited`, ...). `swf_preview=1` (needs `swf_manage_forms`) validates the draft only. |
 
 Submission token: `admin-ajax.php?action=swf_token&form={id}` returns `{token, nonce}` (nonce only

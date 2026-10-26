@@ -10,19 +10,21 @@ Konzept: `/home/swarnat/.claude/plans/ich-m-chte-ein-plugin-parallel-glacier.md`
 - Einträge (Liste, Filter, Suche, Bulk, Detail mit Log), E-Mail-Benachrichtigungen, Bestätigung
 - Spamschutz ohne Nonce (Token, Honeypot, Rate-Limit), No-JS-Postback, Barrierefreiheit, de_DE
 
-## Milestone 2 – Webhooks (0.2.0)
+## ✅ Milestone 2 – Webhooks (0.2.0)
 
-- [ ] Action Scheduler per Composer bündeln, Queue-Wrapper (`swf_` Gruppe)
-- [ ] Webhook-Einstellungen pro Formular: URL, Methode (POST/PUT), Format (JSON / form-encoded), Header, Feld-Mapping (Standard: alle Felder), Bedingung (LogicEditor wiederverwenden)
-- [ ] Payload: `{event, eventId, form, entry, data}`; Filter `swf_webhook_payload`
-- [ ] Signatur `X-SWForms-Signature` (HMAC-SHA256, Secret pro Webhook, verschlüsselt gespeichert, nie im Export/REST im Klartext)
-- [ ] Asynchrone Zustellung, Retries mit Backoff (z. B. 1 min, 5 min, 30 min, 2 h, 12 h), Timeout
-- [ ] SSRF-Schutz: nur http(s), keine privaten/lokalen IPs (Filter für Ausnahmen), `wp_safe_remote_request`
-- [ ] Zustellungslog in `swf_entry_log` (Status, HTTP-Code, Dauer, gekürzte Antwort) + „Erneut senden“ im Eintrag
-- [ ] Endgültiger Fehlschlag: Admin-Mail + Badge in der Formularliste; Hooks `swf_webhook_sent` / `swf_webhook_failed`
-- [ ] Speicherung aus: Eintrag temporär halten, nach Zustellung/letztem Retry löschen
-- [ ] Builder-Tab „Webhooks“ inkl. Test-Button mit Beispieldaten
-- [ ] Tests: Signatur (Unit), Queue/Retry (Integration), E2E gegen lokalen Echo-Endpoint
+Doku: `docs/webhooks.md`. Tests: `tests/Unit/WebhookTest.php`, `tests/wp-webhooks.php`, `apps/admin/scripts/e2e/webhooks.mjs`.
+
+- [x] Action Scheduler per Composer gebündelt (nicht präfixiert, Release unter `libraries/`), Queue-Wrapper (`swf`-Gruppe, WP-Cron-Fallback)
+- [x] Webhook-Einstellungen pro Formular: URL, Methode (POST/PUT/PATCH), Format (JSON / form-encoded), Header (auch geheime), Feld-Mapping mit Zielnamen (Standard: alle Felder), Umschlag abschaltbar, Bedingung
+- [x] Payload `{event, eventId, form, entry, data}`; Filter `swf_webhook_payload`
+- [x] Signatur `X-SWForms-Signature: t=…,v1=…` (HMAC-SHA256 über `t.body`), Secrets verschlüsselt, write-only (nie in Dokument/Export/REST)
+- [x] Asynchrone Zustellung, Retries 1 min / 5 min / 30 min / 2 h / 12 h, Timeout, keine Redirects
+- [x] SSRF-Schutz: http(s), alle aufgelösten IPs öffentlich, DNS-Pinning; Ausnahmen über Einstellung „Erlaubte interne Hosts“ + Filter. Eigene Prüfung statt `wp_safe_remote_request` (blockiert Ports außer 80/443/8080 und deckt IPv6/Metadaten-IPs nicht ab)
+- [x] Zustellungslog am Eintrag + Tabelle `swf_webhook_deliveries`, „Erneut senden“ (Eintrag, Webhooks-Tab, alle fehlgeschlagenen), „Als erledigt markieren“
+- [x] Endgültiger Fehlschlag: Alarm-Mail (gedrosselt, Adresse einstellbar) + Badge in der Formularliste; Hooks `swf_webhook_sent` / `swf_webhook_failed`
+- [x] Speicherung aus: Payload nur in der Zustellung, nach Erfolg/letztem Retry gelöscht (statt temporärem Eintrag)
+- [x] Builder-Tab „Webhooks“ inkl. Test-Button mit Beispieldaten und letzten Zustellungen
+- [x] Tests: Signatur/Retry/SSRF/Mapping (Unit), Queue/Retry/Resend/SSRF (Integration gegen lokalen Echo-Endpoint), E2E im Browser
 
 ## Milestone 3 – Komfort & Export (0.3.0)
 
@@ -30,7 +32,7 @@ Konzept: `/home/swarnat/.claude/plans/ich-m-chte-ein-plugin-parallel-glacier.md`
 - [ ] Weitere Merge-Tags (`{entry:ip}` nur bei Hash-Modus nein, `{form:url}`, `{field:key:raw}` für Rohwerte)
 - [ ] Merge-Tags an Cursorposition einfügen statt anhängen
 - [ ] Captcha-Provider-Interface + Turnstile / hCaptcha (`swf_register_spam_providers`)
-- [ ] Select mit Suchfeld (Combobox, barrierefrei)
+- [x] Select mit Suchfeld (Combobox, barrierefrei) – Issue #2
 - [ ] Bedingte Pflichtfelder / Deaktivieren (Logik-Aktionen `require`, `disable`)
 - [ ] Datenschutz: WP-Privacy-Exporter/-Eraser für Einträge (per E-Mail-Feld)
 - [ ] Einträge bearbeiten (Admin), Notizen am Eintrag
@@ -49,7 +51,7 @@ Konzept: `/home/swarnat/.claude/plans/ich-m-chte-ein-plugin-parallel-glacier.md`
 - [ ] Import/Export von Formularen (JSON, ohne Secrets)
 - [ ] Mehrschritt-Formulare (Seitenumbruch-Element, Fortschritt, Validierung pro Schritt)
 - [ ] Datei-Upload (geschütztes Verzeichnis, Typ-/Größenprüfung, Anhang in Mails)
-- [ ] Weitere Felder: Datepicker, Rating, Signatur, HTML/Text-Block, Berechnung
+- [ ] Weitere Felder: Signatur, HTML/Text-Block, Berechnung (Datepicker, Rating: Issue #2)
 - [ ] Vorlagenbibliothek (Kontakt, Anmeldung, Umfrage)
 - [ ] Versionsverlauf im Builder (alte Version ansehen / wiederherstellen)
 
@@ -60,5 +62,5 @@ Konzept: `/home/swarnat/.claude/plans/ich-m-chte-ein-plugin-parallel-glacier.md`
 - [ ] Mails im Test mit Mailpit statt `pre_wp_mail` prüfen (Darstellung der HTML-Mail)
 - [ ] Admin-Bundle ~330 kB (118 kB gzip): Quasar-Komponenten gezielt importieren / Builder-Chunk weiter splitten
 - [ ] Dark-Mode des Builders visuell prüfen
-- [ ] Git-Repository anlegen, CI (composer check + npm lint/typecheck/test)
-- [ ] Release-Paket (ohne `apps/admin/node_modules`, mit `vendor/` und gebauten `assets/`)
+- [ ] CI für Pull Requests (composer check + npm lint/typecheck/test); Repository und Release-Workflow existieren
+- [x] Release-Paket (`.github/workflows/main.yml`: Mozart, gebaute Assets, Action Scheduler in `libraries/`)

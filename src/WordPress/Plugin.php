@@ -20,9 +20,11 @@ use SWForms\WordPress\Rest\EntriesController;
 use SWForms\WordPress\Rest\FormsController;
 use SWForms\WordPress\Rest\SettingsController;
 use SWForms\WordPress\Rest\SubmitController;
+use SWForms\WordPress\Rest\WebhooksController;
 use SWForms\WordPress\Support\Capabilities;
 use SWForms\WordPress\Support\Maintenance;
 use SWForms\WordPress\Support\Wpml;
+use SWForms\WordPress\Webhooks\DeliveryService;
 
 final class Plugin {
 
@@ -50,6 +52,7 @@ final class Plugin {
 		( new TokenEndpoint() )->register();
 		( new Maintenance() )->register();
 		( new Wpml() )->register();
+		( new DeliveryService() )->register();
 
 		if ( is_admin() ) {
 			( new AdminPage() )->register();
@@ -79,7 +82,7 @@ final class Plugin {
 	}
 
 	public function register_rest(): void {
-		foreach ( array( new FormsController(), new EntriesController(), new SubmitController(), new SettingsController() ) as $controller ) {
+		foreach ( array( new FormsController(), new EntriesController(), new SubmitController(), new SettingsController(), new WebhooksController() ) as $controller ) {
 			$controller->register_routes();
 		}
 	}

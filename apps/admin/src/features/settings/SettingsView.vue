@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { settingsApi } from '@/api';
 import PageHeader from '@/components/ui/PageHeader.vue';
@@ -19,6 +19,14 @@ const { loading, error, load } = useAsyncData(
   },
   { immediate: true },
 );
+
+/** One host, wildcard, IP or CIDR range per line. */
+const allowedHosts = computed({
+  get: () => (form.value?.webhook_allowed_hosts ?? []).join('\n'),
+  set: (value: string) => {
+    if (form.value) form.value.webhook_allowed_hosts = value.split(/[\s,]+/).filter((h) => h !== '');
+  },
+});
 
 async function save(): Promise<void> {
   if (!form.value) return;
@@ -53,6 +61,28 @@ async function save(): Promise<void> {
         <div class="swf-grid">
           <q-input v-model="form.from_email" outlined dense type="email" :label="t('settings.fromEmail')" :hint="t('settings.fromEmailHint')" />
           <q-input v-model="form.from_name" outlined dense :label="t('settings.fromName')" />
+        </div>
+      </SwfCard>
+      <SwfCard :title="t('settings.webhooks')" :subtitle="t('settings.webhooksText')" icon="r_webhook">
+        <div class="swf-stack">
+          <q-input
+            v-model="form.webhook_alert_email"
+            outlined
+            dense
+            type="email"
+            :label="t('settings.webhookAlertEmail')"
+            :hint="t('settings.webhookAlertEmailHint')"
+          />
+          <q-input
+            v-model="allowedHosts"
+            outlined
+            type="textarea"
+            autogrow
+            class="swf-mono"
+            :label="t('settings.webhookAllowedHosts')"
+            :hint="t('settings.webhookAllowedHostsHint')"
+            data-test="allowed-hosts"
+          />
         </div>
       </SwfCard>
       <SwfCard :title="t('settings.frontend')" icon="r_web">

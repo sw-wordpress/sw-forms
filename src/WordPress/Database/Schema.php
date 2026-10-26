@@ -12,7 +12,7 @@ namespace SWForms\WordPress\Database;
 final class Schema {
 
 	public const VERSION_OPTION = 'swf_db_version';
-	public const CURRENT        = 1;
+	public const CURRENT        = 2;
 
 	/** Per site tables: forms belong to a site, also on multisite. */
 	public static function table( string $name ): string {
@@ -24,7 +24,7 @@ final class Schema {
 	 * @return list<string> Short table names.
 	 */
 	public static function tables(): array {
-		return array( 'forms', 'form_versions', 'entries', 'entry_values', 'entry_log' );
+		return array( 'forms', 'form_versions', 'entries', 'entry_values', 'entry_log', 'webhook_deliveries' );
 	}
 
 	public static function needs_migration(): bool {
@@ -39,6 +39,9 @@ final class Schema {
 		}
 		if ( $installed < 1 ) {
 			self::migrate_to_1();
+		}
+		if ( $installed < 2 ) {
+			self::migrate_to_2();
 		}
 		update_option( self::VERSION_OPTION, self::CURRENT, true );
 	}
@@ -115,6 +118,40 @@ final class Schema {
 		foreach ( $statements as $sql ) {
 			dbDelta( $sql );
 		}
+	}
+
+	/**
+	 * Webhook deliveries: one row per submission and webhook. The payload is kept until the entry
+	 * is deleted; without stored entries it is removed once the delivery is final.
+	 */
+	private static function migrate_to_2(): void {
+		global $wpdb;
+		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+		$charset = $wpdb->get_charset_collate();
+		$p       = $wpdb->prefix . 'swf_';
+		dbDelta(
+			"CREATE TABLE {$p}webhook_deliveries (
+  id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  form_id bigint(20) unsigned NOT NULL,
+  entry_id bigint(20) unsigned NOT NULL DEFAULT 0,
+  webhook_id varchar(64) NOT NULL,
+  event varchar(40) NOT NULL,
+  event_id char(36) NOT NULL,
+  status varchar(20) NOT NULL DEFAULT 'pending',
+  attempts smallint(5) unsigned NOT NULL DEFAULT 0,
+  payload longtext NULL,
+  response_code smallint(5) unsigned NOT NULL DEFAULT 0,
+  message text NULL,
+  duration_ms int(10) unsigned NOT NULL DEFAULT 0,
+  next_attempt_at datetime NULL,
+  created_at datetime NOT NULL,
+  updated_at datetime NOT NULL,
+  PRIMARY KEY  (id),
+  KEY form_status (form_id,status),
+  KEY entry_id (entry_id),
+  KEY status_next (status,next_attempt_at)
+) $charset;"
+		);
 	}
 
 	/** Drops all plugin tables (uninstall with opt-in only). */

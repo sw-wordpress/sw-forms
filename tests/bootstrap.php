@@ -51,6 +51,16 @@ function is_admin(): bool
     return true;
 }
 
+function did_action(string $hook): int
+{
+    return 0;
+}
+
+function doing_action(?string $hook = null): bool
+{
+    return false;
+}
+
 $swf_test_root = $argv[1] ?? dirname(__DIR__);
 require $swf_test_root . '/sw-forms.php';
 
@@ -74,6 +84,15 @@ foreach (array( 'admin_menu', 'rest_api_init', 'wp_enqueue_scripts', 'template_r
     }
 }
 
+// The webhook queue: Action Scheduler registers its version on plugins_loaded.
+$swf_test_scheduler = array_filter(
+    $GLOBALS['test_actions']['plugins_loaded'] ?? array(),
+    static fn (mixed $callback): bool => is_string($callback) && str_starts_with($callback, 'action_scheduler_register_')
+);
+if ($swf_test_scheduler === array()) {
+    throw new RuntimeException('Action Scheduler was not loaded.');
+}
+
 foreach (array( 'swf_render_form', 'swf_get_form', 'swf_submit' ) as $swf_test_function) {
     if (! function_exists($swf_test_function)) {
         throw new RuntimeException('Public API was not loaded: ' . $swf_test_function);
@@ -84,4 +103,4 @@ if (isset($GLOBALS['test_actions']['admin_notices'])) {
     throw new RuntimeException('Plugin reported a bootstrap error.');
 }
 
-echo 'PASS: Plugin bootstrap, lifecycle callbacks, core classes, shortcode, integrations and public API.' . PHP_EOL;
+echo 'PASS: Plugin bootstrap, lifecycle callbacks, core classes, shortcode, integrations, Action Scheduler and public API.' . PHP_EOL;

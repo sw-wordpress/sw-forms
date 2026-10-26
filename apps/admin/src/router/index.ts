@@ -16,13 +16,13 @@ export const NAV_ITEMS: NavItem[] = [
   { name: 'settings', to: '/settings', icon: 'r_settings', labelKey: 'nav.settings', cap: 'swf_settings' },
 ];
 
-export const BUILDER_TABS = ['build', 'settings', 'notifications', 'entries'] as const;
+export const BUILDER_TABS = ['build', 'settings', 'notifications', 'webhooks', 'entries'] as const;
 export type BuilderTab = (typeof BUILDER_TABS)[number];
 
 const routes: RouteRecordRaw[] = [
   { path: '/', name: 'forms', component: () => import('@/features/forms/FormsView.vue') },
   {
-    path: '/forms/:id(\\d+)/:tab(build|settings|notifications|entries)?/:entryId(\\d+)?',
+    path: '/forms/:id(\\d+)/:tab(build|settings|notifications|webhooks|entries)?/:entryId(\\d+)?',
     name: 'builder',
     component: () => import('@/features/builder/BuilderView.vue'),
     meta: { fullWidth: true },

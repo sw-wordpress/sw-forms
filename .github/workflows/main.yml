@@ -59,6 +59,11 @@ jobs:
 
       - name: Isolate dependencies with Mozart
         run: |
+          # Action Scheduler is shared between plugins and must keep its global names. Its dist
+          # archive has no composer.json, which Mozart needs even for excluded packages.
+          test -f vendor/woocommerce/action-scheduler/composer.json \
+            || echo '{"name":"woocommerce/action-scheduler"}' > vendor/woocommerce/action-scheduler/composer.json
+
           docker run --rm \
             --user "$(id -u):$(id -g)" \
             -v "$GITHUB_WORKSPACE:/project" \
@@ -66,7 +71,9 @@ jobs:
             /mozart/bin/mozart compose
 
       - name: Verify Mozart output
-        run: test -f vendor-prefixed/autoload.php
+        run: |
+          test -f vendor-prefixed/autoload.php
+          test -f vendor/woocommerce/action-scheduler/action-scheduler.php
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -117,6 +124,10 @@ jobs:
             --exclude='/phpunit.xml*' \
             ./ "$STAGING/"
 
+          # Action Scheduler (webhook queue) ships unprefixed outside vendor/.
+          mkdir -p "$STAGING/libraries"
+          rsync -a --exclude='/composer.json' vendor/woocommerce/action-scheduler/ "$STAGING/libraries/action-scheduler/"
+
           # Prove that the plugin boots without the original vendor directory.
           php tests/bootstrap.php "$STAGING"
 
@@ -134,6 +145,7 @@ jobs:
           unzip -Z1 "$ZIP_FILE" > "$RUNNER_TEMP/zip-contents.txt"
           grep -Fx "$PLUGIN_SLUG/vendor-prefixed/autoload.php" "$RUNNER_TEMP/zip-contents.txt"
           grep -Fx "$PLUGIN_SLUG/sw-forms.php" "$RUNNER_TEMP/zip-contents.txt"
+          grep -Fx "$PLUGIN_SLUG/libraries/action-scheduler/action-scheduler.php" "$RUNNER_TEMP/zip-contents.txt"
           grep -q "^$PLUGIN_SLUG/assets/admin/" "$RUNNER_TEMP/zip-contents.txt"
           grep -q "^$PLUGIN_SLUG/assets/frontend/" "$RUNNER_TEMP/zip-contents.txt"
           if grep -Eq "^$PLUGIN_SLUG/(vendor|tests|apps|bin|node_modules|\.git|\.github)/" "$RUNNER_TEMP/zip-contents.txt"; then

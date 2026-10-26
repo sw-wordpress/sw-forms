@@ -1,6 +1,7 @@
 <?php
 /**
- * Daily maintenance: deletes entries older than each form's retention period.
+ * Daily maintenance: deletes entries older than each form's retention period, requeues webhook
+ * deliveries whose queue job got lost and removes old finished deliveries without entry.
  *
  * @package SWForms
  */
@@ -11,6 +12,8 @@ namespace SWForms\WordPress\Support;
 
 use SWForms\WordPress\Entries\EntryRepository;
 use SWForms\WordPress\Forms\FormRepository;
+use SWForms\WordPress\Webhooks\DeliveryRepository;
+use SWForms\WordPress\Webhooks\DeliveryService;
 
 final class Maintenance {
 
@@ -40,5 +43,7 @@ final class Maintenance {
 				$entries->purge_older_than( (int) $form['id'], $days );
 			}
 		}
+		( new DeliveryService() )->recover();
+		( new DeliveryRepository() )->purge_finished( 30 );
 	}
 }

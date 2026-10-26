@@ -64,6 +64,16 @@ $swf_loader = require $swf_autoload;
 $swf_loader->addPsr4( 'SWForms\\', SWF_DIR . 'src/' );
 unset( $swf_autoload, $swf_loader );
 
+// Action Scheduler (webhook queue) is shared, not prefixed: every copy registers itself and the
+// newest one loaded by any plugin is used. Release ZIPs ship it in libraries/.
+foreach ( array( 'libraries/action-scheduler/action-scheduler.php', 'vendor/woocommerce/action-scheduler/action-scheduler.php' ) as $swf_scheduler ) {
+	if ( is_readable( SWF_DIR . $swf_scheduler ) ) {
+		require_once SWF_DIR . $swf_scheduler;
+		break;
+	}
+}
+unset( $swf_scheduler );
+
 require_once SWF_DIR . 'includes/functions.php';
 
 register_activation_hook( __FILE__, array( \SWForms\WordPress\Lifecycle::class, 'activate' ) );

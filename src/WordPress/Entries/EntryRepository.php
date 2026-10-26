@@ -12,6 +12,7 @@ namespace SWForms\WordPress\Entries;
 // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- custom tables.
 
 use SWForms\WordPress\Database\Schema;
+use SWForms\WordPress\Webhooks\DeliveryRepository;
 
 final class EntryRepository {
 
@@ -190,6 +191,8 @@ final class EntryRepository {
 		global $wpdb;
 		$wpdb->query( $wpdb->prepare( 'DELETE FROM %i WHERE entry_id = %d', Schema::table( 'entry_values' ), $id ) );
 		$wpdb->query( $wpdb->prepare( 'DELETE FROM %i WHERE entry_id = %d', Schema::table( 'entry_log' ), $id ) );
+		// Deliveries hold a copy of the entry data (payload).
+		DeliveryRepository::delete_for_entry( $id );
 		$wpdb->query( $wpdb->prepare( 'DELETE FROM %i WHERE id = %d', Schema::table( 'entries' ), $id ) );
 	}
 

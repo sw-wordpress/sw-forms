@@ -15,6 +15,7 @@ use SWForms\WordPress\Entries\EntryRepository;
 use SWForms\WordPress\Fields\FieldRegistry;
 use SWForms\WordPress\Forms\FormRepository;
 use SWForms\WordPress\Support\Capabilities;
+use SWForms\WordPress\Webhooks\DeliveryRepository;
 
 final class EntriesController extends BaseController {
 
@@ -171,10 +172,11 @@ final class EntriesController extends BaseController {
 		$user     = $entry['userId'] > 0 ? get_userdata( $entry['userId'] ) : false;
 		return new \WP_REST_Response(
 			array(
-				'entry'  => $entry,
-				'fields' => ( new EntryPresenter( FieldRegistry::instance() ) )->present( is_array( $document['fields'] ?? null ) ? $document['fields'] : array(), $entry['data'] ),
-				'user'   => $user instanceof \WP_User ? $user->display_name : '',
-				'log'    => $this->entries->logs( $entry['id'] ),
+				'entry'      => $entry,
+				'fields'     => ( new EntryPresenter( FieldRegistry::instance() ) )->present( is_array( $document['fields'] ?? null ) ? $document['fields'] : array(), $entry['data'] ),
+				'user'       => $user instanceof \WP_User ? $user->display_name : '',
+				'log'        => $this->entries->logs( $entry['id'] ),
+				'deliveries' => array_map( array( WebhooksController::class, 'present' ), ( new DeliveryRepository() )->for_entry( $entry['id'] ) ),
 			)
 		);
 	}

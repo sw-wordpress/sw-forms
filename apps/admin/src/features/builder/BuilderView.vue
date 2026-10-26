@@ -9,6 +9,7 @@ import { BUILDER_TABS, type BuilderTab } from '@/router';
 import { useAppStore } from '@/stores/app';
 import { useBuilderStore } from '@/stores/builder';
 import EntriesView from '@/features/entries/EntriesView.vue';
+import WebhooksPanel from '@/features/webhooks/WebhooksPanel.vue';
 import BuilderCanvas from './BuilderCanvas.vue';
 import FormSettingsPanel from './FormSettingsPanel.vue';
 import InspectorPanel from './InspectorPanel.vue';
@@ -37,6 +38,20 @@ const tab = computed<BuilderTab>(() => {
   if ((BUILDER_TABS as readonly string[]).includes(value)) return value as BuilderTab;
   return canManage ? 'build' : 'entries';
 });
+
+const tabs = computed(() =>
+  (
+    [
+      { name: 'build', icon: 'r_view_quilt', manage: true },
+      { name: 'settings', icon: 'r_tune', manage: true },
+      { name: 'notifications', icon: 'r_mail', manage: true },
+      { name: 'webhooks', icon: 'r_webhook', manage: true },
+      { name: 'entries', icon: 'r_inbox', manage: false },
+    ] as const
+  )
+    .filter((item) => canManage || !item.manage)
+    .map((item) => ({ ...item, label: t(`builder.tabs.${item.name}`) })),
+);
 
 const loading = ref(true);
 const loadError = ref('');
@@ -77,6 +92,10 @@ async function save(): Promise<void> {
 function selectError(path: string): void {
   if (path.startsWith('notification:')) {
     go('notifications');
+    return;
+  }
+  if (path.startsWith('webhook:')) {
+    go('webhooks');
     return;
   }
   if (path !== '') store.select(path);
@@ -184,10 +203,9 @@ onBeforeRouteLeave(async (to) => {
         indicator-color="primary"
         @update:model-value="go($event as BuilderTab)"
       >
-        <q-tab v-if="canManage" name="build" icon="r_view_quilt" :label="t('builder.tabs.build')" />
-        <q-tab v-if="canManage" name="settings" icon="r_tune" :label="t('builder.tabs.settings')" />
-        <q-tab v-if="canManage" name="notifications" icon="r_mail" :label="t('builder.tabs.notifications')" />
-        <q-tab name="entries" icon="r_inbox" :label="t('builder.tabs.entries')" />
+        <q-tab v-for="item in tabs" :key="item.name" :name="item.name" :icon="item.icon" :label="item.label" :aria-label="item.label">
+          <q-tooltip v-if="item.name !== tab" class="swf-builder__tab-tip">{{ item.label }}</q-tooltip>
+        </q-tab>
       </q-tabs>
 
       <div v-if="canManage && store.document" class="swf-builder__right">
@@ -237,6 +255,7 @@ onBeforeRouteLeave(async (to) => {
       </div>
       <div v-else-if="tab === 'settings'" class="swf-builder__page"><FormSettingsPanel /></div>
       <div v-else-if="tab === 'notifications'" class="swf-builder__page"><NotificationsPanel /></div>
+      <div v-else-if="tab === 'webhooks'" class="swf-builder__page"><WebhooksPanel /></div>
       <div v-else class="swf-builder__page">
         <EntriesView :form-id="formId" :entry-id="route.params.entryId ? Number(route.params.entryId) : null" />
       </div>

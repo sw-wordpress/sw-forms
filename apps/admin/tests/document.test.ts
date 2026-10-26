@@ -29,6 +29,7 @@ function document(fields: ElementNode[]): FormDocument {
       notifications: [
         { id: 'n1', name: 'n', enabled: true, to: '', subject: '', message: '', replyTo: '', fromName: '', logic: { action: 'show', match: 'all', rules: [{ field: 'a', op: 'notempty' }] } },
       ],
+      webhooks: [],
     },
   };
 }
@@ -106,6 +107,30 @@ describe('structure operations', () => {
     expect(doc.remove(d, 'a')).toEqual(['a']);
     expect(doc.findElement(d.fields, 'b')?.logic).toBeNull();
     expect(d.settings.notifications[0]?.logic).toBeNull();
+  });
+
+  it('strips webhook conditions and mappings of removed fields', () => {
+    const d = sample();
+    d.settings.webhooks.push({
+      id: 'w1',
+      name: 'CRM',
+      enabled: true,
+      url: 'https://crm.example',
+      method: 'POST',
+      format: 'json',
+      envelope: true,
+      fields: 'custom',
+      mapping: [
+        { field: 'a', name: 'name' },
+        { field: 'b', name: 'mail' },
+      ],
+      headers: [],
+      logic: { action: 'show', match: 'all', rules: [{ field: 'a', op: 'notempty' }] },
+    });
+    expect(doc.dependents(d, new Set(['a']))).toContain('webhook:w1');
+    doc.remove(d, 'a');
+    expect(d.settings.webhooks[0]?.logic).toBeNull();
+    expect(d.settings.webhooks[0]?.mapping).toEqual([{ field: 'b', name: 'mail' }]);
   });
 });
 

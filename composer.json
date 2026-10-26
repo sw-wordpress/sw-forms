@@ -5,7 +5,8 @@
     "license": "GPL-2.0-or-later",
     "require": {
         "php": ">=8.2",
-        "ext-json": "*"
+        "ext-json": "*",
+        "woocommerce/action-scheduler": "^3.9"
     },
     "require-dev": {
         "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
@@ -35,7 +36,10 @@
             "constant_prefix": "SWFORMS_",
             "functions_prefix": "swforms_",
             "generate_autoloader": true,
-            "delete_vendor_directories": true
+            "delete_vendor_directories": true,
+            "excluded_packages": [
+                "woocommerce/action-scheduler"
+            ]
         }
     },
     "config": {

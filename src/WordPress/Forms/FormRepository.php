@@ -15,6 +15,7 @@ namespace SWForms\WordPress\Forms;
 // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- custom tables; reads are cheap and per request.
 
 use SWForms\WordPress\Database\Schema;
+use SWForms\WordPress\Webhooks\SecretStore;
 
 final class FormRepository {
 
@@ -192,10 +193,11 @@ final class FormRepository {
 		return is_string( $json ) ? $json : null;
 	}
 
-	/** Deletes the form with all versions, entries and logs. */
+	/** Deletes the form with all versions, entries, logs, webhook deliveries and secrets. */
 	public function delete( int $id ): void {
 		global $wpdb;
-		foreach ( array( 'entry_values', 'entry_log', 'entries', 'form_versions' ) as $table ) {
+		( new SecretStore() )->delete( $id );
+		foreach ( array( 'entry_values', 'entry_log', 'entries', 'form_versions', 'webhook_deliveries' ) as $table ) {
 			$wpdb->query( $wpdb->prepare( 'DELETE FROM %i WHERE form_id = %d', Schema::table( $table ), $id ) );
 		}
 		$wpdb->query( $wpdb->prepare( 'DELETE FROM %i WHERE id = %d', Schema::table( 'forms' ), $id ) );

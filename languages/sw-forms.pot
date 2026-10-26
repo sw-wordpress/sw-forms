@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SW Forms\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-26 18:27+0000\n"
+"POT-Creation-Date: 2026-10-26 22:02+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,6 +19,7 @@ msgstr ""
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
 #: src/WordPress/Actions/EmailNotifications.php:37
+#: src/WordPress/Webhooks/WebhookAction.php:36
 msgid "Condition not met."
 msgstr ""
 
@@ -609,36 +610,36 @@ msgstr ""
 msgid "Time interval"
 msgstr ""
 
-#: src/WordPress/Forms/FormService.php:78
-#: src/WordPress/Forms/FormService.php:108
+#: src/WordPress/Forms/FormService.php:88
+#: src/WordPress/Forms/FormService.php:118
 msgid "Untitled form"
 msgstr ""
 
 #. translators: %s: title of the copied form
-#: src/WordPress/Forms/FormService.php:144
-#: src/WordPress/Forms/FormService.php:146
+#: src/WordPress/Forms/FormService.php:155
+#: src/WordPress/Forms/FormService.php:159
 #, php-format
 msgid "%s (copy)"
 msgstr ""
 
-#: src/WordPress/Forms/FormSettings.php:36
+#: src/WordPress/Forms/FormSettings.php:38
 #: src/WordPress/Frontend/FormView.php:88
 msgid "Submit"
 msgstr ""
 
-#: src/WordPress/Forms/FormSettings.php:40
+#: src/WordPress/Forms/FormSettings.php:42
 msgid "Thank you! Your message has been sent."
 msgstr ""
 
-#: src/WordPress/Forms/FormSettings.php:62
+#: src/WordPress/Forms/FormSettings.php:65
 msgid "Admin notification"
 msgstr ""
 
-#: src/WordPress/Forms/FormSettings.php:65
+#: src/WordPress/Forms/FormSettings.php:68
 msgid "New entry: {form:title}"
 msgstr ""
 
-#: src/WordPress/Forms/FormSettings.php:79
+#: src/WordPress/Forms/FormSettings.php:82
 msgid "Notification"
 msgstr ""
 
@@ -675,58 +676,79 @@ msgstr ""
 msgid "You are not allowed to preview this form."
 msgstr ""
 
-#: src/WordPress/Rest/EntriesController.php:122
-#: src/WordPress/Rest/FormsController.php:292
+#: src/WordPress/Rest/EntriesController.php:123
+#: src/WordPress/Rest/FormsController.php:299
+#: src/WordPress/Rest/WebhooksController.php:100
+#: src/WordPress/Rest/WebhooksController.php:127
+#: src/WordPress/Rest/WebhooksController.php:147
 msgid "Form not found."
 msgstr ""
 
-#: src/WordPress/Rest/EntriesController.php:168
-#: src/WordPress/Rest/EntriesController.php:188
-#: src/WordPress/Rest/EntriesController.php:207
+#: src/WordPress/Rest/EntriesController.php:169
+#: src/WordPress/Rest/EntriesController.php:190
+#: src/WordPress/Rest/EntriesController.php:209
 msgid "Entry not found."
 msgstr ""
 
-#: src/WordPress/Rest/FormsController.php:159
+#: src/WordPress/Rest/FormsController.php:165
 msgid "The form could not be saved. Please fix the marked problems."
 msgstr ""
 
-#: src/WordPress/Submission/SubmissionService.php:45
+#: src/WordPress/Rest/WebhooksController.php:105
+#: src/WordPress/Support/Messages.php:89
+msgid "A webhook needs a target URL."
+msgstr ""
+
+#: src/WordPress/Rest/WebhooksController.php:168
+msgid "Delivery not found."
+msgstr ""
+
+#: src/WordPress/Rest/WebhooksController.php:173
+msgid "This delivery is still queued."
+msgstr ""
+
+#: src/WordPress/Rest/WebhooksController.php:175
+msgid ""
+"The data of this delivery is no longer available, it cannot be sent again."
+msgstr ""
+
+#: src/WordPress/Submission/SubmissionService.php:46
 msgid "This form does not exist."
 msgstr ""
 
-#: src/WordPress/Submission/SubmissionService.php:49
+#: src/WordPress/Submission/SubmissionService.php:50
 msgid "This form is currently not available."
 msgstr ""
 
-#: src/WordPress/Submission/SubmissionService.php:88
+#: src/WordPress/Submission/SubmissionService.php:89
 msgid "Please correct the marked fields."
 msgstr ""
 
-#: src/WordPress/Submission/SubmissionService.php:96
+#: src/WordPress/Submission/SubmissionService.php:97
 msgid "Preview: all entries are valid. Nothing was stored or sent."
 msgstr ""
 
-#: src/WordPress/Submission/SubmissionService.php:130
+#: src/WordPress/Submission/SubmissionService.php:132
 msgid "Your entry could not be saved. Please try again later."
 msgstr ""
 
-#: src/WordPress/Submission/SubmissionService.php:202
+#: src/WordPress/Submission/SubmissionService.php:204
 msgid "The page was open for a long time. Please submit the form again."
 msgstr ""
 
-#: src/WordPress/Submission/SubmissionService.php:203
+#: src/WordPress/Submission/SubmissionService.php:205
 msgid "That was very fast. Please wait a moment and submit again."
 msgstr ""
 
-#: src/WordPress/Submission/SubmissionService.php:204
+#: src/WordPress/Submission/SubmissionService.php:206
 msgid "This form has already been submitted."
 msgstr ""
 
-#: src/WordPress/Submission/SubmissionService.php:205
+#: src/WordPress/Submission/SubmissionService.php:207
 msgid "Too many submissions. Please try again in a few minutes."
 msgstr ""
 
-#: src/WordPress/Submission/SubmissionService.php:206
+#: src/WordPress/Submission/SubmissionService.php:208
 msgid "The form could not be verified. Please reload the page and try again."
 msgstr ""
 
@@ -969,8 +991,166 @@ msgstr ""
 msgid "Conditions depend on each other in a circle."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:89
+#: src/WordPress/Support/Messages.php:90
+msgid ""
+"The webhook URL must be a complete http:// or https:// address without user "
+"name or password."
+msgstr ""
+
+#: src/WordPress/Support/Messages.php:91
+msgid "A webhook header has an invalid or reserved name, or is defined twice."
+msgstr ""
+
+#: src/WordPress/Support/Messages.php:92
+msgid ""
+"The field mapping of a webhook refers to an unknown field or uses an invalid "
+"or duplicate target name."
+msgstr ""
+
+#: src/WordPress/Support/Messages.php:93
+msgid "A webhook with selected fields needs at least one mapped field."
+msgstr ""
+
+#: src/WordPress/Support/Messages.php:94
 msgid "The form contains an error."
+msgstr ""
+
+#: src/WordPress/Webhooks/DeliveryService.php:53
+msgid "The webhook no longer exists."
+msgstr ""
+
+#: src/WordPress/Webhooks/DeliveryService.php:53
+msgid "The webhook is switched off."
+msgstr ""
+
+#: src/WordPress/Webhooks/DeliveryService.php:57
+msgid "The data of this delivery is no longer available."
+msgstr ""
+
+#. translators: 1: number of the failed attempt, 2: error, 3: time until the next attempt, e.g. "5 mins"
+#: src/WordPress/Webhooks/DeliveryService.php:98
+#, php-format
+msgid "Attempt %1$d failed: %2$s · next attempt in %3$s"
+msgstr ""
+
+#: src/WordPress/Webhooks/DeliveryService.php:109
+msgid "Resend requested."
+msgstr ""
+
+#. translators: 1: number of attempts, 2: error
+#: src/WordPress/Webhooks/DeliveryService.php:236
+#, php-format
+msgid "Failed after %1$d attempts: %2$s"
+msgstr ""
+
+#. translators: 1: site name, 2: form title
+#: src/WordPress/Webhooks/DeliveryService.php:266
+#, php-format
+msgid "[%1$s] Webhook delivery failed: %2$s"
+msgstr ""
+
+#. translators: %s: webhook name
+#: src/WordPress/Webhooks/DeliveryService.php:269
+#, php-format
+msgid "The webhook \"%s\" could not be delivered."
+msgstr ""
+
+#. translators: %s: form title
+#: src/WordPress/Webhooks/DeliveryService.php:272
+#, php-format
+msgid "Form: %s"
+msgstr ""
+
+#. translators: %s: target URL
+#: src/WordPress/Webhooks/DeliveryService.php:274
+#, php-format
+msgid "URL: %s"
+msgstr ""
+
+#. translators: %d: number of attempts
+#: src/WordPress/Webhooks/DeliveryService.php:276
+#, php-format
+msgid "Attempts: %d"
+msgstr ""
+
+#. translators: %s: last error
+#: src/WordPress/Webhooks/DeliveryService.php:278
+#, php-format
+msgid "Last error: %s"
+msgstr ""
+
+#. translators: %d: entry id
+#: src/WordPress/Webhooks/DeliveryService.php:282
+#, php-format
+msgid "Entry: #%d"
+msgstr ""
+
+#: src/WordPress/Webhooks/DeliveryService.php:285
+msgid ""
+"Further failures of this webhook within the next hour are not reported by e-"
+"mail. You can resend failed deliveries in the Webhooks tab of the form:"
+msgstr ""
+
+#: src/WordPress/Webhooks/Payloads.php:96
+msgid "Example text"
+msgstr ""
+
+#: src/WordPress/Webhooks/Payloads.php:121
+msgid "Example"
+msgstr ""
+
+#: src/WordPress/Webhooks/WebhookAction.php:71
+msgid "The delivery could not be queued."
+msgstr ""
+
+#. translators: %s: host name of the webhook URL
+#: src/WordPress/Webhooks/WebhookAction.php:76
+#, php-format
+msgid "Queued for %s."
+msgstr ""
+
+#: src/WordPress/Webhooks/WebhookSender.php:40
+msgid "The webhook URL is invalid."
+msgstr ""
+
+#. translators: %s: host name
+#: src/WordPress/Webhooks/WebhookSender.php:59
+#, php-format
+msgid "The host %s could not be resolved."
+msgstr ""
+
+#. translators: %s: host name
+#: src/WordPress/Webhooks/WebhookSender.php:61
+#, php-format
+msgid ""
+"The host %s points to a private or local network address. Add it to the "
+"allowed internal hosts in the settings if this is intended."
+msgstr ""
+
+#. translators: %s: header name
+#: src/WordPress/Webhooks/WebhookSender.php:83
+#, php-format
+msgid ""
+"The secret value of the header %s is missing or cannot be decrypted. Please "
+"enter it again."
+msgstr ""
+
+#: src/WordPress/Webhooks/WebhookSender.php:90
+msgid ""
+"The signing secret cannot be decrypted (changed security keys?). Please "
+"enter it again."
+msgstr ""
+
+#. translators: 1: HTTP status code, 2: duration in milliseconds
+#: src/WordPress/Webhooks/WebhookSender.php:149
+#, php-format
+msgid "HTTP %1$d in %2$d ms"
+msgstr ""
+
+#. translators: %s: redirect target
+#: src/WordPress/Webhooks/WebhookSender.php:152
+#, php-format
+msgid "Redirect to %s was not followed. Please enter the final URL."
 msgstr ""
 
 #. translators: 1: required PHP version, 2: current PHP version

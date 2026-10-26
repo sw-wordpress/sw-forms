@@ -86,6 +86,11 @@ final class Messages {
 			'rule_self_reference' => __( 'A condition cannot refer to the element itself.', 'sw-forms' ),
 			'rule_out_of_scope'   => __( 'A condition refers to a field inside a repeatable group. Only fields of the same row or outside the group can be used.', 'sw-forms' ),
 			'logic_cycle'         => __( 'Conditions depend on each other in a circle.', 'sw-forms' ),
+			'webhook_url_missing' => __( 'A webhook needs a target URL.', 'sw-forms' ),
+			'webhook_url'         => __( 'The webhook URL must be a complete http:// or https:// address without user name or password.', 'sw-forms' ),
+			'webhook_header'      => __( 'A webhook header has an invalid or reserved name, or is defined twice.', 'sw-forms' ),
+			'webhook_mapping'     => __( 'The field mapping of a webhook refers to an unknown field or uses an invalid or duplicate target name.', 'sw-forms' ),
+			'webhook_mapping_empty' => __( 'A webhook with selected fields needs at least one mapped field.', 'sw-forms' ),
 			default               => __( 'The form contains an error.', 'sw-forms' ),
 		};
 	}

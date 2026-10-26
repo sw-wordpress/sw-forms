@@ -264,7 +264,7 @@ export function remove(document: FormDocument, id: string): string[] {
   return removed;
 }
 
-/** Ids of elements (and notifications) whose conditions refer to one of `ids`. */
+/** Ids of elements (and notifications, webhooks) whose conditions or field mappings refer to one of `ids`. */
 export function dependents(document: FormDocument, ids: Set<string>): string[] {
   const out: string[] = [];
   const check = (owner: string, logic: Logic | null | undefined): void => {
@@ -275,10 +275,16 @@ export function dependents(document: FormDocument, ids: Set<string>): string[] {
     node.columns?.forEach((c) => check(c.id, c.logic));
   });
   document.settings.notifications.forEach((n) => check(`notification:${n.id}`, n.logic));
+  (document.settings.webhooks ?? []).forEach((w) => {
+    if (w.logic?.rules.some((r) => ids.has(r.field)) || w.mapping.some((m) => ids.has(m.field))) out.push(`webhook:${w.id}`);
+  });
   return out;
 }
 
-/** Drops rules that refer to removed fields; an empty rule list switches the condition off. */
+/**
+ * Drops rules and webhook mappings that refer to removed fields; an empty rule list switches the
+ * condition off.
+ */
 export function stripRules(document: FormDocument, ids: Set<string>): void {
   const clean = (logic: Logic | null | undefined): Logic | null => {
     if (!logic) return null;
@@ -290,6 +296,10 @@ export function stripRules(document: FormDocument, ids: Set<string>): void {
     node.columns?.forEach((c) => (c.logic = clean(c.logic)));
   });
   document.settings.notifications.forEach((n) => (n.logic = clean(n.logic)));
+  (document.settings.webhooks ?? []).forEach((w) => {
+    w.logic = clean(w.logic);
+    w.mapping = w.mapping.filter((m) => !ids.has(m.field));
+  });
 }
 
 // ---------- columns ----------

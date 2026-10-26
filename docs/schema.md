@@ -86,9 +86,18 @@ Yes/No) and the row path (`people[0].`) for fields inside repeaters.
   "notifications": [
     { "id": "admin", "name": "", "enabled": true, "to": "{admin_email}", "subject": "", "message": "{all_fields}",
       "replyTo": "{field:email}", "fromName": "", "logic": null }
+  ],
+  "webhooks": [
+    { "id": "w1", "name": "CRM", "enabled": true, "url": "https://crm.example/hooks/forms",
+      "method": "POST|PUT|PATCH", "format": "json|form", "envelope": true,
+      "fields": "all|custom", "mapping": [ { "field": "<element id>", "name": "contact.email" } ],
+      "headers": [ { "name": "Authorization", "value": "", "secret": true } ], "logic": null }
   ]
 }
 ```
+
+Webhook secrets (signing secret, values of headers with `secret: true`) are not stored in the
+document; see `webhooks.md`.
 
 ## Merge tags
 

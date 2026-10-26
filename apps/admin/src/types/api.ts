@@ -41,6 +41,78 @@ export interface Notification {
   logic: Logic | null;
 }
 
+export interface WebhookHeader {
+  name: string;
+  /** Empty for secret headers: the value is write-only (stored encrypted on the server). */
+  value: string;
+  secret: boolean;
+  /** From the server: a secret value is stored. */
+  hasValue?: boolean;
+}
+
+export interface WebhookMapping {
+  /** Element id (stable across key renames). */
+  field: string;
+  /** Target name, dots nest (`contact.email`). */
+  name: string;
+}
+
+export interface Webhook {
+  id: string;
+  name: string;
+  enabled: boolean;
+  url: string;
+  method: 'POST' | 'PUT' | 'PATCH';
+  format: 'json' | 'form';
+  envelope: boolean;
+  fields: 'all' | 'custom';
+  mapping: WebhookMapping[];
+  headers: WebhookHeader[];
+  logic: Logic | null;
+  /** From the server: a signing secret is stored. */
+  hasSecret?: boolean;
+  /** Write-only: new signing secret. */
+  secret?: string;
+  /** Write-only: remove the stored signing secret. */
+  clearSecret?: boolean;
+}
+
+export type DeliveryStatus = 'pending' | 'success' | 'failed' | 'dismissed';
+
+export interface WebhookDelivery {
+  id: number;
+  formId: number;
+  entryId: number;
+  webhookId: string;
+  event: string;
+  eventId: string;
+  status: DeliveryStatus;
+  attempts: number;
+  responseCode: number;
+  message: string;
+  durationMs: number;
+  nextAttemptAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  resendable: boolean;
+}
+
+export interface DeliveryList {
+  items: WebhookDelivery[];
+  total: number;
+  pages: number;
+  failures: number;
+}
+
+export interface WebhookTestResult {
+  success: boolean;
+  status: number | null;
+  message: string;
+  durationMs: number;
+  response: string;
+  payload: Record<string, unknown>;
+}
+
 export interface FormSettings {
   submitLabel: string;
   cssClass: string;
@@ -49,6 +121,7 @@ export interface FormSettings {
   retentionDays: number;
   spam: { honeypot: boolean; minSeconds: number; rateLimit: number };
   notifications: Notification[];
+  webhooks: Webhook[];
 }
 
 export interface FormDocument {
@@ -67,6 +140,8 @@ export interface FormSummary {
   hasDraft: boolean;
   entries: number;
   unread: number;
+  /** Webhook deliveries that failed for good and were not dismissed. */
+  webhookFailures: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -126,7 +201,7 @@ export interface EntryNode {
 export interface EntryLogItem {
   type: string;
   actionId: string;
-  status: 'success' | 'failed' | 'skipped' | string;
+  status: 'success' | 'failed' | 'skipped' | 'queued' | 'retry' | string;
   message: string;
   createdAt: string;
 }
@@ -136,6 +211,7 @@ export interface EntryDetail {
   fields: EntryNode[];
   user: string;
   log: EntryLogItem[];
+  deliveries: WebhookDelivery[];
 }
 
 export type BulkAction = 'read' | 'unread' | 'star' | 'unstar' | 'spam' | 'trash' | 'restore' | 'delete';
@@ -146,6 +222,10 @@ export interface GlobalSettings {
   from_name: string;
   delete_data_on_uninstall: boolean;
   load_css: boolean;
+  /** Empty: the site's admin e-mail address. */
+  webhook_alert_email: string;
+  /** Internal hosts webhooks may call (host, *.domain, IP, CIDR). */
+  webhook_allowed_hosts: string[];
 }
 
 export interface WpPage {

@@ -20,6 +20,7 @@ use SWForms\WordPress\Forms\FormRepository;
 use SWForms\WordPress\Support\Settings;
 use SWForms\WordPress\Support\Wpml;
 use SWForms\WordPress\Template\MergeTagResolver;
+use SWForms\WordPress\Webhooks\WebhookAction;
 
 final class SubmissionService {
 
@@ -107,13 +108,14 @@ final class SubmissionService {
 		 * @param int                  $form_id Form id.
 		 */
 		$data     = (array) apply_filters( 'swf_submission_data', $builder->build( $values, $visibility ), $values, $form_id );
+		$meta     = array( 'sourceUrl' => esc_url_raw( (string) ( $request['source_url'] ?? '' ) ) );
 		$entry_id = 0;
 		if ( ! empty( $settings['storeEntries'] ) ) {
 			$entry_id = $this->entries->insert(
 				$form_id,
 				$form['current_version'],
 				$data,
-				array( 'sourceUrl' => esc_url_raw( (string) ( $request['source_url'] ?? '' ) ) ),
+				$meta,
 				// The index holds the display text (option labels, Yes/No): what people see and search for.
 				$builder->flatten(
 					$values,
@@ -132,7 +134,7 @@ final class SubmissionService {
 		}
 		$this->spam->record_success( $form_id, $token_id, $ip );
 
-		$submission = new Submission( $form, $form['current_version'], $document, $tree, $values, $visibility, $data, $entry_id, $this->entries );
+		$submission = new Submission( $form, $form['current_version'], $document, $tree, $values, $visibility, $data, $entry_id, $this->entries, $meta );
 		if ( $entry_id > 0 ) {
 			/**
 			 * Fires after an entry was stored, before actions run.
@@ -158,7 +160,7 @@ final class SubmissionService {
 	}
 
 	private function run_actions( Submission $submission ): void {
-		$actions = array( new EmailNotifications( $this->registry ) );
+		$actions = array( new EmailNotifications( $this->registry ), new WebhookAction() );
 		/**
 		 * Actions executed after a valid submission.
 		 *

@@ -131,6 +131,10 @@ function openCreate(): void {
               <router-link :to="`/forms/${form.id}`" class="swf-forms__title">{{ form.title }}</router-link>
               <span v-if="form.hasDraft" class="swf-chip swf-chip--warning">{{ t('forms.unsaved') }}</span>
               <span v-if="form.currentVersion === 0" class="swf-chip">{{ t('forms.neverSaved') }}</span>
+              <router-link v-if="form.webhookFailures > 0" :to="`/forms/${form.id}/webhooks`" class="swf-chip swf-chip--danger" data-test="webhook-failures">
+                <q-icon name="r_error" size="14px" aria-hidden="true" />
+                {{ t('forms.webhookFailures', { n: form.webhookFailures }, form.webhookFailures) }}
+              </router-link>
             </td>
             <td :data-label="t('forms.col.status')">
               <q-toggle

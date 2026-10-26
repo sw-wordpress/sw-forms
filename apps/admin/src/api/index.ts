@@ -1,6 +1,8 @@
 import { getConfig } from '@/config';
 import type {
   BulkAction,
+  DeliveryList,
+  DeliveryStatus,
   EntryDetail,
   EntryFilter,
   EntryList,
@@ -12,6 +14,9 @@ import type {
   FormStatus,
   FormSummary,
   GlobalSettings,
+  Webhook,
+  WebhookDelivery,
+  WebhookTestResult,
   WpPage,
 } from '@/types/api';
 import { ApiClient } from './client';
@@ -64,6 +69,19 @@ export const entriesApi = {
     api().request<EntrySummary>('PATCH', `entries/${id}`, { body: changes }),
   remove: (id: number) => api().delete<{ deleted: boolean }>(`entries/${id}`),
   bulk: (ids: number[], action: BulkAction) => api().post<{ affected: number }>('entries/bulk', { ids, action }),
+};
+
+export const webhooksApi = {
+  /** Sends example data synchronously; `document` provides the (unsaved) fields. */
+  test: (formId: number, webhook: Webhook, document: FormDocument) =>
+    api().post<WebhookTestResult>(`forms/${formId}/webhooks/test`, { webhook, document }),
+  deliveries: (formId: number, query: { status?: DeliveryStatus | ''; webhook?: string; page?: number; per_page?: number }) =>
+    api().get<DeliveryList>(`forms/${formId}/webhooks/deliveries`, query),
+  /** Resend or dismiss all failed deliveries of a form. */
+  bulk: (formId: number, action: 'resend' | 'dismiss') =>
+    api().post<{ affected: number }>(`forms/${formId}/webhooks/deliveries/bulk`, { action }),
+  resend: (id: number) => api().post<WebhookDelivery>(`webhooks/deliveries/${id}/resend`),
+  dismiss: (id: number) => api().post<WebhookDelivery>(`webhooks/deliveries/${id}/dismiss`),
 };
 
 export const settingsApi = {

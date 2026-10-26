@@ -13,6 +13,7 @@ use SWForms\WordPress\Fields\FieldRegistry;
 use SWForms\WordPress\Forms\FormService;
 use SWForms\WordPress\Frontend\Preview;
 use SWForms\WordPress\Support\Capabilities;
+use SWForms\WordPress\Webhooks\DeliveryRepository;
 
 final class FormsController extends BaseController {
 
@@ -123,7 +124,12 @@ final class FormsController extends BaseController {
 	}
 
 	public function list_forms(): \WP_REST_Response {
-		return new \WP_REST_Response( array( 'items' => $this->service->repository()->all() ) );
+		$failures = ( new DeliveryRepository() )->failure_counts();
+		$items    = array();
+		foreach ( $this->service->repository()->all() as $form ) {
+			$items[] = $form + array( 'webhookFailures' => $failures[ $form['id'] ] ?? 0 );
+		}
+		return new \WP_REST_Response( array( 'items' => $items ) );
 	}
 
 	public function create_form( \WP_REST_Request $request ): \WP_REST_Response {
@@ -258,7 +264,8 @@ final class FormsController extends BaseController {
 			'status'         => $form['status'],
 			'currentVersion' => $form['current_version'],
 			'hasDraft'       => null !== $form['draft'],
-			'document'       => $this->service->editable_document( $id ),
+			// Secrets stay on the server; the builder only learns whether they are set.
+			'document'       => $this->service->secrets()->decorate( $id, $this->service->editable_document( $id ) ),
 			// Keys of the published version: the builder warns before a key that receivers may rely on changes.
 			'publishedKeys'  => (object) self::keys( is_array( $published['fields'] ?? null ) ? $published['fields'] : array() ),
 			'previewUrl'     => Preview::url( $id ),

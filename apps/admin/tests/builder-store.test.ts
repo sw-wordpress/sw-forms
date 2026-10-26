@@ -27,6 +27,7 @@ function detail(): FormDetail {
         retentionDays: 0,
         spam: { honeypot: true, minSeconds: 2, rateLimit: 10 },
         notifications: [],
+        webhooks: [],
       },
     },
     publishedKeys: { old: 'email' },

@@ -13,16 +13,23 @@ use SWForms\Core\Form\SchemaValidator;
 use SWForms\Core\Form\Tree;
 use SWForms\WordPress\Fields\FieldRegistry;
 use SWForms\WordPress\Support\Messages;
+use SWForms\WordPress\Webhooks\SecretStore;
+use SWForms\WordPress\Webhooks\WebhookSettings;
 
 final class FormService {
 
 	public function __construct(
 		private readonly FormRepository $forms,
 		private readonly FieldRegistry $registry,
+		private readonly SecretStore $secrets = new SecretStore(),
 	) {}
 
 	public static function create_default(): self {
 		return new self( new FormRepository(), FieldRegistry::instance() );
+	}
+
+	public function secrets(): SecretStore {
+		return $this->secrets;
 	}
 
 	public function repository(): FormRepository {
@@ -71,6 +78,9 @@ final class FormService {
 				}
 			}
 		}
+		foreach ( WebhookSettings::validate( $document['settings']['webhooks'] ?? array(), $tree ) as $error ) {
+			$errors[] = $error + array( 'message' => Messages::schema( $error['code'] ) );
+		}
 		return $errors;
 	}
 
@@ -95,7 +105,7 @@ final class FormService {
 	 * @return array{errors: list<array{path: string, code: string, message: string}>, version: int, document: array<string, mixed>}
 	 */
 	public function save( int $id, string $title, array $document ): array {
-		$document = $this->normalize( $document );
+		$document = $this->normalize( $this->secrets->absorb( $id, $document ) );
 		$errors   = $this->validate( $document );
 		if ( array() !== $errors ) {
 			return array(
@@ -106,6 +116,7 @@ final class FormService {
 		}
 		$title   = sanitize_text_field( $title );
 		$version = $this->forms->publish( $id, '' === $title ? __( 'Untitled form', 'sw-forms' ) : $title, $document );
+		$this->secrets->prune( $id, $document );
 		/**
 		 * Fires after a form was saved (published).
 		 *
@@ -131,7 +142,7 @@ final class FormService {
 	 * @param array<string, mixed> $document
 	 */
 	public function save_draft( int $id, array $document ): void {
-		$this->forms->save_draft( $id, $this->normalize( $document ) );
+		$this->forms->save_draft( $id, $this->normalize( $this->secrets->absorb( $id, $document ) ) );
 	}
 
 	public function duplicate( int $id ): int {
@@ -142,6 +153,8 @@ final class FormService {
 		$document = $form['draft'] ?? $this->forms->published( $id ) ?? DocumentNormalizer::blank();
 		/* translators: %s: title of the copied form */
 		$copy_id = $this->forms->create( sprintf( __( '%s (copy)', 'sw-forms' ), $form['title'] ), $document );
+		// Same webhook ids, same receivers: the copy keeps working without entering secrets again.
+		$this->secrets->copy( $id, $copy_id );
 		if ( array() === $this->validate( $this->normalize( $document ) ) ) {
 			$this->forms->publish( $copy_id, sprintf( __( '%s (copy)', 'sw-forms' ), $form['title'] ), $this->normalize( $document ) ); // phpcs:ignore WordPress.WP.I18n.MissingTranslatorsComment -- same string as above.
 		}

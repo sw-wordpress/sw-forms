@@ -1,6 +1,6 @@
 <?php
 /**
- * Per form settings: submit button, confirmation, storage, spam protection, notifications.
+ * Per form settings: submit button, confirmation, storage, spam protection, notifications, webhooks.
  *
  * @package SWForms
  */
@@ -8,6 +8,8 @@
 declare(strict_types=1);
 
 namespace SWForms\WordPress\Forms;
+
+use SWForms\WordPress\Webhooks\WebhookSettings;
 
 final class FormSettings {
 
@@ -49,6 +51,7 @@ final class FormSettings {
 				'rateLimit'  => min( 1000, absint( $spam['rateLimit'] ?? 10 ) ),
 			),
 			'notifications' => $notifications,
+			'webhooks'      => WebhookSettings::normalize_list( $input['webhooks'] ?? array() ),
 		);
 	}
 

@@ -103,6 +103,8 @@ export const useBuilderStore = defineStore('builder', () => {
     title.value = detail.title;
     status.value = detail.status;
     document.value = structuredClone(detail.document);
+    // Documents stored before webhooks existed have no list yet.
+    document.value.settings.webhooks ??= [];
     lockPresetComponentKeys(document.value.fields);
     errors.value = [];
     revision.value++;

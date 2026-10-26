@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { entriesApi } from '@/api';
+import { entriesApi, webhooksApi } from '@/api';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import SideSheet from '@/components/ui/SideSheet.vue';
 import { useCapabilities } from '@/composables/useCapabilities';
 import { useFormat } from '@/composables/useFormat';
 import { useNotify } from '@/composables/useNotify';
+import { useBuilderStore } from '@/stores/builder';
 import type { EntryDetail, EntryStatus } from '@/types/api';
+import DeliveryList from '@/features/webhooks/DeliveryList.vue';
+import { hostOf } from '@/features/webhooks/webhooks';
 import EntryFields from './EntryFields.vue';
 
 const props = defineProps<{ entryId: number | null }>();
@@ -17,6 +20,11 @@ const notify = useNotify();
 const { dateTime } = useFormat();
 const { can } = useCapabilities();
 const canManage = can('swf_manage_entries');
+
+const builder = useBuilderStore();
+const webhookNames = computed(() =>
+  Object.fromEntries((builder.document?.settings.webhooks ?? []).map((w) => [w.id, w.name || hostOf(w.url)])),
+);
 
 const detail = ref<EntryDetail | null>(null);
 const loading = ref(false);
@@ -51,6 +59,11 @@ watch(
   { immediate: true },
 );
 
+function logIcon(status: string): string {
+  const icons: Record<string, string> = { success: 'r_check_circle', failed: 'r_error', queued: 'r_schedule', retry: 'r_update' };
+  return icons[status] ?? 'r_remove_circle_outline';
+}
+
 async function change(changes: { status?: EntryStatus; starred?: boolean }): Promise<void> {
   if (!detail.value) return;
   try {
@@ -62,6 +75,17 @@ async function change(changes: { status?: EntryStatus; starred?: boolean }): Pro
       notify.success(changes.status === 'trash' ? t('entries.movedToTrash') : t('entries.markedSpam'));
       emit('close');
     }
+  } catch (e) {
+    notify.error(e);
+  }
+}
+
+async function resend(deliveryId: number): Promise<void> {
+  if (!detail.value) return;
+  try {
+    await webhooksApi.resend(deliveryId);
+    notify.success(t('webhooks.resent'));
+    detail.value = await entriesApi.get(detail.value.entry.id);
   } catch (e) {
     notify.error(e);
   }
@@ -109,11 +133,20 @@ async function remove(): Promise<void> {
         <h3 class="swf-eyebrow">{{ t('entries.log') }}</h3>
         <ul class="swf-entry-log">
           <li v-for="(item, i) in detail.log" :key="i" :class="`swf-entry-log--${item.status}`">
-            <q-icon :name="item.status === 'success' ? 'r_check_circle' : item.status === 'failed' ? 'r_error' : 'r_remove_circle_outline'" size="16px" aria-hidden="true" />
-            <span><strong>{{ t(`entries.logTypes.${item.type}`, item.type) }}</strong> · {{ item.message }}</span>
+            <q-icon :name="logIcon(item.status)" size="16px" aria-hidden="true" />
+            <span>
+              <strong>{{ t(`entries.logTypes.${item.type}`, item.type) }}</strong>
+              <template v-if="item.type === 'webhook' && webhookNames[item.actionId]"> ({{ webhookNames[item.actionId] }})</template>
+              · {{ item.message }}
+            </span>
             <span class="swf-muted swf-small">{{ dateTime(item.createdAt) }}</span>
           </li>
         </ul>
+      </section>
+
+      <section v-if="detail.deliveries.length > 0" class="swf-entry-meta" data-test="entry-deliveries">
+        <h3 class="swf-eyebrow">{{ t('entries.webhooks') }}</h3>
+        <DeliveryList :deliveries="detail.deliveries" :names="webhookNames" :can-resend="canManage" @resend="resend" />
       </section>
     </div>
 
