@@ -409,3 +409,7 @@
 .swf-score--rating .swf-choice:has(input:checked) label,
 .swf-score--rating .swf-choice:has(~ .swf-choice input:checked) label { color: var(--swf-accent); }
 .swf-range:focus-visible, .swf-color:focus-visible { outline: 3px solid var(--swf-accent); outline-offset: 3px; }
+
+.swf-interval { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--swf-gap); }
+.swf-interval label { display: block; margin-bottom: 0.35em; }
+@container (max-width: 479px) { .swf-interval { grid-template-columns: minmax(0, 1fr); } }

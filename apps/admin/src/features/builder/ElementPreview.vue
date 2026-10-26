@@ -85,6 +85,12 @@ const defaults = computed(() => {
         </label>
         <span v-if="options.length === 0" class="swf-muted">{{ t('canvas.noOptions') }}</span>
       </div>
+      <input v-else-if="element.type === 'birthdate'" type="date" disabled />
+      <div v-else-if="element.type === 'date-interval' || element.type === 'time-interval'" class="swf-preview__interval">
+        <input :type="element.type === 'date-interval' ? 'date' : 'time'" :value="String(settings.defaultFrom ?? '')" disabled />
+        <q-icon name="r_arrow_forward" aria-hidden="true" />
+        <input :type="element.type === 'date-interval' ? 'date' : 'time'" :value="String(settings.defaultTo ?? '')" disabled />
+      </div>
       <input v-else-if="element.type === 'range'" type="range" disabled :min="Number(settings.min ?? 0)" :max="Number(settings.max ?? 100)" :step="Number(settings.step ?? 1)" :value="Number(settings.default ?? 0)" />
       <input v-else-if="element.type === 'color'" type="color" disabled :value="/^#[0-9a-f]{6}$/i.test(String(settings.default)) ? String(settings.default) : '#000000'" />
       <div v-else-if="element.type === 'rating' || element.type === 'scale'" class="swf-preview__scores">

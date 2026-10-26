@@ -20,6 +20,9 @@ final class StaticTypeCatalog implements TypeCatalog
     public static function builtIn(): self
     {
         return new self([
+            'birthdate' => ['data' => true, 'container' => self::CONTAINER_NONE],
+            'date-interval' => ['data' => true, 'container' => self::CONTAINER_NONE],
+            'time-interval' => ['data' => true, 'container' => self::CONTAINER_NONE],
             'input' => ['data' => true, 'container' => self::CONTAINER_NONE],
             'textarea' => ['data' => true, 'container' => self::CONTAINER_NONE],
             'checkbox' => ['data' => true, 'container' => self::CONTAINER_NONE],

@@ -3,6 +3,7 @@
  * Without this script forms still work (server side postback).
  */
 import './form.css';
+import { parseInterval } from './intervalValues';
 import { parseTags } from './tagValues';
 import { phoneValue } from './inputValues';
 import { filterSelect, initSelectSearch } from './selectSearch';
@@ -119,6 +120,9 @@ class SwForm {
       case 'bool':
         return this.control(scope, name).some((el) => el.checked);
       case 'list': {
+        const from = this.control(scope, name + '[from]')[0];
+        const to = this.control(scope, name + '[to]')[0];
+        if (from || to) return parseInterval({ from: from?.value ?? '', to: to?.value ?? '' });
         const tags = this.control(scope, name)[0];
         if (tags?.matches('textarea[data-swf-tags]')) return parseTags(tags.value);
         const select = scope.querySelector<HTMLSelectElement>(`select[name="${cssEscape(name + '[]')}"]`);
