@@ -1,0 +1,9 @@
+[
+ {"raw":" Alpha, Beta\nAlpha\r\n Gamma ","expected":["Alpha","Beta","Gamma"]},
+ {"raw":["a,b","c",4,null,["x"]],"expected":["a","b","c"]},
+ {"raw":"ä, 日本語, 😀, ä","expected":["ä","日本語","😀"]},
+ {"raw":"<b>tag</b>, <script>alert(1)</script>","expected":["<b>tag</b>","<script>alert(1)</script>"]},
+ {"raw":" , \n\t,","expected":[]},
+ {"raw":null,"expected":[]},
+ {"raw":"a,A","expected":["a","A"]}
+]

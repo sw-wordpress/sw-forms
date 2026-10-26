@@ -138,3 +138,38 @@ A confirmed email still produces one string; the selected calling code becomes p
 telephone string. Programmatic `swf_submit()` calls must supply the confirmation when enabled.
 
 Checks: `php tests/wp-input-options.php`, `node apps/admin/scripts/e2e/inputs.mjs`.
+
+## Range, score, color and tag fields
+
+These built-in types use the same field keys, conditional visibility, repeater scopes and
+entry pipeline as existing fields. Custom types still register on `swf_register_field_types`.
+
+| Type | Settings / defaults | Stored value |
+|------|---------------------|--------------|
+| `range` | `min=0`, `max=100`, `step=1`, `default=0` | Numeric string; native slider. |
+| `rating` | Fixed minimum 1, `max=5` (up to 10), optional `default` | Integer string or unanswered `""`; star labels on native radios. |
+| `scale` | `min=1` (0–19), `max=10` (1–20), optional `default` | Integer string or unanswered `""`; numeric native radios. |
+| `color` | `default="#000000"` | Lowercase `#rrggbb` string; native RGB picker without alpha. |
+| `tags` | `default=""`, `minTags=0`, `maxTags=20`, `maxTagLength=50` | List of unique plain-text strings, preserving order and case. |
+
+Range bounds are limited to ±1,000,000,000; step is between 0.000001 and 1,000,000,000.
+Invalid/reversed settings are normalized (maximum raised to minimum); defaults are clamped
+and snapped down to the step grid relative to the minimum. Range/color controls have an
+initial value, so `required` does not imply that the visitor explicitly interacted with them.
+The slider value readout is enhanced with JavaScript; the native slider remains usable without it.
+
+Ratings/scales initially have no selected value unless a default is configured. `required`
+therefore enforces a selection. Scores must be integers within configured bounds; range
+values must match bounds and step. RGB format and score membership remain structural checks.
+
+Tags use a textarea with comma/newline separators. Programmatic submissions may also supply
+arrays of strings; separators are processed the same way. Surrounding ASCII whitespace and
+exact duplicates are removed. Tag content is plain text, including literal markup characters,
+and is escaped in rendering, entry HTML and notification output. It is never interpreted as HTML.
+Tag counts (up to 100) and Unicode code-point length (up to 200 per tag) are checked server-side;
+the parser retains one extra item/character so overflow is rejected rather than silently accepted.
+Empty optional fields remain valid; set `required` to require tags, and `minTags` for a larger
+minimum on nonempty lists. Frontend conditions read the same parsed list as the server.
+
+New checks: `php tests/wp-scalar-fields.php` and `node apps/admin/scripts/e2e/scalars.mjs`.
+The PHP and TypeScript tag parsers share `tests/fixtures/tag-values.json`.

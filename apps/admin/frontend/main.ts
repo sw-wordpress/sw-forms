@@ -3,6 +3,7 @@
  * Without this script forms still work (server side postback).
  */
 import './form.css';
+import { parseTags } from './tagValues';
 import { phoneValue } from './inputValues';
 import { filterSelect, initSelectSearch } from './selectSearch';
 import { Evaluator } from '../shared/logic';
@@ -83,8 +84,12 @@ class SwForm {
     this.nonce = this.config.nonce;
 
     initSelectSearch(form);
+    this.updateRangeOutputs(form);
     form.addEventListener('reset', () => {
-      setTimeout(() => form.querySelectorAll<HTMLInputElement>('.swf-select-search').forEach(filterSelect), 0);
+      setTimeout(() => {
+        form.querySelectorAll<HTMLInputElement>('.swf-select-search').forEach(filterSelect);
+        this.updateRangeOutputs(form);
+      }, 0);
     });
     form.addEventListener('input', (e) => this.onChange(e));
     form.addEventListener('change', (e) => this.onChange(e));
@@ -114,6 +119,8 @@ class SwForm {
       case 'bool':
         return this.control(scope, name).some((el) => el.checked);
       case 'list': {
+        const tags = this.control(scope, name)[0];
+        if (tags?.matches('textarea[data-swf-tags]')) return parseTags(tags.value);
         const select = scope.querySelector<HTMLSelectElement>(`select[name="${cssEscape(name + '[]')}"]`);
         if (select) return Array.from(select.selectedOptions).map((o) => o.value);
         return this.control(scope, name + '[]')
@@ -164,11 +171,25 @@ class SwForm {
     return values;
   }
 
+  private updateRangeOutputs(root: ParentNode): void {
+    root.querySelectorAll<HTMLInputElement>('input[type="range"]').forEach((input) => {
+      const output = input.parentElement?.querySelector<HTMLOutputElement>('output.swf-range-value');
+      if (output) {
+        output.textContent = input.value;
+        output.hidden = false;
+      }
+    });
+  }
+
   private onChange(event: Event): void {
     const target = event.target as HTMLElement | null;
     if (target instanceof HTMLInputElement && target.classList.contains('swf-select-search')) {
       filterSelect(target);
       return;
+    }
+    if (target instanceof HTMLInputElement && target.type === 'range') {
+      const output = target.parentElement?.querySelector('output.swf-range-value');
+      if (output) output.textContent = target.value;
     }
     const wrapper = target?.closest<HTMLElement>('[data-swf-path]');
     if (wrapper?.classList.contains('swf-field--error')) this.clearError(wrapper);
@@ -236,6 +257,7 @@ class SwForm {
     replacePlaceholder(fragment, token);
     initSelectSearch(fragment);
     container.appendChild(fragment);
+    this.updateRangeOutputs(container);
     this.updateRowButtons(repeater);
     this.apply();
     const rows = this.rows(repeater);

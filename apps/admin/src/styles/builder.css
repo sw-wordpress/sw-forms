@@ -1023,3 +1023,5 @@ body > .swf-root .q-tooltip {
 .swf-preview__option-image { width: 64px; height: 48px; object-fit: contain; }
 
 .swf-options__image { flex: 1 1 40%; min-width: 0; }
+
+.swf-preview__scores { display: flex; flex-wrap: wrap; gap: 10px; font-size: 18px; color: var(--swf-muted); }

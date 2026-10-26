@@ -16,6 +16,11 @@ const options = computed(() => {
   return Array.isArray(list) ? (list as { label: string; value: string; image?: string }[]) : [];
 });
 const inputType = computed(() => String(settings.value.inputType ?? 'text'));
+const scores = computed(() => {
+  const min = props.element.type === 'rating' ? 1 : Math.max(0, Number(settings.value.min ?? 1));
+  const max = Math.min(20, Number(settings.value.max ?? (props.element.type === 'rating' ? 5 : 10)));
+  return Array.from({ length: Math.max(0, max - min + 1) }, (_, index) => min + index);
+});
 const mode = computed(() => String(settings.value.mode ?? 'multiple'));
 const placeholder = computed(() => String(settings.value.placeholder ?? ''));
 const horizontal = computed(() => settings.value.layout === 'horizontal');
@@ -54,7 +59,7 @@ const defaults = computed(() => {
         <q-icon v-if="inputType === 'date'" name="r_calendar_today" size="16px" />
         <q-icon v-else-if="inputType === 'email'" name="r_alternate_email" size="16px" />
       </div>
-      <div v-else-if="element.type === 'textarea'" class="swf-preview__input swf-preview__input--area" :style="{ minHeight: `${Math.max(2, Number(settings.rows ?? 4)) * 14}px` }">
+      <div v-else-if="element.type === 'textarea' || element.type === 'tags'" class="swf-preview__input swf-preview__input--area" :style="{ minHeight: `${Math.max(2, Number(settings.rows ?? 4)) * 14}px` }">
         <span class="swf-preview__placeholder">{{ placeholder }}</span>
       </div>
       <div v-else-if="element.type === 'select'" class="swf-preview__input">
@@ -79,6 +84,11 @@ const defaults = computed(() => {
           <span class="swf-preview__radio" />{{ settings.otherLabel }} <span class="swf-preview__input swf-preview__input--inline" />
         </label>
         <span v-if="options.length === 0" class="swf-muted">{{ t('canvas.noOptions') }}</span>
+      </div>
+      <input v-else-if="element.type === 'range'" type="range" disabled :min="Number(settings.min ?? 0)" :max="Number(settings.max ?? 100)" :step="Number(settings.step ?? 1)" :value="Number(settings.default ?? 0)" />
+      <input v-else-if="element.type === 'color'" type="color" disabled :value="/^#[0-9a-f]{6}$/i.test(String(settings.default)) ? String(settings.default) : '#000000'" />
+      <div v-else-if="element.type === 'rating' || element.type === 'scale'" class="swf-preview__scores">
+        <span v-for="score in scores" :key="score">{{ element.type === 'rating' ? '★' : score }}</span>
       </div>
       <div v-else-if="known && !['input', 'textarea', 'select', 'checkbox', 'radio'].includes(element.type)" class="swf-preview__unknown">
         <q-icon name="r_extension" size="20px" aria-hidden="true" />

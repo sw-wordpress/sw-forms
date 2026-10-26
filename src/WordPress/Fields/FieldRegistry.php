@@ -23,7 +23,20 @@ final class FieldRegistry implements TypeCatalog {
 	public static function instance(): self {
 		if ( null === self::$instance ) {
 			self::$instance = new self();
-			foreach ( array( new InputField(), new TextareaField(), new CheckboxField(), new RadioField(), new SelectField(), new GroupField(), new ColumnsField() ) as $type ) {
+			foreach ( array(
+				new InputField(),
+				new TextareaField(),
+				new CheckboxField(),
+				new RadioField(),
+				new SelectField(),
+				new RangeField(),
+				new RatingField(),
+				new ScaleField(),
+				new ColorField(),
+				new TagsField(),
+				new GroupField(),
+				new ColumnsField(),
+			) as $type ) {
 				self::$instance->register( $type );
 			}
 			/**

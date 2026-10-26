@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SW Forms\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-26 16:52+0000\n"
+"POT-Creation-Date: 2026-10-26 17:24+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -146,6 +146,14 @@ msgstr ""
 
 #: src/WordPress/Fields/ChoiceField.php:88
 msgid "Images"
+msgstr ""
+
+#: src/WordPress/Fields/ColorField.php:20
+msgid "Color"
+msgstr ""
+
+#: src/WordPress/Fields/ColorField.php:37
+msgid "Default color (#RRGGBB)"
 msgstr ""
 
 #: src/WordPress/Fields/ColumnsField.php:24
@@ -327,6 +335,8 @@ msgid "Placeholder"
 msgstr ""
 
 #: src/WordPress/Fields/InputField.php:224
+#: src/WordPress/Fields/RangeField.php:65
+#: src/WordPress/Fields/ScoreField.php:50
 #: src/WordPress/Fields/TextareaField.php:46
 msgid "Default value"
 msgstr ""
@@ -341,14 +351,19 @@ msgid "Maximum length"
 msgstr ""
 
 #: src/WordPress/Fields/InputField.php:252
+#: src/WordPress/Fields/RangeField.php:38
+#: src/WordPress/Fields/ScoreField.php:32
 msgid "Minimum"
 msgstr ""
 
 #: src/WordPress/Fields/InputField.php:260
+#: src/WordPress/Fields/RangeField.php:47
+#: src/WordPress/Fields/ScoreField.php:42
 msgid "Maximum"
 msgstr ""
 
 #: src/WordPress/Fields/InputField.php:269
+#: src/WordPress/Fields/RangeField.php:56
 msgid "Step"
 msgstr ""
 
@@ -424,6 +439,24 @@ msgstr ""
 msgid "Other"
 msgstr ""
 
+#: src/WordPress/Fields/RangeField.php:21
+msgid "Number range"
+msgstr ""
+
+#: src/WordPress/Fields/RatingField.php:18
+msgid "Rating"
+msgstr ""
+
+#: src/WordPress/Fields/ScaleField.php:18
+msgid "Scale"
+msgstr ""
+
+#. translators: 1: rating value, 2: maximum rating
+#: src/WordPress/Fields/ScoreField.php:65
+#, php-format
+msgid "%1$d of %2$d"
+msgstr ""
+
 #: src/WordPress/Fields/SelectField.php:21
 msgid "Select"
 msgstr ""
@@ -447,6 +480,30 @@ msgstr ""
 
 #: src/WordPress/Fields/SelectField.php:153
 msgid "No matching options."
+msgstr ""
+
+#: src/WordPress/Fields/TagsField.php:22
+msgid "Tags"
+msgstr ""
+
+#: src/WordPress/Fields/TagsField.php:43
+msgid "Default tags"
+msgstr ""
+
+#: src/WordPress/Fields/TagsField.php:53
+msgid "Minimum tags"
+msgstr ""
+
+#: src/WordPress/Fields/TagsField.php:63
+msgid "Maximum tags"
+msgstr ""
+
+#: src/WordPress/Fields/TagsField.php:73
+msgid "Maximum tag length"
+msgstr ""
+
+#: src/WordPress/Fields/TagsField.php:148
+msgid "Separate tags with commas or line breaks."
 msgstr ""
 
 #: src/WordPress/Fields/TextareaField.php:22
@@ -616,35 +673,39 @@ msgid "Please enter a valid date."
 msgstr ""
 
 #: src/WordPress/Support/Messages.php:27
-msgid "Please enter a valid time."
+msgid "Please choose a color in #RRGGBB format."
 msgstr ""
 
 #: src/WordPress/Support/Messages.php:28
-msgid "Please enter a whole number."
+msgid "Please enter a valid time."
 msgstr ""
 
 #: src/WordPress/Support/Messages.php:29
-msgid "Please use the configured interval."
+msgid "Please enter a whole number."
 msgstr ""
 
 #: src/WordPress/Support/Messages.php:30
+msgid "Please use the configured interval."
+msgstr ""
+
+#: src/WordPress/Support/Messages.php:31
 msgid "Please enter a number."
 msgstr ""
 
 #. translators: %s: minimum value
-#: src/WordPress/Support/Messages.php:32
+#: src/WordPress/Support/Messages.php:33
 #, php-format
 msgid "Please enter a value of at least %s."
 msgstr ""
 
 #. translators: %s: maximum value
-#: src/WordPress/Support/Messages.php:34
+#: src/WordPress/Support/Messages.php:35
 #, php-format
 msgid "Please enter a value of at most %s."
 msgstr ""
 
 #. translators: %d: minimum number of characters
-#: src/WordPress/Support/Messages.php:36
+#: src/WordPress/Support/Messages.php:37
 #, php-format
 msgid "Please enter at least %d character."
 msgid_plural "Please enter at least %d characters."
@@ -652,23 +713,23 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: maximum number of characters
-#: src/WordPress/Support/Messages.php:38
+#: src/WordPress/Support/Messages.php:39
 #, php-format
 msgid "Please enter at most %d character."
 msgid_plural "Please enter at most %d characters."
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/WordPress/Support/Messages.php:39
+#: src/WordPress/Support/Messages.php:40
 msgid "Please match the requested format."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:40
+#: src/WordPress/Support/Messages.php:41
 msgid "Please choose one of the offered options."
 msgstr ""
 
 #. translators: %d: minimum number of selections
-#: src/WordPress/Support/Messages.php:42
+#: src/WordPress/Support/Messages.php:43
 #, php-format
 msgid "Please select at least %d option."
 msgid_plural "Please select at least %d options."
@@ -676,7 +737,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: maximum number of selections
-#: src/WordPress/Support/Messages.php:44
+#: src/WordPress/Support/Messages.php:45
 #, php-format
 msgid "Please select at most %d option."
 msgid_plural "Please select at most %d options."
@@ -684,41 +745,41 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: minimum number of rows
-#: src/WordPress/Support/Messages.php:46
+#: src/WordPress/Support/Messages.php:47
 #, php-format
 msgid "Please add at least %d entry."
 msgid_plural "Please add at least %d entries."
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/WordPress/Support/Messages.php:47
+#: src/WordPress/Support/Messages.php:48
 msgid "This value is invalid."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:57
+#: src/WordPress/Support/Messages.php:58
 msgid "The form document is invalid."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:58
+#: src/WordPress/Support/Messages.php:59
 msgid "An element is invalid."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:59
+#: src/WordPress/Support/Messages.php:60
 msgid "An element has an invalid id."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:60
+#: src/WordPress/Support/Messages.php:61
 msgid "Two elements share the same id."
 msgstr ""
 
 #. translators: %s: element type
-#: src/WordPress/Support/Messages.php:62
+#: src/WordPress/Support/Messages.php:63
 #, php-format
 msgid "The element type \"%s\" is not available. Is an add-on missing?"
 msgstr ""
 
 #. translators: %s: field key
-#: src/WordPress/Support/Messages.php:64
+#: src/WordPress/Support/Messages.php:65
 #, php-format
 msgid ""
 "The field name \"%s\" is invalid. Use letters, digits and underscores; start "
@@ -726,66 +787,66 @@ msgid ""
 msgstr ""
 
 #. translators: %s: field key
-#: src/WordPress/Support/Messages.php:66
+#: src/WordPress/Support/Messages.php:67
 #, php-format
 msgid "The field name \"%s\" is used twice at the same level."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:67
+#: src/WordPress/Support/Messages.php:68
 msgid "The label is invalid."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:68
+#: src/WordPress/Support/Messages.php:69
 msgid "The contents of this container are invalid."
 msgstr ""
 
 #. translators: %d: maximum number of columns
-#: src/WordPress/Support/Messages.php:70
+#: src/WordPress/Support/Messages.php:71
 #, php-format
 msgid "A column layout needs between 1 and %d columns."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:71
+#: src/WordPress/Support/Messages.php:72
 msgid "Column widths must be between 1 and 12."
 msgstr ""
 
 #. translators: %d: maximum nesting depth
-#: src/WordPress/Support/Messages.php:73
+#: src/WordPress/Support/Messages.php:74
 #, php-format
 msgid "Elements may be nested at most %d levels deep."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:74
+#: src/WordPress/Support/Messages.php:75
 msgid "The conditional logic is invalid."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:75
+#: src/WordPress/Support/Messages.php:76
 msgid "A condition is invalid."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:76
+#: src/WordPress/Support/Messages.php:77
 msgid "A condition uses an unknown comparison."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:77
+#: src/WordPress/Support/Messages.php:78
 msgid "A condition refers to a field that does not exist or has no value."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:78
+#: src/WordPress/Support/Messages.php:79
 msgid "A condition cannot refer to the element itself."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:79
+#: src/WordPress/Support/Messages.php:80
 msgid ""
 "A condition refers to a field inside a repeatable group. Only fields of the "
 "same row or outside the group can be used."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:80
+#: src/WordPress/Support/Messages.php:81
 msgid "Conditions depend on each other in a circle."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:81
+#: src/WordPress/Support/Messages.php:82
 msgid "The form contains an error."
 msgstr ""
 

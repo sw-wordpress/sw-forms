@@ -401,3 +401,11 @@
   display: block;
   color: var(--swf-muted);
 }
+
+.swf-range { width: 100%; accent-color: var(--swf-accent); }
+.swf-range-value { display: block; font-variant-numeric: tabular-nums; }
+.swf-color { width: 4rem; min-height: 2.5rem; padding: 0.2rem; border: 1px solid var(--swf-border); background: var(--swf-bg); }
+.swf-score--rating .swf-choice label { color: var(--swf-muted); font-size: 1.4em; }
+.swf-score--rating .swf-choice:has(input:checked) label,
+.swf-score--rating .swf-choice:has(~ .swf-choice input:checked) label { color: var(--swf-accent); }
+.swf-range:focus-visible, .swf-color:focus-visible { outline: 3px solid var(--swf-accent); outline-offset: 3px; }
