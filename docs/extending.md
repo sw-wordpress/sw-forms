@@ -90,6 +90,6 @@ The `input` type supports `text`, `email`, `tel`, `url`, `number`, `date`, `time
   the minimum (or midnight / the Unix epoch). There is no timezone conversion or
   wraparound range across midnight. Omitted intervals impose no server restriction.
 * Date boundaries in this increment are explicit ISO values. Dynamic relative
-  boundaries, email confirmation, password strength and additional choice/media/
+  boundaries, email confirmation, password strength and additional media/
   structured types from issue #2 remain follow-up work. Existing email, phone, URL,
   number, date, password, hidden, multi-select and single-checkbox functionality is retained.

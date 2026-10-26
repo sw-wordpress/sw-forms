@@ -6,6 +6,7 @@ import { slugKey } from './document';
 interface Option {
   label: string;
   value: string;
+  image?: string;
 }
 
 /**
@@ -16,6 +17,7 @@ const props = defineProps<{ modelValue: Option[] }>();
 const emit = defineEmits<{ (e: 'update:modelValue', value: Option[]): void }>();
 const { t } = useI18n();
 const showValues = ref(false);
+const showImages = ref(props.modelValue.some((option) => !!option.image));
 const bulkOpen = ref(false);
 const bulkText = ref('');
 
@@ -66,7 +68,9 @@ function applyBulk(): void {
   for (const line of bulkText.value.split('\n')) {
     const [label = '', value] = line.split('|').map((part) => part.trim());
     if (label === '') continue;
-    list.push({ label, value: value || valueFor(label, list.length, list) });
+    const resolved = value || valueFor(label, list.length, list);
+    const previous = props.modelValue.find((option) => option.value === resolved);
+    list.push({ label, value: resolved, ...(previous?.image ? { image: previous.image } : {}) });
   }
   emit('update:modelValue', list);
   bulkOpen.value = false;
@@ -95,6 +99,14 @@ function applyBulk(): void {
           :aria-label="t('options.value', { n: index + 1 })"
           @update:model-value="update(index, { value: String($event ?? '') })"
         />
+        <q-input
+          v-if="showImages"
+          :model-value="option.image ?? ''"
+          dense outlined type="url" class="swf-options__image"
+          :aria-label="t('options.image', { n: index + 1 })"
+          :placeholder="t('options.imageUrl')"
+          @update:model-value="update(index, { image: String($event ?? '') })"
+        />
         <q-btn flat round dense size="sm" icon="r_arrow_upward" :disable="index === 0" :aria-label="t('canvas.moveUp')" @click="moveAt(index, -1)" />
         <q-btn flat round dense size="sm" icon="r_close" :aria-label="t('options.remove', { n: index + 1 })" @click="removeAt(index)" />
       </li>
@@ -103,6 +115,7 @@ function applyBulk(): void {
       <q-btn flat dense no-caps icon="r_add" :label="t('options.add')" @click="add" />
       <q-btn flat dense no-caps icon="r_playlist_add" :label="t('options.bulk')" @click="openBulk" />
       <q-toggle v-model="showValues" dense :label="t('options.showValues')" />
+      <q-toggle v-model="showImages" dense :label="t('options.showImages')" />
     </div>
 
     <q-dialog v-model="bulkOpen">

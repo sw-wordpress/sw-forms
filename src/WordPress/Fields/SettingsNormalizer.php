@@ -86,7 +86,7 @@ final class SettingsNormalizer {
 	}
 
 	/**
-	 * @return list<array{label: string, value: string}>
+	 * @return list<array{label: string, value: string, image?: string}>
 	 */
 	public static function options( mixed $value ): array {
 		$out  = array();
@@ -104,10 +104,14 @@ final class SettingsNormalizer {
 				continue;
 			}
 			$seen[ $val ] = true;
-			$out[]        = array(
+			$entry        = array(
 				'label' => '' === $label ? $val : $label,
 				'value' => $val,
 			);
+			if ( isset( $option['image'] ) && is_string( $option['image'] ) ) {
+				$entry['image'] = esc_url_raw( $option['image'], array( 'http', 'https' ) );
+			}
+			$out[] = $entry;
 		}
 		return $out;
 	}

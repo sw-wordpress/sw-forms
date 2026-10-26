@@ -101,6 +101,15 @@ final class CheckboxField extends ChoiceField {
 				'showIf'  => $multiple,
 			),
 			$this->layout_setting( $multiple ),
+			$this->presentation_setting() + array( 'showIf' => $multiple ),
+			array(
+				'name'    => 'switch',
+				'type'    => 'toggle',
+				'tab'     => 'appearance',
+				'label'   => __( 'Display as switch', 'sw-forms' ),
+				'default' => false,
+				'showIf'  => $single,
+			),
 		);
 	}
 
@@ -192,6 +201,8 @@ final class CheckboxField extends ChoiceField {
 				array_merge(
 					array(
 						'type'    => 'checkbox',
+						'role'    => $this->setting( $element, 'switch', false ) ? 'switch' : null,
+						'class'   => $this->setting( $element, 'switch', false ) ? 'swf-switch' : null,
 						'id'      => $dom_id,
 						'name'    => $context->name( $id ),
 						'value'   => '1',
@@ -221,7 +232,7 @@ final class CheckboxField extends ChoiceField {
 					'checked'      => in_array( (string) $option_value, $selected, true ),
 					'aria-invalid' => $this->invalid_attr( $element, $context ),
 				),
-				esc_html( $option_label )
+				$this->option_label( $element, (string) $option_value, $option_label )
 			);
 		}
 		return $this->wrap( $element, $context, '<div class="' . esc_attr( $this->list_class( $element ) ) . '">' . $controls . '</div>', true );

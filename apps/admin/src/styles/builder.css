@@ -1017,3 +1017,9 @@ body > .swf-root .q-tooltip {
   line-height: 1.4;
   font-weight: 600;
 }
+
+.swf-preview__switch { width: 28px; border-radius: 12px; }
+.swf-preview__choices--cards .swf-preview__choice { padding: 8px 12px; border: 1px solid var(--swf-border); border-radius: 6px; }
+.swf-preview__option-image { width: 64px; height: 48px; object-fit: contain; }
+
+.swf-options__image { flex: 1 1 40%; min-width: 0; }

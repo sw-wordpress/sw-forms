@@ -58,6 +58,7 @@ final class RadioField extends ChoiceField {
 				),
 			),
 			$this->layout_setting(),
+			$this->presentation_setting(),
 		);
 	}
 
@@ -110,7 +111,7 @@ final class RadioField extends ChoiceField {
 					'checked'      => (string) $option_value === $value,
 					'aria-invalid' => $invalid,
 				),
-				esc_html( $option_label )
+				$this->option_label( $element, (string) $option_value, $option_label )
 			);
 		}
 		if ( $this->setting( $element, 'other' ) ) {
