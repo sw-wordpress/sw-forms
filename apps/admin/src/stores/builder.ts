@@ -36,7 +36,7 @@ export const useBuilderStore = defineStore('builder', () => {
   const past = ref<string[]>([]);
   const future = ref<string[]>([]);
   const savedJson = ref('');
-  /** Elements whose key the user edited by hand (the key no longer follows the label). */
+  /** Keys locked by manual edits or preset contracts; they no longer follow labels. */
   const manualKeys = new Set<string>();
   let lastCoalesce = { key: '', at: 0 };
   let draftTimer: ReturnType<typeof setTimeout> | null = null;
@@ -92,6 +92,7 @@ export const useBuilderStore = defineStore('builder', () => {
     future.value = [];
     selectedId.value = null;
     manualKeys.clear();
+    lockPresetComponentKeys(document.value?.fields ?? []);
     // A pending draft is unsaved work: compare against the published state.
     if (detail.hasDraft) savedJson.value = '';
   }
@@ -102,6 +103,7 @@ export const useBuilderStore = defineStore('builder', () => {
     title.value = detail.title;
     status.value = detail.status;
     document.value = structuredClone(detail.document);
+    lockPresetComponentKeys(document.value.fields);
     errors.value = [];
     revision.value++;
     savedJson.value = snapshotJson.value;
@@ -164,13 +166,28 @@ export const useBuilderStore = defineStore('builder', () => {
 
   // ---------- elements ----------
 
+  /** Template component keys are data contracts, independent of localized labels. */
+  function lockPresetComponentKeys(fields: ElementNode[]): void {
+    doc.walk(fields, (parent) => {
+      const templates = typeMap.value.get(parent.type)?.initialChildren;
+      if (!templates) return;
+      const keys = new Set(templates.map((template) => template.key));
+      doc.walk(parent.children ?? [], (child) => {
+        if (child.key && keys.has(child.key)) manualKeys.add(child.id);
+      });
+    });
+  }
+
   function addElement(type: string, listId: string, index: number): ElementNode | null {
     const definition = typeMap.value.get(type);
     if (!definition || !document.value) return null;
     let created: ElementNode | null = null;
     change((d) => {
       const node = doc.createElement(definition, doc.keysInObject(d, listId));
-      if (doc.insert(d, listId, index, node)) created = node;
+      if (doc.insert(d, listId, index, node)) {
+        lockPresetComponentKeys([node]);
+        created = node;
+      }
     });
     if (created) selectedId.value = (created as ElementNode).id;
     return created;
@@ -190,7 +207,10 @@ export const useBuilderStore = defineStore('builder', () => {
     change((d) => {
       copy = doc.duplicate(d, id);
     });
-    if (copy) selectedId.value = (copy as ElementNode).id;
+    if (copy) {
+      lockPresetComponentKeys([copy as ElementNode]);
+      selectedId.value = (copy as ElementNode).id;
+    }
   }
 
   function removeElement(id: string): void {
@@ -202,7 +222,7 @@ export const useBuilderStore = defineStore('builder', () => {
     }
   }
 
-  /** Whether the key of an element still follows its label (new, never published, not edited by hand). */
+  /** Whether a new, unpublished and unlocked key still follows its label. */
   function keyFollowsLabel(id: string): boolean {
     return !(id in (meta.value?.publishedKeys ?? {})) && !manualKeys.has(id);
   }
@@ -287,6 +307,7 @@ export const useBuilderStore = defineStore('builder', () => {
       apply(detail);
       selectedId.value = selection;
       manualKeys.clear();
+      lockPresetComponentKeys(document.value?.fields ?? []);
       draftState.value = 'idle';
       return true;
     } catch (error) {

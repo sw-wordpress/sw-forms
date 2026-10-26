@@ -119,4 +119,14 @@ controls (for example in calling-code lists).
 
 Built-in `range`, `rating`, `scale`, `color` and `tags` fields are documented in `docs/schema.md`.
 Built-in `birthdate`, `date-interval` and `time-interval` fields are also documented there.
-Remaining issue #2 work covers address/name, Likert matrices, uploads, signatures and media capture.
+Built-in `name` and `address` are editable group presets (see `docs/schema.md`).
+Remaining issue #2 work covers Likert matrices, uploads, signatures and media capture.
+
+## Preset groups
+
+`GroupField` is extendable. A `PresetGroupField` subclass can implement `initial_children()`
+to return initial keyed component templates without ids, and register through the existing
+`swf_register_field_types` action. `input_part()` constructs the flat input components used
+by the built-in name/address presets. The registry publishes normalized templates as
+`initialChildren`; the normalizer seeds omitted children for programmatic creation. This
+initialization never replaces an explicit child list. Persist generated ids when editing.

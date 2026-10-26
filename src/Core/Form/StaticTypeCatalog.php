@@ -33,6 +33,8 @@ final class StaticTypeCatalog implements TypeCatalog
             'scale' => ['data' => true, 'container' => self::CONTAINER_NONE],
             'color' => ['data' => true, 'container' => self::CONTAINER_NONE],
             'tags' => ['data' => true, 'container' => self::CONTAINER_NONE],
+            'name' => ['data' => true, 'container' => self::CONTAINER_CHILDREN],
+            'address' => ['data' => true, 'container' => self::CONTAINER_CHILDREN],
             'group' => ['data' => true, 'container' => self::CONTAINER_CHILDREN],
             'columns' => ['data' => false, 'container' => self::CONTAINER_COLUMNS],
         ]);

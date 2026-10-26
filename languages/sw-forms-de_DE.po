@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SW Forms 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-26 17:49+0000\n"
+"POT-Creation-Date: 2026-10-26 18:27+0000\n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -53,6 +53,30 @@ msgstr "SW Forms benötigt JavaScript."
 #: src/WordPress/Fields/CheckboxField.php:246
 msgid "(required)"
 msgstr "(Pflichtfeld)"
+
+#: src/WordPress/Fields/AddressField.php:17
+msgid "Address"
+msgstr "Adresse"
+
+#: src/WordPress/Fields/AddressField.php:24
+msgid "Street"
+msgstr "Straße"
+
+#: src/WordPress/Fields/AddressField.php:25
+msgid "House number"
+msgstr "Hausnummer"
+
+#: src/WordPress/Fields/AddressField.php:26
+msgid "Postal code"
+msgstr "Postleitzahl"
+
+#: src/WordPress/Fields/AddressField.php:27
+msgid "City"
+msgstr "Ort"
+
+#: src/WordPress/Fields/AddressField.php:28
+msgid "Country"
+msgstr "Land"
 
 #: src/WordPress/Fields/BirthdateField.php:22
 msgid "Birthdate"
@@ -459,7 +483,9 @@ msgstr "Identische Endpunkte erlauben"
 msgid ""
 "ISO date or time. Dates also support today with an offset, e.g. today + 7 "
 "days."
-msgstr "ISO-Datum oder Uhrzeit. Datumswerte unterstützen auch today mit einem Versatz, z. B. today + 7 days."
+msgstr ""
+"ISO-Datum oder Uhrzeit. Datumswerte unterstützen auch today mit einem "
+"Versatz, z. B. today + 7 days."
 
 #: src/WordPress/Fields/IntervalField.php:140
 msgid "From"
@@ -468,6 +494,26 @@ msgstr "Von"
 #: src/WordPress/Fields/IntervalField.php:141
 msgid "To"
 msgstr "Bis"
+
+#: src/WordPress/Fields/NameField.php:17
+msgid "Name"
+msgstr "Name"
+
+#: src/WordPress/Fields/NameField.php:24
+msgid "Salutation"
+msgstr "Anrede"
+
+#: src/WordPress/Fields/NameField.php:25
+msgid "Given name"
+msgstr "Vorname"
+
+#: src/WordPress/Fields/NameField.php:26
+msgid "Family name"
+msgstr "Nachname"
+
+#: src/WordPress/Fields/NameField.php:27
+msgid "Title"
+msgstr "Titel"
 
 #: src/WordPress/Fields/RadioField.php:25
 msgid "Radio buttons"

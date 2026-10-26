@@ -210,3 +210,45 @@ field documents and the `swf_register_field_types` extension action remain uncha
 
 Checks: `php tests/wp-temporal-fields.php`, `node apps/admin/scripts/e2e/temporal.mjs`.
 PHP/TypeScript interval collection shares `tests/fixtures/interval-values.json`.
+
+## Name and address presets
+
+`name` and `address` are data-bearing `children` containers, using the same group rendering,
+validation, conditions and optional repeatability as `group`. Their initial components are
+ordinary editable fields, not a separate opaque value parser.
+
+| Preset | Initial component keys | Required by default |
+|--------|------------------------|---------------------|
+| `name` | `salutation`, `given_name`, `family_name`, `title` | Given/family name |
+| `address` | `street`, `house_number`, `postal_code`, `city`, `country` | Street, city, country |
+
+Salutation/title and house number/postal code are optional. Country is free text; postal codes
+and house numbers remain text, retaining leading zeros, letters and national formatting.
+There is no global postal-code pattern or address lookup. Native autocomplete hints are
+provided where applicable. Components reuse normal input length, pattern, format and required
+settings. Default maximum lengths are 120 characters for names, 60 for salutation/title,
+200 for street, 50 for house number, 30 for postal code and 120 for city/country.
+These settings can be edited like other input fields.
+
+The builder receives optional `initialChildren` templates in `/field-types`. Creating a preset
+copies them once with fresh ids. Label changes retain the canonical component keys, including
+before publishing and after draft reload or duplication. Editing a key explicitly remains
+possible; published-key warnings still apply. Existing saved children are never reset when
+loading/saving; removed parts stay removed. Components can be reordered, configured, moved or
+extended through the normal builder. There is no aggregate required flag: requirements belong
+to the component fields, so an optional name/address is configured by relaxing those parts.
+
+Programmatic documents may omit `children` to request initial components. Normalization assigns
+deterministic ids from the parent id and each initial key, so repeated shorthand normalization
+is stable. Supplying explicit `children` preserves them, including an empty list. After the
+first save, keep the saved ids/children as usual when editing a form.
+
+Nonrepeatable groups produce named objects, e.g. `person.given_name` and
+`location.postal_code`; repeatable groups produce lists of those objects. Requests use the
+actual child **ids** in the current scope, as for ordinary groups: `swf[child_id]` outside a
+repeater, `swf[people_id][row][child_id]` inside one. The group itself is not a condition source;
+its component fields are. Component merge tags such as `{field:person.given_name}` work in
+nonrepeatable groups, while `{all_fields}` renders the full hierarchy, including repeaters.
+
+Checks: `php tests/wp-contact-fields.php`, `node apps/admin/scripts/e2e/contacts.mjs`.
+The PHP/TypeScript evaluators share `tests/fixtures/logic/contact-groups.json`.

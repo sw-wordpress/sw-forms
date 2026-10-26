@@ -64,10 +64,21 @@ export function staticCatalog(
 
 export const BUILT_IN_CATALOG = staticCatalog({
   input: { data: true, container: '' },
+  'birthdate': { data: true, container: '' },
+  'date-interval': { data: true, container: '' },
+  'time-interval': { data: true, container: '' },
+  'range': { data: true, container: '' },
+  'rating': { data: true, container: '' },
+  'scale': { data: true, container: '' },
+  'color': { data: true, container: '' },
+  'tags': { data: true, container: '' },
+
   textarea: { data: true, container: '' },
   checkbox: { data: true, container: '' },
   radio: { data: true, container: '' },
   select: { data: true, container: '' },
+  name: { data: true, container: 'children' },
+  address: { data: true, container: 'children' },
   group: { data: true, container: 'children' },
   columns: { data: false, container: 'columns' },
 });
