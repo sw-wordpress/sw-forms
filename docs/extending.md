@@ -2,6 +2,14 @@
 
 ## A custom element type
 
+Register custom field types on `swf_register_field_types` during plugin bootstrap,
+before the registry is first used. Each type implements `FieldTypeInterface`; call
+`$registry->register( new My_Type() )` to add it. Registering an existing slug replaces
+that type; invalid slugs are ignored. Slugs must match `[a-z][a-z0-9-]{0,39}`.
+
+The same registry drives schema validation, the builder's `/field-types` response,
+rendering, submission validation and entry formatting.
+
 ```php
 add_action( 'swf_register_field_types', function ( \SWForms\WordPress\Fields\FieldRegistry $registry ) {
 	$registry->register( new My_Rating_Field() );
@@ -64,3 +72,24 @@ add_filter( 'swf_register_actions', function ( array $actions ) {
 ```
 
 The entry log shows the logged result. Exceptions are caught and logged as `failed`.
+
+## Input validation
+
+The `input` type supports `text`, `email`, `tel`, `url`, `number`, `date`, `time`,
+`datetime-local`, `password` and `hidden`. Existing documents need no migration.
+
+* `validate` defaults to `true` when omitted. Turning it off skips format, length,
+  pattern, range and interval checks for this input; sanitization and the central
+  `required` check remain active. Native email/URL/temporal inputs become text inputs
+  in this mode so browsers do not erase values that the form deliberately accepts.
+* Numbers support `integer`, `min`, `max` and `step`. Step is enforced on the server,
+  relative to `min` (or zero). Decimal commas remain supported.
+* Temporal inputs accept `minDate` and `maxDate` in their own format: `YYYY-MM-DD`,
+  `HH:MM[:SS]`, or `YYYY-MM-DDTHH:MM[:SS]`. Invalid configured bounds are ignored.
+  Times and local datetimes support a positive `timeStep` in seconds, relative to
+  the minimum (or midnight / the Unix epoch). There is no timezone conversion or
+  wraparound range across midnight. Omitted intervals impose no server restriction.
+* Date boundaries in this increment are explicit ISO values. Dynamic relative
+  boundaries, email confirmation, password strength and additional choice/media/
+  structured types from issue #2 remain follow-up work. Existing email, phone, URL,
+  number, date, password, hidden, multi-select and single-checkbox functionality is retained.
