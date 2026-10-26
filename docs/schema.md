@@ -173,3 +173,40 @@ minimum on nonempty lists. Frontend conditions read the same parsed list as the 
 
 New checks: `php tests/wp-scalar-fields.php` and `node apps/admin/scripts/e2e/scalars.mjs`.
 The PHP and TypeScript tag parsers share `tests/fixtures/tag-values.json`.
+
+## Birthdates and temporal intervals
+
+| Type | Settings | Value |
+|------|----------|-------|
+| `birthdate` | Optional `minAge` / `maxAge` (0–150 completed years), `validate=true` | ISO date string, initially empty. |
+| `date-interval` | `defaultFrom`, `defaultTo`, `min`, `max`, `allowEqual=true`, `validate=true` | Empty `[]` or ordered `[from, to]` date strings. |
+| `time-interval` | Same, plus `step=60` in seconds (1–86400) | Empty `[]` or ordered `[from, to]` time strings. |
+
+Birthdates must be valid, non-future dates. Age is evaluated on the current calendar day
+in the WordPress site timezone. A February 29 birthday advances on March 1 in non-leap years.
+Picker bounds and server age validation use the same policy. If both age limits are supplied,
+a smaller maximum is raised to the minimum. `validate=false` disables date/future/age checks
+and renders a text input; the central required check remains active.
+
+Interval requests use `swf[id][from]` and `swf[id][to]` (or the corresponding repeater scope).
+Programmatic submissions may pass `{from, to}` or an ordered two-string list. Whitespace is
+trimmed; endpoint strings are capped at 200 Unicode code points. Empty optional pairs are
+allowed. Once one endpoint is supplied, both are required, even with `validate=false`.
+Nonempty malformed input is rejected as incomplete.
+
+Date intervals use ISO `YYYY-MM-DD`. Time intervals use `HH:MM[:SS]`; they represent a single
+local day, with no timezone conversion, duration calculation or overnight wrapping. Start
+must not exceed end; `allowEqual=false` requires a strictly later end. Time steps are relative
+to a valid minimum or midnight. Both endpoints must satisfy configured `min`/`max` bounds.
+Date bounds support the existing `today`/`now` offset grammar; invalid bounds are ignored,
+as for simple date inputs. Bounds and ages are reevaluated when submitting cached pages.
+`validate=false` switches endpoint controls to text and disables format, bounds, step and
+ordering checks while retaining completeness and required checks.
+
+Intervals are leaf fields with the existing `list` conditional-value kind. `contains` can match
+an endpoint, and empty/not-empty conditions use the whole pair. Endpoints are not independently
+addressable form elements. Entries/notifications format the pair as `from – to`. Existing
+field documents and the `swf_register_field_types` extension action remain unchanged.
+
+Checks: `php tests/wp-temporal-fields.php`, `node apps/admin/scripts/e2e/temporal.mjs`.
+PHP/TypeScript interval collection shares `tests/fixtures/interval-values.json`.

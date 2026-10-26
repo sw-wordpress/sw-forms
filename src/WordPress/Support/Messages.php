@@ -20,6 +20,13 @@ final class Messages {
 			'email_confirmation' => __( 'The email addresses do not match.', 'sw-forms' ),
 			/* translators: %d: minimum number of characters */
 			'password' => sprintf( ! empty( $params['mixed'] ) ? __( 'Use at least %d characters including uppercase, lowercase, a number and a symbol.', 'sw-forms' ) : __( 'Use at least %d characters.', 'sw-forms' ), (int) ( $params['min'] ?? 12 ) ),
+			'birthdate' => __( 'Please enter a birthdate on or before today.', 'sw-forms' ),
+			/* translators: %d: minimum age */
+			'min_age' => sprintf( __( 'You must be at least %d years old.', 'sw-forms' ), (int) ( $params['min'] ?? 0 ) ),
+			/* translators: %d: maximum age */
+			'max_age' => sprintf( __( 'Age must be at most %d years.', 'sw-forms' ), (int) ( $params['max'] ?? 0 ) ),
+			'interval_complete' => __( 'Please fill in both endpoints.', 'sw-forms' ),
+			'interval_order' => ! empty( $params['allowEqual'] ) ? __( 'The end must not be before the start.', 'sw-forms' ) : __( 'The end must be after the start.', 'sw-forms' ),
 			'email'        => __( 'Please enter a valid email address.', 'sw-forms' ),
 			'url'          => __( 'Please enter a valid web address starting with http:// or https://.', 'sw-forms' ),
 			'tel'          => __( 'Please enter a valid phone number.', 'sw-forms' ),

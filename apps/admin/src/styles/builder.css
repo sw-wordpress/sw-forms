@@ -1025,3 +1025,6 @@ body > .swf-root .q-tooltip {
 .swf-options__image { flex: 1 1 40%; min-width: 0; }
 
 .swf-preview__scores { display: flex; flex-wrap: wrap; gap: 10px; font-size: 18px; color: var(--swf-muted); }
+
+.swf-preview__interval { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 8px; align-items: center; }
+.swf-preview__interval input { min-width: 0; width: 100%; }

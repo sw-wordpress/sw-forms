@@ -118,5 +118,5 @@ The settings schema may set `images: false` on an `options` setting to hide imag
 controls (for example in calling-code lists).
 
 Built-in `range`, `rating`, `scale`, `color` and `tags` fields are documented in `docs/schema.md`.
-Remaining issue #2 work covers address/name, birthdate with age validation, date/time intervals,
-Likert matrices, uploads, signatures and media capture.
+Built-in `birthdate`, `date-interval` and `time-interval` fields are also documented there.
+Remaining issue #2 work covers address/name, Likert matrices, uploads, signatures and media capture.
