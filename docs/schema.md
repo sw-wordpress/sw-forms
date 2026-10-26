@@ -97,3 +97,28 @@ Yes/No) and the row path (`people[0].`) for fields inside repeaters.
 `{date}` / `{date:Y-m-d}`, `{user:email|display_name|first_name|last_name|login}`. Default values
 of inputs additionally support `{get:parameter}`. Values are escaped for the target context
 (HTML, plain text, URL).
+
+## Choice presentations
+
+Choice variants use the existing type slugs and value contracts; no migration is needed.
+
+| Type | Setting | Behavior |
+|------|---------|----------|
+| `checkbox` (`mode: single`) | `switch: true` | Native boolean checkbox styled as a switch, including keyboard support. |
+| `radio`, `checkbox` (list) | `presentation: standard\|buttons\|images` | Alternative option labels around native inputs; list checkbox selections remain arrays. |
+| `select` | `searchable: true` | Adds a search input when JavaScript is available, for single and multiple selects. Selected values remain visible while filtering. |
+
+Options retain `{label, value}` and may include `image`, an HTTP(S) image URL. The builder's
+option editor exposes optional image URL inputs. Image presentation keeps the text label
+as the accessible name and as a fallback when no image is configured. Only HTTP(S)-safe
+URLs are rendered; images do not alter the stored option values. Standard presentations
+ignore images. Bulk editing preserves images for options whose values are retained.
+
+Required checks, allowed-option validation and existing checkbox min/max selection settings
+continue to apply to every presentation. Search changes only option visibility; it never
+removes selections or changes the submitted values. No matching results are announced by
+a status region. Without JavaScript the search input stays hidden and all native options
+remain available. Button and image presentations work without JavaScript as well.
+
+Checks: `php tests/wp-choice-fields.php`, and with local WordPress and Playwright Chromium,
+`node apps/admin/scripts/e2e/choices.mjs` (honors `WP_ROOT` for the WordPress installation).

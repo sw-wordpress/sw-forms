@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SW Forms 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-26 14:28+0000\n"
+"POT-Creation-Date: 2026-10-26 14:51+0000\n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -50,7 +50,7 @@ msgid "SW Forms requires JavaScript."
 msgstr "SW Forms benötigt JavaScript."
 
 #: src/WordPress/Fields/AbstractFieldType.php:167
-#: src/WordPress/Fields/CheckboxField.php:235
+#: src/WordPress/Fields/CheckboxField.php:246
 msgid "(required)"
 msgstr "(Pflichtfeld)"
 
@@ -93,11 +93,15 @@ msgstr "Mindestens auszuwählen"
 msgid "Maximum selections"
 msgstr "Höchstens auszuwählen"
 
-#: src/WordPress/Fields/CheckboxField.php:170
+#: src/WordPress/Fields/CheckboxField.php:109
+msgid "Display as switch"
+msgstr "Als Schalter anzeigen"
+
+#: src/WordPress/Fields/CheckboxField.php:179
 msgid "Yes"
 msgstr "Ja"
 
-#: src/WordPress/Fields/CheckboxField.php:170
+#: src/WordPress/Fields/CheckboxField.php:179
 msgid "No"
 msgstr "Nein"
 
@@ -124,6 +128,22 @@ msgstr "Untereinander"
 #: src/WordPress/Fields/ChoiceField.php:60
 msgid "Side by side"
 msgstr "Nebeneinander"
+
+#: src/WordPress/Fields/ChoiceField.php:75
+msgid "Presentation"
+msgstr "Darstellung"
+
+#: src/WordPress/Fields/ChoiceField.php:80
+msgid "Standard"
+msgstr "Standard"
+
+#: src/WordPress/Fields/ChoiceField.php:84
+msgid "Buttons"
+msgstr "Schaltflächen"
+
+#: src/WordPress/Fields/ChoiceField.php:88
+msgid "Images"
+msgstr "Bilder"
 
 #: src/WordPress/Fields/ColumnsField.php:24
 msgid "Columns"
@@ -249,7 +269,9 @@ msgstr "Wert validieren"
 
 #: src/WordPress/Fields/InputField.php:99
 msgid "Disable format and range checks. Required fields are still checked."
-msgstr "Format- und Bereichsprüfungen deaktivieren. Pflichtfelder werden weiterhin geprüft."
+msgstr ""
+"Format- und Bereichsprüfungen deaktivieren. Pflichtfelder werden weiterhin "
+"geprüft."
 
 #: src/WordPress/Fields/InputField.php:106
 msgid "Whole numbers only"
@@ -329,7 +351,7 @@ msgid "Radio buttons"
 msgstr "Radio-Buttons"
 
 #: src/WordPress/Fields/RadioField.php:39
-#: src/WordPress/Fields/SelectField.php:54
+#: src/WordPress/Fields/SelectField.php:61
 msgid "Selected by default (option value)"
 msgstr "Standardmäßig gewählt (Wert der Option)"
 
@@ -350,16 +372,25 @@ msgid "Select"
 msgstr "Auswahlliste"
 
 #: src/WordPress/Fields/SelectField.php:39
+#: src/WordPress/Fields/SelectField.php:151
+msgid "Search options"
+msgstr "Optionen durchsuchen"
+
+#: src/WordPress/Fields/SelectField.php:46
 msgid "Allow multiple selections"
 msgstr "Mehrfachauswahl erlauben"
 
-#: src/WordPress/Fields/SelectField.php:46
+#: src/WordPress/Fields/SelectField.php:53
 msgid "Empty choice text"
 msgstr "Text der leeren Auswahl"
 
-#: src/WordPress/Fields/SelectField.php:47
+#: src/WordPress/Fields/SelectField.php:54
 msgid "Please choose"
 msgstr "Bitte wählen"
+
+#: src/WordPress/Fields/SelectField.php:153
+msgid "No matching options."
+msgstr "Keine passenden Optionen."
 
 #: src/WordPress/Fields/TextareaField.php:22
 msgid "Text area"

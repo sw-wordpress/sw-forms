@@ -65,6 +65,53 @@ abstract class ChoiceField extends AbstractFieldType {
 	}
 
 	/**
+	 * @return array<string, mixed>
+	 */
+	protected function presentation_setting(): array {
+		return array(
+			'name'    => 'presentation',
+			'type'    => 'select',
+			'tab'     => 'appearance',
+			'label'   => __( 'Presentation', 'sw-forms' ),
+			'default' => 'standard',
+			'choices' => array(
+				array(
+					'value' => 'standard',
+					'label' => __( 'Standard', 'sw-forms' ),
+				),
+				array(
+					'value' => 'buttons',
+					'label' => __( 'Buttons', 'sw-forms' ),
+				),
+				array(
+					'value' => 'images',
+					'label' => __( 'Images', 'sw-forms' ),
+				),
+			),
+		);
+	}
+
+	/**
+	 * @param array<string, mixed> $element
+	 */
+	protected function option_label( array $element, string $value, string $label ): string {
+		$html = '';
+		if ( 'images' === $this->setting( $element, 'presentation' ) ) {
+			$options = $this->setting( $element, 'options', array() );
+			foreach ( is_array( $options ) ? $options : array() as $option ) {
+				if ( is_array( $option ) && (string) ( $option['value'] ?? '' ) === $value && is_string( $option['image'] ?? null ) ) {
+					$url = esc_url( $option['image'], array( 'http', 'https' ) );
+					if ( '' !== $url ) {
+						$html = '<img src="' . $url . '" alt="" loading="lazy" class="swf-option-image">';
+					}
+					break;
+				}
+			}
+		}
+		return $html . esc_html( $label );
+	}
+
+	/**
 	 * One checkbox or radio control with its label.
 	 *
 	 * @param array<string, string|bool|null> $attributes
@@ -77,7 +124,8 @@ abstract class ChoiceField extends AbstractFieldType {
 	 * @param array<string, mixed> $element
 	 */
 	protected function list_class( array $element ): string {
-		return 'swf-choices swf-choices--' . ( 'horizontal' === $this->setting( $element, 'layout' ) ? 'horizontal' : 'vertical' );
+		return 'swf-choices swf-choices--' . ( 'horizontal' === $this->setting( $element, 'layout' ) ? 'horizontal' : 'vertical' )
+			. ( in_array( $this->setting( $element, 'presentation' ), array( 'buttons', 'images' ), true ) ? ' swf-choices--' . $this->setting( $element, 'presentation' ) : '' );
 	}
 
 	/**

@@ -3,6 +3,7 @@
  * Without this script forms still work (server side postback).
  */
 import './form.css';
+import { filterSelect, initSelectSearch } from './selectSearch';
 import { Evaluator } from '../shared/logic';
 import { Tree } from '../shared/tree';
 import type { ElementNode, FieldValue, TypeCatalog, Values } from '../shared/types';
@@ -26,7 +27,7 @@ interface SubmitResponse {
 }
 
 const INDEX = '__INDEX__';
-const ROW_ATTRIBUTES = ['name', 'id', 'for', 'aria-describedby', 'data-swf-path', 'data-swf-row', 'href'];
+const ROW_ATTRIBUTES = ['name', 'id', 'for', 'aria-describedby', 'aria-controls', 'data-swf-path', 'data-swf-row', 'href'];
 
 /**
  * Replaces the first `__INDEX__` (the one of the row being added) in all row specific attributes,
@@ -80,6 +81,10 @@ class SwForm {
     this.evaluator = new Evaluator(this.tree);
     this.nonce = this.config.nonce;
 
+    initSelectSearch(form);
+    form.addEventListener('reset', () => {
+      setTimeout(() => form.querySelectorAll<HTMLInputElement>('.swf-select-search').forEach(filterSelect), 0);
+    });
     form.addEventListener('input', (e) => this.onChange(e));
     form.addEventListener('change', (e) => this.onChange(e));
     form.addEventListener('click', (e) => this.onClick(e));
@@ -157,6 +162,10 @@ class SwForm {
 
   private onChange(event: Event): void {
     const target = event.target as HTMLElement | null;
+    if (target instanceof HTMLInputElement && target.classList.contains('swf-select-search')) {
+      filterSelect(target);
+      return;
+    }
     const wrapper = target?.closest<HTMLElement>('[data-swf-path]');
     if (wrapper?.classList.contains('swf-field--error')) this.clearError(wrapper);
     if (target instanceof HTMLInputElement && target.classList.contains('swf-other-text') && target.value !== '') {
@@ -221,6 +230,7 @@ class SwForm {
     const token = String(this.rowCounter++);
     const fragment = template.content.cloneNode(true) as DocumentFragment;
     replacePlaceholder(fragment, token);
+    initSelectSearch(fragment);
     container.appendChild(fragment);
     this.updateRowButtons(repeater);
     this.apply();

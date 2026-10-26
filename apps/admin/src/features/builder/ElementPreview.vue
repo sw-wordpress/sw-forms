@@ -13,7 +13,7 @@ const { t } = useI18n();
 const settings = computed(() => props.element.settings ?? {});
 const options = computed(() => {
   const list = settings.value.options;
-  return Array.isArray(list) ? (list as { label: string; value: string }[]) : [];
+  return Array.isArray(list) ? (list as { label: string; value: string; image?: string }[]) : [];
 });
 const inputType = computed(() => String(settings.value.inputType ?? 'text'));
 const mode = computed(() => String(settings.value.mode ?? 'multiple'));
@@ -37,7 +37,7 @@ const defaults = computed(() => {
 
     <template v-else-if="element.type === 'checkbox' && mode === 'single'">
       <label class="swf-preview__choice">
-        <span class="swf-preview__box" :class="{ 'swf-preview__box--on': settings.checked === true }" />
+        <span class="swf-preview__box" :class="{ 'swf-preview__box--on': settings.checked === true, 'swf-preview__switch': settings.switch === true }" />
         <span>{{ singleText || element.label }}<span v-if="element.required" class="swf-preview__req">*</span></span>
       </label>
       <p v-if="element.description" class="swf-preview__desc">{{ element.description }}</p>
@@ -61,7 +61,7 @@ const defaults = computed(() => {
         <span class="swf-preview__placeholder">{{ settings.multiple ? options.map((o) => o.label).join(', ') : settings.placeholder }}</span>
         <q-icon name="r_expand_more" size="18px" />
       </div>
-      <div v-else-if="element.type === 'checkbox' || element.type === 'radio'" class="swf-preview__choices" :class="{ 'swf-preview__choices--row': horizontal }">
+      <div v-else-if="element.type === 'checkbox' || element.type === 'radio'" class="swf-preview__choices" :class="{ 'swf-preview__choices--row': horizontal, 'swf-preview__choices--cards': ['buttons', 'images'].includes(String(settings.presentation)) }">
         <label v-for="option in options" :key="option.value" class="swf-preview__choice">
           <span
             :class="[
@@ -72,6 +72,7 @@ const defaults = computed(() => {
               },
             ]"
           />
+          <img v-if="settings.presentation === 'images' && option.image && /^https?:\/\//i.test(option.image)" :src="option.image" alt="" class="swf-preview__option-image" />
           {{ option.label }}
         </label>
         <label v-if="element.type === 'radio' && settings.other" class="swf-preview__choice">

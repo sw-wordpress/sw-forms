@@ -131,6 +131,10 @@ const en = {
     backToLayout: 'Back to the column layout',
   },
   options: {
+    showImages: 'Image URLs',
+    image: 'Image URL for option {n}',
+    imageUrl: 'https://…',
+
     label: 'Option {n}',
     value: 'Value of option {n}',
     newOption: 'Option {n}',

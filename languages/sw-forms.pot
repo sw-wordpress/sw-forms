@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SW Forms\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-26 14:28+0000\n"
+"POT-Creation-Date: 2026-10-26 14:51+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -55,7 +55,7 @@ msgid "SW Forms requires JavaScript."
 msgstr ""
 
 #: src/WordPress/Fields/AbstractFieldType.php:167
-#: src/WordPress/Fields/CheckboxField.php:235
+#: src/WordPress/Fields/CheckboxField.php:246
 msgid "(required)"
 msgstr ""
 
@@ -96,11 +96,15 @@ msgstr ""
 msgid "Maximum selections"
 msgstr ""
 
-#: src/WordPress/Fields/CheckboxField.php:170
+#: src/WordPress/Fields/CheckboxField.php:109
+msgid "Display as switch"
+msgstr ""
+
+#: src/WordPress/Fields/CheckboxField.php:179
 msgid "Yes"
 msgstr ""
 
-#: src/WordPress/Fields/CheckboxField.php:170
+#: src/WordPress/Fields/CheckboxField.php:179
 msgid "No"
 msgstr ""
 
@@ -126,6 +130,22 @@ msgstr ""
 
 #: src/WordPress/Fields/ChoiceField.php:60
 msgid "Side by side"
+msgstr ""
+
+#: src/WordPress/Fields/ChoiceField.php:75
+msgid "Presentation"
+msgstr ""
+
+#: src/WordPress/Fields/ChoiceField.php:80
+msgid "Standard"
+msgstr ""
+
+#: src/WordPress/Fields/ChoiceField.php:84
+msgid "Buttons"
+msgstr ""
+
+#: src/WordPress/Fields/ChoiceField.php:88
+msgid "Images"
 msgstr ""
 
 #: src/WordPress/Fields/ColumnsField.php:24
@@ -331,7 +351,7 @@ msgid "Radio buttons"
 msgstr ""
 
 #: src/WordPress/Fields/RadioField.php:39
-#: src/WordPress/Fields/SelectField.php:54
+#: src/WordPress/Fields/SelectField.php:61
 msgid "Selected by default (option value)"
 msgstr ""
 
@@ -352,15 +372,24 @@ msgid "Select"
 msgstr ""
 
 #: src/WordPress/Fields/SelectField.php:39
-msgid "Allow multiple selections"
+#: src/WordPress/Fields/SelectField.php:151
+msgid "Search options"
 msgstr ""
 
 #: src/WordPress/Fields/SelectField.php:46
+msgid "Allow multiple selections"
+msgstr ""
+
+#: src/WordPress/Fields/SelectField.php:53
 msgid "Empty choice text"
 msgstr ""
 
-#: src/WordPress/Fields/SelectField.php:47
+#: src/WordPress/Fields/SelectField.php:54
 msgid "Please choose"
+msgstr ""
+
+#: src/WordPress/Fields/SelectField.php:153
+msgid "No matching options."
 msgstr ""
 
 #: src/WordPress/Fields/TextareaField.php:22

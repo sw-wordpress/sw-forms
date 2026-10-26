@@ -133,6 +133,10 @@ const de: typeof en = {
     backToLayout: 'Zurück zum Spaltenlayout',
   },
   options: {
+    showImages: 'Bild-URLs',
+    image: 'Bild-URL für Option {n}',
+    imageUrl: 'https://…',
+
     label: 'Option {n}',
     value: 'Wert von Option {n}',
     newOption: 'Option {n}',

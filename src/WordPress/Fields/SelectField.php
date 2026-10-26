@@ -33,6 +33,13 @@ final class SelectField extends ChoiceField {
 		return array(
 			$this->options_setting(),
 			array(
+				'name'    => 'searchable',
+				'type'    => 'toggle',
+				'tab'     => 'general',
+				'label'   => __( 'Search options', 'sw-forms' ),
+				'default' => false,
+			),
+			array(
 				'name'    => 'multiple',
 				'type'    => 'toggle',
 				'tab'     => 'general',
@@ -135,6 +142,19 @@ final class SelectField extends ChoiceField {
 				$this->aria( $element, $context )
 			)
 		) . '>' . $options . '</select>';
+		if ( $this->setting( $element, 'searchable', false ) ) {
+			$search  = '<input' . $this->attrs(
+				array(
+					'type'                   => 'search',
+					'class'                  => 'swf-input swf-select-search',
+					'hidden'                 => true,
+					'aria-label'             => __( 'Search options', 'sw-forms' ),
+					'aria-controls'          => $context->dom_id( $id ),
+					'data-swf-empty-message' => __( 'No matching options.', 'sw-forms' ),
+				)
+			) . '>';
+			$control = $search . $control . '<span class="swf-search-status" role="status"></span>';
+		}
 		return $this->wrap( $element, $context, $control );
 	}
 }
