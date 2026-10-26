@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace SWForms\WordPress\Fields;
 
 use SWForms\Core\Validation\Rules;
+use SWForms\Core\Validation\TemporalBound;
 use SWForms\WordPress\Frontend\RenderContext;
 
 final class InputField extends AbstractFieldType {
@@ -108,6 +109,108 @@ final class InputField extends AbstractFieldType {
 				'showIf'  => $number_only,
 			),
 			array(
+				'name'    => 'emailConfirmation',
+				'type'    => 'toggle',
+				'tab'     => 'validation',
+				'label'   => __( 'Require email confirmation', 'sw-forms' ),
+				'default' => false,
+				'showIf'  => array(
+					'setting' => 'inputType',
+					'equals'  => array( 'email' ),
+				),
+			),
+			array(
+				'name'    => 'countryCode',
+				'type'    => 'toggle',
+				'tab'     => 'validation',
+				'label'   => __( 'Offer country calling codes', 'sw-forms' ),
+				'default' => false,
+				'showIf'  => array(
+					'setting' => 'inputType',
+					'equals'  => array( 'tel' ),
+				),
+			),
+			array(
+				'name'    => 'countryCodes',
+				'type'    => 'options',
+				'tab'     => 'validation',
+				'label'   => __( 'Country calling codes', 'sw-forms' ),
+				'images'  => false,
+				'help'    => __( 'Use calling codes such as +49 as option values. Numbers are not reformatted.', 'sw-forms' ),
+				'default' => array(
+					array(
+						'label' => 'DE (+49)',
+						'value' => '+49',
+					),
+					array(
+						'label' => 'AT (+43)',
+						'value' => '+43',
+					),
+					array(
+						'label' => 'CH (+41)',
+						'value' => '+41',
+					),
+					array(
+						'label' => 'US / CA (+1)',
+						'value' => '+1',
+					),
+				),
+				'showIf'  => array(
+					'setting' => 'inputType',
+					'equals'  => array( 'tel' ),
+				),
+			),
+			array(
+				'name'    => 'defaultCountryCode',
+				'type'    => 'text',
+				'tab'     => 'validation',
+				'label'   => __( 'Default calling code', 'sw-forms' ),
+				'default' => '',
+				'showIf'  => array(
+					'setting' => 'inputType',
+					'equals'  => array( 'tel' ),
+				),
+			),
+			array(
+				'name'    => 'passwordStrength',
+				'type'    => 'select',
+				'tab'     => 'validation',
+				'label'   => __( 'Password requirements', 'sw-forms' ),
+				'default' => 'none',
+				'showIf'  => array(
+					'setting' => 'inputType',
+					'equals'  => array( 'password' ),
+				),
+				'choices' => array(
+					array(
+						'value' => 'none',
+						'label' => __( 'No strength check', 'sw-forms' ),
+					),
+					array(
+						'value' => 'length',
+						'label' => __( 'Minimum length', 'sw-forms' ),
+					),
+					array(
+						'value' => 'mixed',
+						'label' => __( 'Length, upper/lowercase, number and symbol', 'sw-forms' ),
+					),
+				),
+			),
+			array(
+				'name'    => 'passwordLength',
+				'type'    => 'number',
+				'tab'     => 'validation',
+				'label'   => __( 'Minimum password length', 'sw-forms' ),
+				'default' => 12,
+				'showIf'  => array(
+					'setting' => 'inputType',
+					'equals'  => array( 'password' ),
+				),
+				'integer' => true,
+				'min'     => 8,
+				'max'     => 500,
+			),
+			array(
 				'name'    => 'placeholder',
 				'type'    => 'text',
 				'tab'     => 'general',
@@ -172,6 +275,7 @@ final class InputField extends AbstractFieldType {
 				'type'    => 'text',
 				'tab'     => 'validation',
 				'label'   => __( 'Earliest value', 'sw-forms' ),
+				'help'    => __( 'ISO value. For dates/local datetimes also today / now with an offset, e.g. today + 7 days. Uses the site timezone.', 'sw-forms' ),
 				'default' => '',
 				'showIf'  => array(
 					'setting' => 'inputType',
@@ -183,6 +287,7 @@ final class InputField extends AbstractFieldType {
 				'type'    => 'text',
 				'tab'     => 'validation',
 				'label'   => __( 'Latest value', 'sw-forms' ),
+				'help'    => __( 'ISO value. For dates/local datetimes also today / now with an offset, e.g. today + 7 days. Uses the site timezone.', 'sw-forms' ),
 				'default' => '',
 				'showIf'  => array(
 					'setting' => 'inputType',
@@ -234,6 +339,10 @@ final class InputField extends AbstractFieldType {
 		$settings = parent::normalize_settings( $settings );
 		// Only keep the token characters allowed in the HTML autocomplete attribute.
 		$settings['autocomplete'] = (string) preg_replace( '/[^a-z0-9 -]/', '', strtolower( (string) $settings['autocomplete'] ) );
+		$settings['countryCodes'] = array_values( array_filter( $settings['countryCodes'], static fn ( array $option ): bool => 1 === preg_match( '/^\+[1-9][0-9]{0,3}$/', $option['value'] ) ) );
+		if ( ! in_array( $settings['defaultCountryCode'], array_column( $settings['countryCodes'], 'value' ), true ) ) {
+			$settings['defaultCountryCode'] = '';
+		}
 		return $settings;
 	}
 
@@ -247,8 +356,14 @@ final class InputField extends AbstractFieldType {
 			return '';
 		}
 		$value = (string) $value;
+		if ( 'tel' === $this->input_type( $element ) && $this->setting( $element, 'countryCode', false ) ) {
+			$country = $raw[ $element['id'] . ':country' ] ?? '';
+			if ( is_string( $country ) && in_array( $country, $this->calling_codes( $element ), true ) && '' !== trim( $value ) && ! preg_match( '/^(?:\+|00)/', trim( $value ) ) ) {
+				$value = $country . ' ' . $value;
+			}
+		}
 		return match ( $this->input_type( $element ) ) {
-			'password' => $this->limit( trim( $value ), 500 ),
+			'password' => $this->limit( $value, 500 ),
 			'email'    => $this->limit( trim( sanitize_text_field( $value ) ), 254 ),
 			'url'      => $this->limit( trim( sanitize_text_field( $value ) ), 2000 ),
 			default    => $this->limit( sanitize_text_field( $value ) ),
@@ -275,6 +390,21 @@ final class InputField extends AbstractFieldType {
 			case 'tel':
 				if ( ! Rules::tel( $value ) ) {
 					return array( array( 'code' => 'tel' ) );
+				}
+				break;
+			case 'password':
+				$mode = (string) $this->setting( $element, 'passwordStrength', 'none' );
+				$min  = (int) $this->setting( $element, 'passwordLength', 12 );
+				if ( 'none' !== $mode && ! Rules::password( $value, $min, 'mixed' === $mode ) ) {
+					return array(
+						array(
+							'code'   => 'password',
+							'params' => array(
+								'min'   => $min,
+								'mixed' => 'mixed' === $mode ? '1' : '',
+							),
+						),
+					);
 				}
 				break;
 			case 'date':
@@ -366,7 +496,7 @@ final class InputField extends AbstractFieldType {
 			'minDate' => 'min',
 			'maxDate' => 'max',
 		) as $setting => $code ) {
-			$bound = (string) $this->setting( $element, $setting, '' );
+			$bound = $this->temporal_bound( $element, $setting );
 			if ( $this->valid_temporal( $bound, $type ) ) {
 				$comparison = strcmp( $this->temporal_key( $value, $type ), $this->temporal_key( $bound, $type ) );
 				if ( ( 'min' === $code && $comparison < 0 ) || ( 'max' === $code && $comparison > 0 ) ) {
@@ -381,10 +511,61 @@ final class InputField extends AbstractFieldType {
 		}
 		$step = $this->setting( $element, 'timeStep' );
 		if ( 'date' !== $type && is_numeric( $step ) && (float) $step > 0 ) {
-			$min  = (string) $this->setting( $element, 'minDate', '' );
+			$min  = $this->temporal_bound( $element, 'minDate' );
 			$base = $this->valid_temporal( $min, $type ) ? $this->temporal_seconds( $min, $type ) : 0;
 			if ( ! Rules::step( $this->temporal_seconds( $value, $type ), (float) $step, $base ) ) {
 				return array( array( 'code' => 'step' ) );
+			}
+		}
+		return array();
+	}
+
+	/**
+	 * @param array<string, mixed> $element
+	 */
+	private function temporal_bound( array $element, string $setting ): string {
+		return TemporalBound::resolve( (string) $this->setting( $element, $setting, '' ), $this->input_type( $element ), current_datetime() );
+	}
+
+	/**
+	 * @param array<string, mixed> $element
+	 * @return list<string>
+	 */
+	private function calling_codes( array $element ): array {
+		$codes = $this->setting( $element, 'countryCodes', array() );
+		return array_column( is_array( $codes ) ? $codes : array(), 'value' );
+	}
+
+	/**
+	 * @param array<string, mixed> $element
+	 */
+	public function requires_confirmation( array $element ): bool {
+		return 'email' === $this->input_type( $element ) && $this->setting( $element, 'emailConfirmation', false ) && $this->setting( $element, 'validate', true );
+	}
+
+	/**
+	 * Validate auxiliary controls without adding them to collected or stored values.
+	 *
+	 * @param array<string, mixed> $element
+	 * @param array<string, mixed> $raw Raw values in this field's repeater scope.
+	 * @return list<array{code: string}>
+	 */
+	public function validate_auxiliary( mixed $value, array $element, array $raw ): array {
+		if ( ! $this->setting( $element, 'validate', true ) ) {
+			return array();
+		}
+		$id = (string) $element['id'];
+		if ( $this->requires_confirmation( $element ) ) {
+			$confirm      = $raw[ $id . ':confirm' ] ?? '';
+			$confirmation = is_string( $confirm ) ? trim( sanitize_text_field( $confirm ) ) : null;
+			if ( $value !== $confirmation ) {
+				return array( array( 'code' => 'email_confirmation' ) );
+			}
+		}
+		if ( 'tel' === $this->input_type( $element ) && $this->setting( $element, 'countryCode', false ) ) {
+			$country = $raw[ $id . ':country' ] ?? '';
+			if ( ! is_string( $country ) || ( '' !== $country && ! in_array( $country, $this->calling_codes( $element ), true ) ) ) {
+				return array( array( 'code' => 'tel' ) );
 			}
 		}
 		return array();
@@ -441,7 +622,7 @@ final class InputField extends AbstractFieldType {
 				'minDate' => 'min',
 				'maxDate' => 'max',
 			) as $setting => $attribute ) {
-				$bound                    = (string) $this->setting( $element, $setting, '' );
+				$bound                    = $this->temporal_bound( $element, $setting );
 				$attributes[ $attribute ] = $this->valid_temporal( $bound, $type ) ? $bound : null;
 			}
 			$step               = $this->setting( $element, 'timeStep' );
@@ -457,6 +638,41 @@ final class InputField extends AbstractFieldType {
 			) . '><input' . $this->attrs( $attributes ) . '></div>';
 		}
 		$control = '<input' . $this->attrs( array_merge( $attributes, $this->aria( $element, $context ) ) ) . '>';
+		if ( 'tel' === $type && $this->setting( $element, 'countryCode', false ) ) {
+			$country_id = $context->dom_id( $id . ':country' );
+			$select     = '<label for="' . esc_attr( $country_id ) . '">' . esc_html__( 'Country calling code', 'sw-forms' ) . '</label><select' . $this->attrs(
+				array(
+					'id'    => $country_id,
+					'name'  => $context->name( $id . ':country' ),
+					'class' => 'swf-select',
+				)
+			) . '><option value="">' . esc_html__( 'No country code', 'sw-forms' ) . '</option>';
+			$codes      = $this->setting( $element, 'countryCodes', array() );
+			foreach ( is_array( $codes ) ? $codes : array() as $code ) {
+				$select .= '<option' . $this->attrs(
+					array(
+						'value'    => $code['value'],
+						'selected' => '' === $value && $this->setting( $element, 'defaultCountryCode' ) === $code['value'],
+					)
+				) . '>' . esc_html( $code['label'] ) . '</option>';
+			}
+			$control = $select . '</select>' . $control;
+		}
+		if ( $this->requires_confirmation( $element ) ) {
+			$confirm_id = $context->dom_id( $id . ':confirm' );
+			$control   .= '<label for="' . esc_attr( $confirm_id ) . '">' . esc_html__( 'Confirm email', 'sw-forms' ) . '</label><input' . $this->attrs(
+				array_merge(
+					$this->aria( $element, $context ),
+					array(
+						'type'         => 'email',
+						'id'           => $confirm_id,
+						'name'         => $context->name( $id . ':confirm' ),
+						'class'        => 'swf-input',
+						'autocomplete' => 'off',
+					)
+				)
+			) . '>';
+		}
 		return $this->wrap( $element, $context, $control );
 	}
 }

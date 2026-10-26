@@ -63,6 +63,18 @@ final class SupportTest extends TestCase
         self::assertFalse(Rules::step(INF, 0.1));
     }
 
+    public function testPasswordRequirements(): void
+    {
+        self::assertTrue(Rules::password('long passphrase', 12, false));
+        self::assertFalse(Rules::password('short', 12, false));
+        self::assertFalse(Rules::password('long passphrase', 12, true));
+        self::assertTrue(Rules::password('Äbcdefghij7!', 12, true));
+        self::assertFalse(Rules::password('ABCDEFGHIJ7!', 12, true));
+        self::assertFalse(Rules::password('abcdefghij7!', 12, true));
+        self::assertFalse(Rules::password('Abcdefghijk!', 12, true));
+        self::assertFalse(Rules::password('Abcdefghij77', 12, true));
+    }
+
     public function testSubmissionToken(): void
     {
         $token = new SubmissionToken('secret');

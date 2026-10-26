@@ -3,6 +3,7 @@
  * Without this script forms still work (server side postback).
  */
 import './form.css';
+import { phoneValue } from './inputValues';
 import { filterSelect, initSelectSearch } from './selectSearch';
 import { Evaluator } from '../shared/logic';
 import { Tree } from '../shared/tree';
@@ -127,8 +128,11 @@ class SwForm {
         }
         return checked.value;
       }
-      default:
-        return this.control(scope, name)[0]?.value ?? '';
+      default: {
+        const value = this.control(scope, name)[0]?.value ?? '';
+        const country = this.control(scope, this.scopeName(prefix, node.id + ':country'))[0];
+        return country ? phoneValue(value, country.value) : value;
+      }
     }
   }
 

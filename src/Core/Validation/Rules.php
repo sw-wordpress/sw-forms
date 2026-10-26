@@ -62,6 +62,18 @@ final class Rules
         return is_finite($steps) && abs($steps - round($steps)) <= 1e-7;
     }
 
+    /** Explicit configurable requirements, rather than an estimated entropy score. */
+    public static function password(string $value, int $minLength, bool $mixed): bool
+    {
+        if (self::length($value) < $minLength) {
+            return false;
+        }
+        return !$mixed || (preg_match('/\p{Lu}/u', $value) === 1
+            && preg_match('/\p{Ll}/u', $value) === 1
+            && preg_match('/\p{N}/u', $value) === 1
+            && preg_match('/[^\p{L}\p{N}\s]/u', $value) === 1);
+    }
+
     public static function number(string $value): ?float
     {
         return Evaluator::number($value);

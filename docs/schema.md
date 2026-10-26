@@ -122,3 +122,19 @@ remain available. Button and image presentations work without JavaScript as well
 
 Checks: `php tests/wp-choice-fields.php`, and with local WordPress and Playwright Chromium,
 `node apps/admin/scripts/e2e/choices.mjs` (honors `WP_ROOT` for the WordPress installation).
+
+## Additional input settings
+
+The `input` type additionally supports `emailConfirmation`, `countryCode`, `countryCodes`,
+`defaultCountryCode`, `passwordStrength` and `passwordLength`. Temporal `minDate`/`maxDate`
+accept restricted relative expressions such as `today + 7 days` for dates/local datetimes.
+All new checks are opt-in; no migration or new field-type registration is necessary.
+See `docs/extending.md` for formats, defaults and precise validation rules.
+
+Email confirmation and telephone calling-code controls use request keys `<id>:confirm` and
+`<id>:country` in the field's own scope, including repeater rows. They are auxiliary
+controls, not form elements: no extra entry keys, merge tags or condition targets are added.
+A confirmed email still produces one string; the selected calling code becomes part of the
+telephone string. Programmatic `swf_submit()` calls must supply the confirmation when enabled.
+
+Checks: `php tests/wp-input-options.php`, `node apps/admin/scripts/e2e/inputs.mjs`.

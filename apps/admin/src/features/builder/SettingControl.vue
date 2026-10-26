@@ -69,7 +69,8 @@ function updateNumber(raw: string | number | null): void {
   />
   <div v-else-if="setting.type === 'options'" class="swf-setting-block">
     <p class="swf-setting-label">{{ setting.label }}</p>
-    <OptionsEditor :model-value="(Array.isArray(value) ? value : []) as { label: string; value: string }[]" @update:model-value="emit('update', $event)" />
+    <p v-if="setting.help" class="swf-muted">{{ setting.help }}</p>
+    <OptionsEditor :allow-images="setting.images" :model-value="(Array.isArray(value) ? value : []) as { label: string; value: string }[]" @update:model-value="emit('update', $event)" />
   </div>
   <q-select
     v-else-if="setting.type === 'list'"

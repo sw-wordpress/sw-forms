@@ -89,7 +89,32 @@ The `input` type supports `text`, `email`, `tel`, `url`, `number`, `date`, `time
   Times and local datetimes support a positive `timeStep` in seconds, relative to
   the minimum (or midnight / the Unix epoch). There is no timezone conversion or
   wraparound range across midnight. Omitted intervals impose no server restriction.
-* Date boundaries in this increment are explicit ISO values. Dynamic relative
-  boundaries, email confirmation, password strength and additional media/
-  structured types from issue #2 remain follow-up work. Existing email, phone, URL,
-  number, date, password, hidden, multi-select and single-checkbox functionality is retained.
+* `minDate` and `maxDate` also accept `today` or `now`, optionally followed by a signed
+  offset: e.g. `today + 7 days`, `today - 18 years`, `now + 2 hours`. Supported units:
+  minute(s), hour(s), day(s), week(s), month(s), year(s); offset: 0–9999. A single offset
+  is allowed. `today` starts at midnight, `now` uses the current minute. Resolution uses
+  the WordPress site timezone for `date` and `datetime-local`, with calendar arithmetic
+  (including normal month-end rollover). `time` still accepts only literal bounds.
+  Bounds are recalculated on submission, so cached pages never relax server checks.
+* Email inputs may set `emailConfirmation: true`. The second input is named `<id>:confirm`
+  in the same request scope. It must match the sanitized primary email exactly. Required
+  checks and conditional visibility still apply. The confirmation is read only for
+  validation, never stored or exposed as a second field value, and remains blank after
+  a non-JavaScript validation error. `validate: false` also disables confirmation.
+* Telephone inputs may set `countryCode: true`, `countryCodes: [{label, value}]` and
+  `defaultCountryCode`. Codes such as `+49` must be selected from the configured list;
+  an empty selection means no prefix. Numbers already starting with `+` or `00` are
+  preserved; otherwise the selected code is prepended, separated by a space. National
+  trunk prefixes and formatting are preserved; this is not country-specific numbering
+  plan validation. Browser conditions and server collection use the same combined value.
+  After a postback the combined number is retained and the calling-code selection is empty,
+  preventing duplicate prefixes.
+* Password inputs may choose `passwordStrength: none|length|mixed` (default `none`) and
+  `passwordLength` (8–500, default 12). `mixed` requires Unicode uppercase, lowercase,
+  a number and a non-whitespace symbol in addition to length. `validate: false` disables
+  these checks. Password whitespace is preserved and the control is never repopulated.
+
+The settings schema may set `images: false` on an `options` setting to hide image URL
+controls (for example in calling-code lists).
+
+Remaining issue #2 work covers structured inputs, uploads, signatures and media capture.

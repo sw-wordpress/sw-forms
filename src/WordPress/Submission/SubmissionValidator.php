@@ -13,6 +13,7 @@ use SWForms\Core\Form\Tree;
 use SWForms\Core\Logic\Visibility;
 use SWForms\WordPress\Fields\FieldRegistry;
 use SWForms\WordPress\Fields\GroupField;
+use SWForms\WordPress\Fields\InputField;
 use SWForms\WordPress\Support\Messages;
 
 final class SubmissionValidator {
@@ -23,21 +24,23 @@ final class SubmissionValidator {
 	) {}
 
 	/**
+	 * @param array<string, mixed> $raw Raw request values; auxiliary controls are never stored.
 	 * @param array<string, mixed> $values
 	 * @return array<string, string> Error message per path (`id` or `rep[0].id`).
 	 */
-	public function validate( array $values, Visibility $visibility ): array {
+	public function validate( array $values, Visibility $visibility, array $raw = array() ): array {
 		$errors = array();
-		$this->walk( $this->tree->rootIds(), $values, $visibility, '', $errors );
+		$this->walk( $this->tree->rootIds(), $values, $visibility, '', $errors, $raw );
 		return $errors;
 	}
 
 	/**
 	 * @param list<string>          $ids
 	 * @param array<string, mixed>  $values
+	 * @param array<string, mixed>  $raw
 	 * @param array<string, string> $errors
 	 */
-	private function walk( array $ids, array $values, Visibility $visibility, string $prefix, array &$errors ): void {
+	private function walk( array $ids, array $values, Visibility $visibility, string $prefix, array &$errors, array $raw ): void {
 		foreach ( $ids as $id ) {
 			if ( ! $visibility->isVisible( $id, $prefix ) ) {
 				continue;
@@ -49,13 +52,14 @@ final class SubmissionValidator {
 				if ( count( $rows ) < $min ) {
 					$errors[ $prefix . $id ] = Messages::validation( 'min_rows', array( 'min' => $min ) );
 				}
+				$raw_rows = is_array( $raw[ $id ] ?? null ) ? array_values( $raw[ $id ] ) : array();
 				foreach ( array_values( $rows ) as $index => $row ) {
-					$this->walk( $this->tree->childIds( $id ), is_array( $row ) ? $row : array(), $visibility, $prefix . $id . '[' . $index . '].', $errors );
+					$this->walk( $this->tree->childIds( $id ), is_array( $row ) ? $row : array(), $visibility, $prefix . $id . '[' . $index . '].', $errors, is_array( $raw_rows[ $index ] ?? null ) ? $raw_rows[ $index ] : array() );
 				}
 				continue;
 			}
 			if ( ! $this->tree->isLeafData( $id ) ) {
-				$this->walk( $this->tree->childIds( $id ), $values, $visibility, $prefix, $errors );
+				$this->walk( $this->tree->childIds( $id ), $values, $visibility, $prefix, $errors, $raw );
 				continue;
 			}
 			$type = $this->registry->get( $this->tree->type( $id ) );
@@ -70,6 +74,9 @@ final class SubmissionValidator {
 				continue;
 			}
 			$problems = $type->validate( $value, $element );
+			if ( array() === $problems && $type instanceof InputField ) {
+				$problems = $type->validate_auxiliary( $value, $element, $raw );
+			}
 			if ( array() !== $problems ) {
 				$errors[ $prefix . $id ] = Messages::validation( $problems[0]['code'], $problems[0]['params'] ?? array() );
 			}

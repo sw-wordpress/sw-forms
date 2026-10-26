@@ -70,7 +70,7 @@ final class SubmissionService {
 		}
 
 		$visibility = ( new Evaluator( $tree ) )->evaluate( $values );
-		$errors     = ( new SubmissionValidator( $tree, $this->registry ) )->validate( $values, $visibility );
+		$errors     = ( new SubmissionValidator( $tree, $this->registry ) )->validate( $values, $visibility, $raw );
 		/**
 		 * Filters the field errors. Add an entry `path => message` to reject a submission.
 		 *

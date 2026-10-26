@@ -13,7 +13,7 @@ interface Option {
  * Choice list editor. The stored value follows the label until it is edited by hand
  * (values end up in entries and webhooks, so they should not change silently later).
  */
-const props = defineProps<{ modelValue: Option[] }>();
+const props = defineProps<{ modelValue: Option[]; allowImages?: boolean }>();
 const emit = defineEmits<{ (e: 'update:modelValue', value: Option[]): void }>();
 const { t } = useI18n();
 const showValues = ref(false);
@@ -100,7 +100,7 @@ function applyBulk(): void {
           @update:model-value="update(index, { value: String($event ?? '') })"
         />
         <q-input
-          v-if="showImages"
+          v-if="showImages && allowImages !== false"
           :model-value="option.image ?? ''"
           dense outlined type="url" class="swf-options__image"
           :aria-label="t('options.image', { n: index + 1 })"
@@ -115,7 +115,7 @@ function applyBulk(): void {
       <q-btn flat dense no-caps icon="r_add" :label="t('options.add')" @click="add" />
       <q-btn flat dense no-caps icon="r_playlist_add" :label="t('options.bulk')" @click="openBulk" />
       <q-toggle v-model="showValues" dense :label="t('options.showValues')" />
-      <q-toggle v-model="showImages" dense :label="t('options.showImages')" />
+      <q-toggle v-if="allowImages !== false" v-model="showImages" dense :label="t('options.showImages')" />
     </div>
 
     <q-dialog v-model="bulkOpen">
