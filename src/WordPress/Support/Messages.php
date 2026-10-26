@@ -17,6 +17,9 @@ final class Messages {
 	public static function validation( string $code, array $params = array() ): string {
 		$message = match ( $code ) {
 			'required'     => __( 'This field is required.', 'sw-forms' ),
+			'email_confirmation' => __( 'The email addresses do not match.', 'sw-forms' ),
+			/* translators: %d: minimum number of characters */
+			'password' => sprintf( ! empty( $params['mixed'] ) ? __( 'Use at least %d characters including uppercase, lowercase, a number and a symbol.', 'sw-forms' ) : __( 'Use at least %d characters.', 'sw-forms' ), (int) ( $params['min'] ?? 12 ) ),
 			'email'        => __( 'Please enter a valid email address.', 'sw-forms' ),
 			'url'          => __( 'Please enter a valid web address starting with http:// or https://.', 'sw-forms' ),
 			'tel'          => __( 'Please enter a valid phone number.', 'sw-forms' ),

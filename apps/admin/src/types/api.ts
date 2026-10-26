@@ -13,6 +13,7 @@ export interface SettingDefinition {
   min?: number;
   max?: number;
   integer?: boolean;
+  images?: boolean;
 }
 
 export interface FieldTypeDefinition {

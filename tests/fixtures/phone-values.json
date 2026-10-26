@@ -1,0 +1,8 @@
+[
+  {"value":"30 123456", "country":"+49", "expected":"+49 30 123456"},
+  {"value":" 30 123456 ", "country":"+49", "expected":"+49 30 123456"},
+  {"value":"+43 1234567", "country":"+49", "expected":"+43 1234567"},
+  {"value":"0043 1234567", "country":"+49", "expected":"0043 1234567"},
+  {"value":"", "country":"+49", "expected":""},
+  {"value":"30 123456", "country":"", "expected":"30 123456"}
+]
