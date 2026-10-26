@@ -2,24 +2,13 @@
 
 ## A custom element type
 
-Use the filter to add types before the registry is built. Register this callback during plugin
-bootstrap (before the registry is first used). The same registry drives schema validation,
-the builder's `/field-types` response, rendering, submission validation and entry formatting.
+Register custom field types on `swf_register_field_types` during plugin bootstrap,
+before the registry is first used. Each type implements `FieldTypeInterface`; call
+`$registry->register( new My_Type() )` to add it. Registering an existing slug replaces
+that type; invalid slugs are ignored. Slugs must match `[a-z][a-z0-9-]{0,39}`.
 
-```php
-add_filter( 'swf_field_types', function ( array $types ): array {
-    $types[] = new My_Rating_Field();
-    return $types;
-} );
-```
-
-Every item must implement `FieldTypeInterface`; invalid items are ignored. The array order
-controls replacement: the last instance of a slug wins. Return an array (including an empty
-array to remove all built-ins). A non-array result falls back to the built-in list. Type slugs
-must match `[a-z][a-z0-9-]{0,39}`.
-
-The existing action remains supported and runs **after** the filter. Register a custom type
-with either approach, rather than both:
+The same registry drives schema validation, the builder's `/field-types` response,
+rendering, submission validation and entry formatting.
 
 ```php
 add_action( 'swf_register_field_types', function ( \SWForms\WordPress\Fields\FieldRegistry $registry ) {

@@ -7,10 +7,11 @@
 
 declare(strict_types=1);
 
-// Register before loading WordPress, so the filter also works if another plugin initializes the registry early.
+// Register before loading WordPress, so the action also works if another plugin initializes the registry early.
 require(getenv('WP_ROOT') ?: dirname(__DIR__, 4)) . '/wp-includes/plugin.php';
-add_filter('swf_field_types', static function (array $types): array {
-    $types[] = new class () extends \SWForms\WordPress\Fields\AbstractFieldType {
+$registration_called = false;
+add_action('swf_register_field_types', static function (\SWForms\WordPress\Fields\FieldRegistry $registry) use (&$registration_called): void {
+    $registry->register(new class () extends \SWForms\WordPress\Fields\AbstractFieldType {
         public function type(): string
         {
             return 'custom-test';
@@ -36,16 +37,8 @@ add_filter('swf_field_types', static function (array $types): array {
         {
             return $this->wrap($element, $context, '<input name="' . esc_attr($context->name($element['id'])) . '">');
         }
-    };
-    $types[] = 'invalid entry';
-    return $types;
-});
-$legacy_called = false;
-add_action('swf_register_field_types', static function ($registry) use (&$legacy_called): void {
-    if (! $registry->has('custom-test')) {
-        throw new RuntimeException('Filter must precede action.');
-    }
-    $legacy_called = true;
+    });
+    $registration_called = true;
 });
 define('WP_USE_THEMES', false);
 $_SERVER['HTTP_HOST'] = 'localhost';
@@ -59,7 +52,7 @@ $check = static function (bool $condition, string $label) use (&$checks): void {
     ++$checks;
 };
 $registry = \SWForms\WordPress\Fields\FieldRegistry::instance();
-$check($legacy_called && $registry->has('custom-test') && $registry->has('input'), 'Registry compatibility');
+$check($registration_called && $registry->has('custom-test') && $registry->has('input'), 'Registry compatibility');
 $check(in_array('custom-test', array_column($registry->definitions(), 'type'), true), 'Builder definitions');
 $input = $registry->get('input');
 $element = static fn (string $type, array $settings = array()): array => array( 'id' => 'test', 'type' => 'input', 'key' => 'value', 'label' => 'Test', 'settings' => array_merge($input->default_settings(), array( 'inputType' => $type ), $settings) );
