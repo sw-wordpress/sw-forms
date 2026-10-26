@@ -1,0 +1,22 @@
+{
+ "description":"Name/address presets obey ordinary child visibility and repeater scopes.",
+ "fields":[
+  {"id":"show","type":"checkbox","key":"show"},
+  {"id":"person","type":"name","key":"person","children":[
+   {"id":"first","type":"input","key":"given_name"},{"id":"last","type":"input","key":"family_name"}
+  ]},
+  {"id":"address","type":"address","key":"location","logic":{"action":"show","match":"all","rules":[{"field":"show","op":"notempty"}]},"children":[
+   {"id":"street","type":"input","key":"street"},{"id":"city","type":"input","key":"city"}
+  ]},
+  {"id":"after","type":"input","key":"after","logic":{"action":"show","match":"all","rules":[{"field":"city","op":"is","value":"Berlin"}]}},
+  {"id":"people","type":"name","key":"people","settings":{"repeatable":true},"children":[
+   {"id":"rgiven","type":"input","key":"given_name"},
+   {"id":"rtitle","type":"input","key":"title","logic":{"action":"show","match":"all","rules":[{"field":"rgiven","op":"notempty"}]}}
+  ]}
+ ],
+ "cases":[
+  {"name":"hidden address and per-row name fields","values":{"show":false,"city":"Berlin","people":[{"rgiven":"One"},{"rgiven":""}]},"expected":{"person":true,"first":true,"last":true,"address":false,"street":false,"city":false,"after":false,"people[0].rtitle":true,"people[1].rtitle":false}},
+  {"name":"visible contact groups","values":{"show":true,"first":"Ada","last":"Lovelace","street":"Main","city":"Berlin","after":"hello","people":[{"rgiven":"One","rtitle":"Dr"},{"rgiven":"","rtitle":"hidden"}]},"expected":{"address":true,"street":true,"city":true,"after":true,"people[0].rtitle":true,"people[1].rtitle":false}},
+  {"name":"component value changes dependent visibility","values":{"show":true,"city":"Paris"},"expected":{"address":true,"city":true,"after":false}}
+ ]
+}

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SW Forms\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-26 17:49+0000\n"
+"POT-Creation-Date: 2026-10-26 18:27+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -57,6 +57,30 @@ msgstr ""
 #: src/WordPress/Fields/AbstractFieldType.php:167
 #: src/WordPress/Fields/CheckboxField.php:246
 msgid "(required)"
+msgstr ""
+
+#: src/WordPress/Fields/AddressField.php:17
+msgid "Address"
+msgstr ""
+
+#: src/WordPress/Fields/AddressField.php:24
+msgid "Street"
+msgstr ""
+
+#: src/WordPress/Fields/AddressField.php:25
+msgid "House number"
+msgstr ""
+
+#: src/WordPress/Fields/AddressField.php:26
+msgid "Postal code"
+msgstr ""
+
+#: src/WordPress/Fields/AddressField.php:27
+msgid "City"
+msgstr ""
+
+#: src/WordPress/Fields/AddressField.php:28
+msgid "Country"
 msgstr ""
 
 #: src/WordPress/Fields/BirthdateField.php:22
@@ -463,6 +487,26 @@ msgstr ""
 
 #: src/WordPress/Fields/IntervalField.php:141
 msgid "To"
+msgstr ""
+
+#: src/WordPress/Fields/NameField.php:17
+msgid "Name"
+msgstr ""
+
+#: src/WordPress/Fields/NameField.php:24
+msgid "Salutation"
+msgstr ""
+
+#: src/WordPress/Fields/NameField.php:25
+msgid "Given name"
+msgstr ""
+
+#: src/WordPress/Fields/NameField.php:26
+msgid "Family name"
+msgstr ""
+
+#: src/WordPress/Fields/NameField.php:27
+msgid "Title"
 msgstr ""
 
 #: src/WordPress/Fields/RadioField.php:25

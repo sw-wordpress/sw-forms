@@ -26,6 +26,7 @@ export interface FieldTypeDefinition {
   supports: string[];
   settings: SettingDefinition[];
   defaults: Record<string, unknown>;
+  initialChildren?: Omit<ElementNode, 'id'>[];
 }
 
 export interface Notification {

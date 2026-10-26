@@ -14,6 +14,7 @@ namespace SWForms\WordPress\Forms;
 use SWForms\Core\Form\TypeCatalog;
 use SWForms\WordPress\Fields\AbstractFieldType;
 use SWForms\WordPress\Fields\FieldRegistry;
+use SWForms\WordPress\Fields\PresetGroupField;
 
 final class DocumentNormalizer {
 
@@ -99,7 +100,16 @@ final class DocumentNormalizer {
 		$out['settings'] = $type->normalize_settings( is_array( $element['settings'] ?? null ) ? $element['settings'] : array() );
 
 		if ( TypeCatalog::CONTAINER_CHILDREN === $type->container() ) {
-			$out['children'] = $this->elements( $element['children'] ?? array() );
+			$children = $element['children'] ?? array();
+			if ( $type instanceof PresetGroupField && ! array_key_exists( 'children', $element ) ) {
+				$children = $type->initial_children();
+				foreach ( $children as &$child ) {
+					// Deterministic ids make programmatic shorthand normalization repeatable.
+					$child['id'] = 'part_' . substr( hash( 'sha256', $out['id'] . ':' . $child['key'] ), 0, 24 );
+				}
+				unset( $child );
+			}
+			$out['children'] = $this->elements( $children );
 		} elseif ( TypeCatalog::CONTAINER_COLUMNS === $type->container() ) {
 			$out['columns'] = array();
 			foreach ( is_array( $element['columns'] ?? null ) ? $element['columns'] : array() as $column ) {

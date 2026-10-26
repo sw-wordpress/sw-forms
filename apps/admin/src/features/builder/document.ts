@@ -154,7 +154,13 @@ export function createElement(definition: FieldTypeDefinition, taken: Set<string
   if (supports.has('description')) node.description = '';
   if (supports.has('required')) node.required = false;
   if (supports.has('logic')) node.logic = null;
-  if (definition.container === 'children') node.children = [];
+  if (definition.container === 'children') {
+    node.children = (definition.initialChildren ?? []).map((template) => {
+      const child: ElementNode = { ...structuredClone(template), id: '' };
+      reassignIds(child);
+      return child;
+    });
+  }
   if (definition.container === 'columns') {
     node.columns = [6, 6].map((width) => ({ id: newId('c'), width, logic: null, children: [] }));
   }
@@ -213,7 +219,8 @@ function reassignIds(node: ElementNode): void {
 export function duplicate(document: FormDocument, id: string): ElementNode | null {
   const found = locate(document.fields, id);
   if (!found || found.isColumn) return null;
-  const copy = structuredClone(found.node as ElementNode);
+  // Documents are JSON data; serialize to also accept reactive store proxies.
+  const copy = JSON.parse(JSON.stringify(found.node)) as ElementNode;
   // Rules inside the copy that point into the copy must follow the new ids.
   const idMap = new Map<string, string>();
   const before: string[] = [];

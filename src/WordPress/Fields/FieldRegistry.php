@@ -38,6 +38,8 @@ final class FieldRegistry implements TypeCatalog {
 				new ColorField(),
 				new TagsField(),
 				new GroupField(),
+				new NameField(),
+				new AddressField(),
 				new ColumnsField(),
 			) as $type ) {
 				self::$instance->register( $type );
@@ -95,7 +97,7 @@ final class FieldRegistry implements TypeCatalog {
 	public function definitions(): array {
 		$out = array();
 		foreach ( $this->types as $type ) {
-			$out[] = array(
+			$definition = array(
 				'type'      => $type->type(),
 				'label'     => $type->label(),
 				'icon'      => $type->icon(),
@@ -106,6 +108,17 @@ final class FieldRegistry implements TypeCatalog {
 				'settings'  => $type->settings_schema(),
 				'defaults'  => $type->default_settings(),
 			);
+			if ( $type instanceof PresetGroupField ) {
+				$definition['initialChildren'] = array();
+				foreach ( $type->initial_children() as $child ) {
+					$child_type = $this->get( (string) $child['type'] );
+					if ( null !== $child_type ) {
+						$child['settings'] = $child_type->normalize_settings( $child['settings'] ?? array() );
+					}
+					$definition['initialChildren'][] = $child;
+				}
+			}
+			$out[] = $definition;
 		}
 		return $out;
 	}

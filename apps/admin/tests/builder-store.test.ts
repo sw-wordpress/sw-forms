@@ -82,6 +82,30 @@ describe('builder store', () => {
     expect(store.document?.fields.length).toBe(2);
   });
 
+  it('keeps preset component keys when labels change before publishing and after duplication', async () => {
+    vi.mocked(formsApi.fieldTypes).mockResolvedValue([...types, {
+      type: 'name', label: 'Name', icon: '', category: 'basic', isData: true, container: 'children',
+      supports: ['key', 'label'], settings: [], defaults: {},
+      initialChildren: [{ type: 'input', key: 'given_name', label: 'Given name', settings: {} }],
+    }]);
+    const store = useBuilderStore();
+    await store.load(7);
+    const person = store.addElement('name', 'root', 1)!;
+    store.updateElement(person.children![0]!.id, { label: 'Vorname' });
+    expect(store.document!.fields[1]!.children![0]!.key).toBe('given_name');
+    store.duplicateElement(person.id);
+    const copy = store.document!.fields[2]!;
+    store.updateElement(copy.children![0]!.id, { label: 'Prénom' });
+    expect(copy.children![0]!.key).toBe('given_name');
+    const draft = detail();
+    draft.hasDraft = true;
+    draft.document = JSON.parse(JSON.stringify(store.document));
+    vi.mocked(formsApi.get).mockResolvedValue(draft);
+    await store.load(7);
+    store.updateElement(person.children![0]!.id, { label: 'Renamed after draft reload' });
+    expect(store.document!.fields[1]!.children![0]!.key).toBe('given_name');
+  });
+
   it('autosaves a draft after changes', async () => {
     const store = useBuilderStore();
     await store.load(7);

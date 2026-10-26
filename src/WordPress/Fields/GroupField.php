@@ -12,7 +12,7 @@ namespace SWForms\WordPress\Fields;
 use SWForms\Core\Form\TypeCatalog;
 use SWForms\WordPress\Frontend\RenderContext;
 
-final class GroupField extends AbstractFieldType {
+class GroupField extends AbstractFieldType {
 
 	public const MAX_ROWS = 50;
 
