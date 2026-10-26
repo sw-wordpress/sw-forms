@@ -39,6 +39,29 @@ final class Rules
         return checkdate((int) $m[2], (int) $m[3], (int) $m[1]);
     }
 
+    /** HTML local time, with optional seconds. */
+    public static function time(string $value): bool
+    {
+        return preg_match('/^(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$/', $value) === 1;
+    }
+
+    /** Local date and time, deliberately without timezone conversion. */
+    public static function dateTime(string $value): bool
+    {
+        $parts = explode('T', $value);
+        return count($parts) === 2 && self::date($parts[0]) && self::time($parts[1]);
+    }
+
+    /** Floating point tolerant step check using the configured minimum as the base. */
+    public static function step(float $value, float $step, float $base = 0.0): bool
+    {
+        if (!is_finite($value) || !is_finite($step) || !is_finite($base) || $step <= 0) {
+            return false;
+        }
+        $steps = ($value - $base) / $step;
+        return is_finite($steps) && abs($steps - round($steps)) <= 1e-7;
+    }
+
     public static function number(string $value): ?float
     {
         return Evaluator::number($value);

@@ -44,6 +44,25 @@ final class SupportTest extends TestCase
         self::assertSame(3, Rules::length('äöü'));
     }
 
+    public function testTemporalFormatsAndStepValidation(): void
+    {
+        foreach (['00:00', '23:59:59', '09:30'] as $value) {
+            self::assertTrue(Rules::time($value));
+        }
+        foreach (['24:00', '12:60', '9:30', '12:30:60', '12:00Z'] as $value) {
+            self::assertFalse(Rules::time($value));
+        }
+        self::assertTrue(Rules::dateTime('2024-02-29T23:59:59'));
+        self::assertFalse(Rules::dateTime('2023-02-29T12:00'));
+        self::assertFalse(Rules::dateTime('2024-02-29T24:00'));
+        self::assertFalse(Rules::dateTime('2024-02-29T12:00+01:00'));
+        self::assertTrue(Rules::step(0.3, 0.1));
+        self::assertTrue(Rules::step(1.3, 0.5, 0.3));
+        self::assertFalse(Rules::step(1.4, 0.5, 0.3));
+        self::assertFalse(Rules::step(1.0, 0.0));
+        self::assertFalse(Rules::step(INF, 0.1));
+    }
+
     public function testSubmissionToken(): void
     {
         $token = new SubmissionToken('secret');

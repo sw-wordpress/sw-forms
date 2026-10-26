@@ -23,8 +23,22 @@ final class FieldRegistry implements TypeCatalog {
 	public static function instance(): self {
 		if ( null === self::$instance ) {
 			self::$instance = new self();
-			foreach ( array( new InputField(), new TextareaField(), new CheckboxField(), new RadioField(), new SelectField(), new GroupField(), new ColumnsField() ) as $type ) {
-				self::$instance->register( $type );
+			$types          = array( new InputField(), new TextareaField(), new CheckboxField(), new RadioField(), new SelectField(), new GroupField(), new ColumnsField() );
+			/**
+			 * Filter the field types before registration. Append custom FieldTypeInterface instances.
+			 *
+			 * Runs once, before the legacy swf_register_field_types action. Later duplicate slugs win.
+			 * Invalid entries are ignored; a non-array result keeps the built-in types.
+			 *
+			 * @since 0.1.0
+			 *
+			 * @param list<FieldTypeInterface> $types Built-in field types.
+			 */
+			$filtered = apply_filters( 'swf_field_types', $types );
+			foreach ( is_array( $filtered ) ? $filtered : $types as $type ) {
+				if ( $type instanceof FieldTypeInterface ) {
+					self::$instance->register( $type );
+				}
 			}
 			/**
 			 * Register additional element types.

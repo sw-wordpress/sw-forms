@@ -17,6 +17,7 @@ All hooks use the prefix `swf_`. Unless stated otherwise exceptions of callbacks
 
 | Hook | Value / arguments | Purpose |
 |------|-------------------|---------|
+| `swf_field_types` | `list<FieldTypeInterface> $types` | Filter built-in types or append custom instances. Runs once before `swf_register_field_types`. Invalid entries are ignored; a non-array result keeps built-ins. Duplicate slugs: last registration wins. |
 | `swf_register_actions` | `list<ActionInterface> $actions, Submission $submission` | Add actions that run after a valid submission. Exceptions of an action are caught and logged on the entry. |
 | `swf_validation_errors` | `array<string,string> $errors, array $values, int $form_id` | Add `path => message` (path `id` or `repeater[0].id`) to reject a submission. |
 | `swf_submission_data` | `array $data, array $values, int $form_id` | Change the data (keyed by field key) before it is stored and sent. |

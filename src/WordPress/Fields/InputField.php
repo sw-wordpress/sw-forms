@@ -14,7 +14,7 @@ use SWForms\WordPress\Frontend\RenderContext;
 
 final class InputField extends AbstractFieldType {
 
-	public const INPUT_TYPES = array( 'text', 'email', 'tel', 'url', 'number', 'date', 'password', 'hidden' );
+	public const INPUT_TYPES = array( 'text', 'email', 'tel', 'url', 'number', 'date', 'time', 'datetime-local', 'password', 'hidden' );
 
 	public function type(): string {
 		return 'input';
@@ -74,6 +74,14 @@ final class InputField extends AbstractFieldType {
 						'label' => __( 'Date', 'sw-forms' ),
 					),
 					array(
+						'value' => 'time',
+						'label' => __( 'Time', 'sw-forms' ),
+					),
+					array(
+						'value' => 'datetime-local',
+						'label' => __( 'Date and time', 'sw-forms' ),
+					),
+					array(
 						'value' => 'password',
 						'label' => __( 'Password', 'sw-forms' ),
 					),
@@ -82,6 +90,22 @@ final class InputField extends AbstractFieldType {
 						'label' => __( 'Hidden', 'sw-forms' ),
 					),
 				),
+			),
+			array(
+				'name'    => 'validate',
+				'type'    => 'toggle',
+				'tab'     => 'validation',
+				'label'   => __( 'Validate value', 'sw-forms' ),
+				'help'    => __( 'Disable format and range checks. Required fields are still checked.', 'sw-forms' ),
+				'default' => true,
+			),
+			array(
+				'name'    => 'integer',
+				'type'    => 'toggle',
+				'tab'     => 'validation',
+				'label'   => __( 'Whole numbers only', 'sw-forms' ),
+				'default' => false,
+				'showIf'  => $number_only,
 			),
 			array(
 				'name'    => 'placeholder',
@@ -144,6 +168,41 @@ final class InputField extends AbstractFieldType {
 				'showIf'  => $number_only,
 			),
 			array(
+				'name'    => 'minDate',
+				'type'    => 'text',
+				'tab'     => 'validation',
+				'label'   => __( 'Earliest value', 'sw-forms' ),
+				'default' => '',
+				'showIf'  => array(
+					'setting' => 'inputType',
+					'equals'  => array( 'date', 'time', 'datetime-local' ),
+				),
+			),
+			array(
+				'name'    => 'maxDate',
+				'type'    => 'text',
+				'tab'     => 'validation',
+				'label'   => __( 'Latest value', 'sw-forms' ),
+				'default' => '',
+				'showIf'  => array(
+					'setting' => 'inputType',
+					'equals'  => array( 'date', 'time', 'datetime-local' ),
+				),
+			),
+			array(
+				'name'    => 'timeStep',
+				'type'    => 'number',
+				'tab'     => 'validation',
+				'label'   => __( 'Time interval (seconds)', 'sw-forms' ),
+				'default' => null,
+				'min'     => 1,
+				'integer' => true,
+				'showIf'  => array(
+					'setting' => 'inputType',
+					'equals'  => array( 'time', 'datetime-local' ),
+				),
+			),
+			array(
 				'name'    => 'pattern',
 				'type'    => 'code',
 				'tab'     => 'validation',
@@ -197,6 +256,9 @@ final class InputField extends AbstractFieldType {
 	}
 
 	public function validate( mixed $value, array $element ): array {
+		if ( ! $this->setting( $element, 'validate', true ) ) {
+			return array();
+		}
 		$value = (string) $value;
 		$type  = $this->input_type( $element );
 		switch ( $type ) {
@@ -216,10 +278,9 @@ final class InputField extends AbstractFieldType {
 				}
 				break;
 			case 'date':
-				if ( ! Rules::date( $value ) ) {
-					return array( array( 'code' => 'date' ) );
-				}
-				break;
+			case 'time':
+			case 'datetime-local':
+				return $this->validate_temporal( $value, $element );
 			case 'number':
 				return $this->validate_number( $value, $element );
 		}
@@ -264,6 +325,9 @@ final class InputField extends AbstractFieldType {
 		if ( null === $number ) {
 			return array( array( 'code' => 'number' ) );
 		}
+		if ( $this->setting( $element, 'integer', false ) && floor( $number ) !== $number ) {
+			return array( array( 'code' => 'integer' ) );
+		}
 		$min = $this->setting( $element, 'min' );
 		$max = $this->setting( $element, 'max' );
 		if ( is_numeric( $min ) && $number < (float) $min ) {
@@ -282,7 +346,66 @@ final class InputField extends AbstractFieldType {
 				),
 			);
 		}
+		$step = $this->setting( $element, 'step' );
+		if ( is_numeric( $step ) && (float) $step > 0 && ! Rules::step( $number, (float) $step, is_numeric( $min ) ? (float) $min : 0.0 ) ) {
+			return array( array( 'code' => 'step' ) );
+		}
 		return array();
+	}
+
+	/**
+	 * @param array<string, mixed> $element
+	 * @return list<array{code: string, params?: array<string, string|int>}>
+	 */
+	private function validate_temporal( string $value, array $element ): array {
+		$type = $this->input_type( $element );
+		if ( ! $this->valid_temporal( $value, $type ) ) {
+			return array( array( 'code' => 'date' === $type ? 'date' : 'time' ) );
+		}
+		foreach ( array(
+			'minDate' => 'min',
+			'maxDate' => 'max',
+		) as $setting => $code ) {
+			$bound = (string) $this->setting( $element, $setting, '' );
+			if ( $this->valid_temporal( $bound, $type ) ) {
+				$comparison = strcmp( $this->temporal_key( $value, $type ), $this->temporal_key( $bound, $type ) );
+				if ( ( 'min' === $code && $comparison < 0 ) || ( 'max' === $code && $comparison > 0 ) ) {
+					return array(
+						array(
+							'code'   => $code,
+							'params' => array( $code => $bound ),
+						),
+					);
+				}
+			}
+		}
+		$step = $this->setting( $element, 'timeStep' );
+		if ( 'date' !== $type && is_numeric( $step ) && (float) $step > 0 ) {
+			$min  = (string) $this->setting( $element, 'minDate', '' );
+			$base = $this->valid_temporal( $min, $type ) ? $this->temporal_seconds( $min, $type ) : 0;
+			if ( ! Rules::step( $this->temporal_seconds( $value, $type ), (float) $step, $base ) ) {
+				return array( array( 'code' => 'step' ) );
+			}
+		}
+		return array();
+	}
+
+	private function valid_temporal( string $value, string $type ): bool {
+		return match ( $type ) {
+			'date' => Rules::date( $value ),
+			'time' => Rules::time( $value ),
+			default => Rules::dateTime( $value ),
+		};
+	}
+
+	private function temporal_key( string $value, string $type ): string {
+		return ( 'time' === $type && 5 === strlen( $value ) ) || ( 'datetime-local' === $type && 16 === strlen( $value ) ) ? $value . ':00' : $value;
+	}
+
+	private function temporal_seconds( string $value, string $type ): int {
+		// UTC is only a stable arithmetic frame for local wall time; no DST conversion.
+		$date = new \DateTimeImmutable( 'time' === $type ? '1970-01-01T' . $value : $value, new \DateTimeZone( 'UTC' ) );
+		return $date->getTimestamp();
 	}
 
 	/**
@@ -303,7 +426,7 @@ final class InputField extends AbstractFieldType {
 		}
 
 		$attributes = array(
-			'type'         => 'number' === $type ? 'text' : $type,
+			'type'         => 'number' === $type || ( ! $this->setting( $element, 'validate', true ) && in_array( $type, array( 'email', 'url', 'date', 'time', 'datetime-local' ), true ) ) ? 'text' : $type,
 			'inputmode'    => 'number' === $type ? 'decimal' : null,
 			'id'           => $context->dom_id( $id ),
 			'name'         => $context->name( $id ),
@@ -311,8 +434,19 @@ final class InputField extends AbstractFieldType {
 			'class'        => 'swf-input',
 			'placeholder'  => (string) $this->setting( $element, 'placeholder', '' ) ?: null,
 			'autocomplete' => (string) $this->setting( $element, 'autocomplete', '' ) ?: null,
-			'maxlength'    => is_int( $this->setting( $element, 'maxLength' ) ) ? (int) $this->setting( $element, 'maxLength' ) : null,
+			'maxlength'    => $this->setting( $element, 'validate', true ) && is_int( $this->setting( $element, 'maxLength' ) ) ? (int) $this->setting( $element, 'maxLength' ) : null,
 		);
+		if ( $this->setting( $element, 'validate', true ) && in_array( $type, array( 'date', 'time', 'datetime-local' ), true ) ) {
+			foreach ( array(
+				'minDate' => 'min',
+				'maxDate' => 'max',
+			) as $setting => $attribute ) {
+				$bound                    = (string) $this->setting( $element, $setting, '' );
+				$attributes[ $attribute ] = $this->valid_temporal( $bound, $type ) ? $bound : null;
+			}
+			$step               = $this->setting( $element, 'timeStep' );
+			$attributes['step'] = 'date' !== $type && is_numeric( $step ) && (float) $step > 0 ? (string) $step : null;
+		}
 		if ( 'hidden' === $type ) {
 			return '<div class="swf-field swf-field--hidden-input"' . $this->attrs(
 				array(

@@ -21,6 +21,9 @@ final class Messages {
 			'url'          => __( 'Please enter a valid web address starting with http:// or https://.', 'sw-forms' ),
 			'tel'          => __( 'Please enter a valid phone number.', 'sw-forms' ),
 			'date'         => __( 'Please enter a valid date.', 'sw-forms' ),
+			'time'         => __( 'Please enter a valid time.', 'sw-forms' ),
+			'integer'      => __( 'Please enter a whole number.', 'sw-forms' ),
+			'step'         => __( 'Please use the configured interval.', 'sw-forms' ),
 			'number'       => __( 'Please enter a number.', 'sw-forms' ),
 			/* translators: %s: minimum value */
 			'min'          => sprintf( __( 'Please enter a value of at least %s.', 'sw-forms' ), (string) ( $params['min'] ?? '' ) ),

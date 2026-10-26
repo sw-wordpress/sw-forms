@@ -111,7 +111,7 @@ try {
   check('no-JS: confirmation', (await p2.locator('.swf-confirmation').textContent())?.includes('Danke, Max!'));
 } finally {
   await browser.close();
-  const count = execFileSync('php', ['-r', `define('WP_USE_THEMES',false);$_SERVER['HTTP_HOST']='localhost';require '${join(here, '../../../../../../../wp-load.php')}';echo json_encode((new \\SWForms\\WordPress\\Entries\\EntryRepository())->search(${fixture.form},'inbox','',1,10,'asc')['items'][0]['values'] ?? null);`], { encoding: 'utf8' });
+  const count = execFileSync('php', ['-r', `define('WP_USE_THEMES',false);$_SERVER['HTTP_HOST']='localhost';require '${join(process.env.WP_ROOT ?? join(here, '../../../../../../..'), 'wp-load.php')}';echo json_encode((new \\SWForms\\WordPress\\Entries\\EntryRepository())->search(${fixture.form},'inbox','',1,10,'asc')['items'][0]['values'] ?? null);`], { encoding: 'utf8' });
   console.log('first stored entry values:', count);
   php('teardown', String(fixture.form), String(fixture.page));
 }
