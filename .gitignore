@@ -10,3 +10,7 @@
 .phpcs-wp.cache
 .phpstan.cache/
 *.log
+
+# Local analysis output
+/coverage/
+/.scannerwork/
