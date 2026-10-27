@@ -37,6 +37,7 @@ final class FieldRegistry implements TypeCatalog {
 				new ScaleField(),
 				new ColorField(),
 				new TagsField(),
+				new FileField(),
 				new GroupField(),
 				new NameField(),
 				new AddressField(),

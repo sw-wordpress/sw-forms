@@ -14,6 +14,7 @@ use SWForms\Core\Logic\Visibility;
 use SWForms\WordPress\Fields\FieldRegistry;
 use SWForms\WordPress\Fields\GroupField;
 use SWForms\WordPress\Fields\InputField;
+use SWForms\WordPress\Fields\FileField;
 use SWForms\WordPress\Support\Messages;
 
 final class SubmissionValidator {
@@ -28,9 +29,9 @@ final class SubmissionValidator {
 	 * @param array<string, mixed> $values
 	 * @return array<string, string> Error message per path (`id` or `rep[0].id`).
 	 */
-	public function validate( array $values, Visibility $visibility, array $raw = array() ): array {
+	public function validate( array $values, Visibility $visibility, array $raw = array(), bool $store_files = true ): array {
 		$errors = array();
-		$this->walk( $this->tree->rootIds(), $values, $visibility, '', $errors, $raw );
+		$this->walk( $this->tree->rootIds(), $values, $visibility, '', $errors, $raw, $store_files );
 		return $errors;
 	}
 
@@ -40,7 +41,7 @@ final class SubmissionValidator {
 	 * @param array<string, mixed>  $raw
 	 * @param array<string, string> $errors
 	 */
-	private function walk( array $ids, array $values, Visibility $visibility, string $prefix, array &$errors, array $raw ): void {
+	private function walk( array $ids, array $values, Visibility $visibility, string $prefix, array &$errors, array $raw, bool $store_files ): void {
 		foreach ( $ids as $id ) {
 			if ( ! $visibility->isVisible( $id, $prefix ) ) {
 				continue;
@@ -54,12 +55,12 @@ final class SubmissionValidator {
 				}
 				$raw_rows = is_array( $raw[ $id ] ?? null ) ? array_values( $raw[ $id ] ) : array();
 				foreach ( array_values( $rows ) as $index => $row ) {
-					$this->walk( $this->tree->childIds( $id ), is_array( $row ) ? $row : array(), $visibility, $prefix . $id . '[' . $index . '].', $errors, is_array( $raw_rows[ $index ] ?? null ) ? $raw_rows[ $index ] : array() );
+					$this->walk( $this->tree->childIds( $id ), is_array( $row ) ? $row : array(), $visibility, $prefix . $id . '[' . $index . '].', $errors, is_array( $raw_rows[ $index ] ?? null ) ? $raw_rows[ $index ] : array(), $store_files );
 				}
 				continue;
 			}
 			if ( ! $this->tree->isLeafData( $id ) ) {
-				$this->walk( $this->tree->childIds( $id ), $values, $visibility, $prefix, $errors, $raw );
+				$this->walk( $this->tree->childIds( $id ), $values, $visibility, $prefix, $errors, $raw, $store_files );
 				continue;
 			}
 			$type = $this->registry->get( $this->tree->type( $id ) );
@@ -76,6 +77,9 @@ final class SubmissionValidator {
 			$problems = $type->validate( $value, $element );
 			if ( array() === $problems && $type instanceof InputField ) {
 				$problems = $type->validate_auxiliary( $value, $element, $raw );
+			}
+			if ( array() === $problems && $type instanceof FileField ) {
+				$problems = $store_files ? $type->validate_uploads( $raw, $element ) : array( array( 'code' => 'file_storage' ) );
 			}
 			if ( array() !== $problems ) {
 				$errors[ $prefix . $id ] = Messages::validation( $problems[0]['code'], $problems[0]['params'] ?? array() );

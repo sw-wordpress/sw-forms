@@ -195,6 +195,17 @@ final class FormRepository {
 	/** Deletes the form with all versions, entries and logs. */
 	public function delete( int $id ): void {
 		global $wpdb;
+		// Delete through the entry repository so uploaded files follow their owning entries.
+		$entries = new \SWForms\WordPress\Entries\EntryRepository();
+		$last_id = 0;
+		do {
+			$ids = $wpdb->get_col( $wpdb->prepare( 'SELECT id FROM %i WHERE form_id = %d AND id > %d ORDER BY id LIMIT 500', Schema::table( 'entries' ), $id, $last_id ) );
+			foreach ( $ids as $entry_id ) {
+				$entries->delete( (int) $entry_id );
+				$last_id = (int) $entry_id;
+			}
+			$count = count( $ids );
+		} while ( 500 === $count );
 		foreach ( array( 'entry_values', 'entry_log', 'entries', 'form_versions' ) as $table ) {
 			$wpdb->query( $wpdb->prepare( 'DELETE FROM %i WHERE form_id = %d', Schema::table( $table ), $id ) );
 		}

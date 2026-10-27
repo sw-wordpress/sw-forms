@@ -59,6 +59,10 @@ const defaults = computed(() => {
         <q-icon v-if="inputType === 'date'" name="r_calendar_today" size="16px" />
         <q-icon v-else-if="inputType === 'email'" name="r_alternate_email" size="16px" />
       </div>
+      <div v-else-if="element.type === 'file'" class="swf-preview__input">
+        <q-icon name="r_upload_file" size="18px" />
+        <span class="swf-preview__placeholder">{{ settings.extensions }}</span>
+      </div>
       <div v-else-if="element.type === 'textarea' || element.type === 'tags'" class="swf-preview__input swf-preview__input--area" :style="{ minHeight: `${Math.max(2, Number(settings.rows ?? 4)) * 14}px` }">
         <span class="swf-preview__placeholder">{{ placeholder }}</span>
       </div>

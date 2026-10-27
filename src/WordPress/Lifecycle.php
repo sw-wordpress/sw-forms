@@ -33,6 +33,10 @@ final class Lifecycle {
 		if ( ! Settings::all()['delete_data_on_uninstall'] ) {
 			return;
 		}
+		$forms = new \SWForms\WordPress\Forms\FormRepository();
+		foreach ( $forms->all() as $form ) {
+			$forms->delete( (int) $form['id'] );
+		}
 		Schema::drop_all();
 		Capabilities::revoke_all();
 		delete_option( Settings::OPTION );

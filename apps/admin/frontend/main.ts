@@ -3,6 +3,7 @@
  * Without this script forms still work (server side postback).
  */
 import './form.css';
+import { fileNames } from './fileValues';
 import { parseInterval } from './intervalValues';
 import { parseTags } from './tagValues';
 import { phoneValue } from './inputValues';
@@ -92,6 +93,17 @@ class SwForm {
         this.updateRangeOutputs(form);
       }, 0);
     });
+    form.addEventListener('dragover', (event) => {
+      const upload = (event.target as Element | null)?.closest('.swf-upload');
+      if (upload && !upload.querySelector<HTMLInputElement>('input')?.disabled) event.preventDefault();
+    });
+    form.addEventListener('drop', (event) => {
+      const input = (event.target as Element | null)?.closest('.swf-upload')?.querySelector<HTMLInputElement>('input[type="file"]');
+      if (!input || input.disabled || !event.dataTransfer) return;
+      event.preventDefault();
+      input.files = event.dataTransfer.files;
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+    });
     form.addEventListener('input', (e) => this.onChange(e));
     form.addEventListener('change', (e) => this.onChange(e));
     form.addEventListener('click', (e) => this.onClick(e));
@@ -120,6 +132,8 @@ class SwForm {
       case 'bool':
         return this.control(scope, name).some((el) => el.checked);
       case 'list': {
+        const upload = scope.querySelector<HTMLInputElement>(`input[type="file"][name="${cssEscape(name + '[]')}"]`);
+        if (upload) return fileNames(upload.files);
         const from = this.control(scope, name + '[from]')[0];
         const to = this.control(scope, name + '[to]')[0];
         if (from || to) return parseInterval({ from: from?.value ?? '', to: to?.value ?? '' });

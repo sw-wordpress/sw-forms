@@ -21,6 +21,10 @@ const { t } = useI18n();
         <span v-if="node.rows.length === 0" class="swf-muted">—</span>
       </dd>
       <dd v-else-if="node.children"><EntryFields :nodes="node.children" /></dd>
+      <dd v-else-if="node.files" class="swf-entry-value">
+        <ul v-if="node.files.length"><li v-for="file in node.files" :key="file.url"><a :href="file.url" target="_blank" rel="noopener noreferrer">{{ file.name }}</a></li></ul>
+        <span v-else class="swf-muted">—</span>
+      </dd>
       <dd v-else class="swf-entry-value">{{ node.value === '' ? '—' : node.value }}</dd>
     </template>
   </dl>

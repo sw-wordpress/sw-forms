@@ -413,3 +413,17 @@
 .swf-interval { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--swf-gap); }
 .swf-interval label { display: block; margin-bottom: 0.35em; }
 @container (max-width: 479px) { .swf-interval { grid-template-columns: minmax(0, 1fr); } }
+
+/* File selection and dropping use the same native accessible control. */
+.swf-upload {
+  border: 1px dashed var(--swf-border);
+  border-radius: var(--swf-radius);
+  padding: 0.75rem;
+}
+.swf-upload:focus-within {
+  outline: 2px solid var(--swf-accent);
+  outline-offset: 2px;
+}
+.swf-upload .swf-file {
+  max-width: 100%;
+}

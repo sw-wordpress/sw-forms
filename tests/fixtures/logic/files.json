@@ -1,0 +1,16 @@
+{
+  "description": "Upload conditions compare plain file name lists, including repeated and hidden uploads.",
+  "fields": [
+    {"id":"show","type":"checkbox","key":"show"},
+    {"id":"upload","type":"file","key":"upload","logic":{"action":"show","match":"all","rules":[{"field":"show","op":"notempty"}]}},
+    {"id":"note","type":"input","key":"note","logic":{"action":"show","match":"all","rules":[{"field":"upload","op":"contains","value":".pdf"}]}},
+    {"id":"rows","type":"group","key":"rows","settings":{"repeatable":true},"children":[
+      {"id":"attachment","type":"file","key":"attachment"},
+      {"id":"reason","type":"input","key":"reason","logic":{"action":"show","match":"all","rules":[{"field":"attachment","op":"notempty"}]}}
+    ]}
+  ],
+  "cases": [
+    {"name":"file names and repeated empty lists","values":{"show":true,"upload":["Consent.PDF","photo.png"],"rows":[{"attachment":["one.txt"]},{"attachment":[]}]},"expected":{"upload":true,"note":true,"rows[0].reason":true,"rows[1].reason":false}},
+    {"name":"hidden upload cannot reveal dependent field","values":{"show":false,"upload":["Consent.PDF"],"rows":[{"attachment":[]}]},"expected":{"upload":false,"note":false,"rows[0].reason":false}}
+  ]
+}

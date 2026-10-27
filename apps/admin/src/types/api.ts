@@ -119,6 +119,7 @@ export interface EntryNode {
   type: string;
   label: string;
   value?: string;
+  files?: { name: string; url: string }[];
   children?: EntryNode[];
   rows?: EntryNode[][];
 }

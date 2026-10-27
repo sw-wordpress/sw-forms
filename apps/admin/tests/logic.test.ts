@@ -20,7 +20,7 @@ describe('operators (fixtures/operators.json)', () => {
 });
 
 describe('visibility fixtures', () => {
-  for (const file of ['basic.json', 'cascade.json', 'containers.json', 'repeater.json', 'contact-groups.json']) {
+  for (const file of ['basic.json', 'cascade.json', 'containers.json', 'repeater.json', 'contact-groups.json', 'files.json']) {
     const data = load(file) as {
       fields: ElementNode[];
       cases: { name: string; values: Values; expected: Record<string, boolean> }[];

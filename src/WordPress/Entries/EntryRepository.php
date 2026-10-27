@@ -12,6 +12,7 @@ namespace SWForms\WordPress\Entries;
 // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- custom tables.
 
 use SWForms\WordPress\Database\Schema;
+use SWForms\WordPress\Uploads\UploadStorage;
 
 final class EntryRepository {
 
@@ -188,9 +189,13 @@ final class EntryRepository {
 
 	public function delete( int $id ): void {
 		global $wpdb;
+		$entry = $this->find( $id );
 		$wpdb->query( $wpdb->prepare( 'DELETE FROM %i WHERE entry_id = %d', Schema::table( 'entry_values' ), $id ) );
 		$wpdb->query( $wpdb->prepare( 'DELETE FROM %i WHERE entry_id = %d', Schema::table( 'entry_log' ), $id ) );
-		$wpdb->query( $wpdb->prepare( 'DELETE FROM %i WHERE id = %d', Schema::table( 'entries' ), $id ) );
+		$deleted = $wpdb->query( $wpdb->prepare( 'DELETE FROM %i WHERE id = %d', Schema::table( 'entries' ), $id ) );
+		if ( false !== $deleted ) {
+			UploadStorage::delete( is_array( $entry['meta']['uploads'] ?? null ) ? $entry['meta']['uploads'] : array() );
+		}
 	}
 
 	/** Deletes entries of a form older than the retention period. Returns the number of deleted entries. */

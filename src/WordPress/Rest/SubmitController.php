@@ -44,6 +44,7 @@ final class SubmitController extends BaseController {
 		}
 		$meta            = Postback::request_meta( $params );
 		$meta['preview'] = $preview;
+		$meta['files']   = $request->get_file_params();
 		$result          = SubmissionService::create_default()->submit(
 			(int) $request['id'],
 			is_array( $params['swf'] ?? null ) ? $params['swf'] : array(),

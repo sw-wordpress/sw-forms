@@ -120,7 +120,8 @@ controls (for example in calling-code lists).
 Built-in `range`, `rating`, `scale`, `color` and `tags` fields are documented in `docs/schema.md`.
 Built-in `birthdate`, `date-interval` and `time-interval` fields are also documented there.
 Built-in `name` and `address` are editable group presets (see `docs/schema.md`).
-Remaining issue #2 work covers Likert matrices, uploads, signatures and media capture.
+Remaining issue #2 work covers image upload features, signatures and media capture.
+Likert scales belong to matrix issue #1 and are excluded from #2.
 
 ## Preset groups
 

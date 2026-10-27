@@ -42,7 +42,7 @@ final class LogicFixturesTest extends TestCase
     public static function visibilityCases(): array
     {
         $cases = [];
-        foreach (['basic.json', 'cascade.json', 'containers.json', 'repeater.json', 'contact-groups.json'] as $file) {
+        foreach (['basic.json', 'cascade.json', 'containers.json', 'repeater.json', 'contact-groups.json', 'files.json'] as $file) {
             $data = self::load($file);
             foreach ($data['cases'] as $case) {
                 $cases[$file . ': ' . $case['name']] = [$data['fields'], $case['values'], $case['expected']];
