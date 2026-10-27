@@ -2,6 +2,8 @@
 
 Concept: `docs/schema.md` (form document), `docs/hooks.md`, `docs/rest-api.md`, `docs/extending.md`.
 
+Write Tests for new implementations!
+
 ## Architecture
 - `src/Core` is framework independent: no WordPress functions. PSR-12, `strict_types`, camelCase, PHPStan level 8.
 - `src/WordPress` is the WordPress adapter: WPCS (tabs, snake_case), PSR-4 class names.
