@@ -60,6 +60,8 @@
             "@cs:wp",
             "@stan",
             "@test"
-        ]
+        ],
+        "test:wp": "@php tests/coverage/wordpress.php",
+        "coverage:wp": "@php tests/coverage/wordpress.php --coverage"
     }
 }

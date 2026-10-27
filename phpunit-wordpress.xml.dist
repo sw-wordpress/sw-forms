@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="tests/Support/wordpress-bootstrap.php"
+         colors="true"
+         cacheDirectory=".phpunit.cache"
+         failOnWarning="true"
+         failOnRisky="true"
+         failOnEmptyTestSuite="true"
+         beStrictAboutOutputDuringTests="true">
+    <testsuites>
+        <testsuite name="wordpress">
+            <directory>tests/WordPress</directory>
+        </testsuite>
+    </testsuites>
+    <source>
+        <include>
+            <directory>src</directory>
+            <directory>includes</directory>
+            <file>sw-forms.php</file>
+            <file>uninstall.php</file>
+        </include>
+    </source>
+</phpunit>

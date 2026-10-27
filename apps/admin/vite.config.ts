@@ -56,6 +56,19 @@ export default defineConfig({
     environment: 'jsdom',
     include: ['tests/**/*.test.ts'],
     css: false,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'clover', 'lcov', 'json-summary'],
+      reportsDirectory: 'coverage',
+      include: ['src/**/*.{ts,vue}', 'shared/**/*.ts', 'frontend/**/*.ts'],
+      exclude: ['**/*.d.ts'],
+      thresholds: {
+        'frontend/main.ts': { lines: 85 },
+        'frontend/fileValues.ts': { lines: 100 },
+        'src/api/client.ts': { lines: 95 },
+        'src/features/entries/EntryFields.vue': { lines: 100 },
+      },
+    },
     server: { deps: { inline: ['quasar'] } },
   },
 });

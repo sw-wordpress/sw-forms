@@ -117,10 +117,13 @@ final class UploadStorage {
 		} finally {
 			remove_filter( 'upload_dir', $directory );
 		}
-		if ( isset( $result['error'] ) || empty( $result['file'] ) || empty( $result['url'] ) ) {
+		// Record a moved file before checking metadata, so malformed filter results also roll back.
+		if ( ! empty( $result['file'] ) && is_file( $result['file'] ) ) {
+			$this->created[] = wp_basename( $result['file'] );
+		}
+		if ( isset( $result['error'] ) || empty( $result['file'] ) || ! is_file( $result['file'] ) || empty( $result['url'] ) ) {
 			throw new \RuntimeException( 'Upload could not be stored.' );
 		}
-		$this->created[] = wp_basename( $result['file'] );
 		return array(
 			'name' => $file->name,
 			'url'  => esc_url_raw( $result['url'] ),
