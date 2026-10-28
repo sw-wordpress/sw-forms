@@ -137,4 +137,26 @@ describe('actual frontend form runtime', () => {
     document.querySelector<HTMLButtonElement>('.swf-row-remove')!.click();
     expect(document.querySelectorAll('.swf-row')).toHaveLength(1); expect(add.hidden).toBe(false);
   });
+  it('releases actual image previews on reset and reevaluates visibility', async () => {
+    const revoke = vi.fn();
+    vi.stubGlobal('URL', { createObjectURL: () => 'blob:preview', revokeObjectURL: revoke });
+    await mountForm(true, { fields: [field('photo', 'image', 'list')], html: wrap('photo', '<div class="swf-upload"><input type="file" name="swf[photo][]" data-swf-image></div><div class="swf-image-previews" hidden></div>') });
+    input().files = [new File(['png'], 'photo.png', { type: 'image/png' })] as unknown as FileList;
+    change(input());
+    expect(document.querySelector('.swf-image-previews img')).not.toBeNull();
+    input().files = [] as unknown as FileList;
+    document.querySelector('form')!.dispatchEvent(new Event('reset'));
+    await vi.waitFor(() => expect(revoke).toHaveBeenCalledWith('blob:preview'));
+    expect(document.querySelector<HTMLElement>('.swf-image-previews')!.hidden).toBe(true);
+  });
+  it('releases image object URLs when a public form is replaced by its confirmation', async () => {
+    const revoke = vi.fn();
+    vi.stubGlobal('URL', { createObjectURL: () => 'blob:preview', revokeObjectURL: revoke });
+    await mountForm(false, { fields: [field('photo', 'image', 'list')], html: wrap('photo', '<div class="swf-upload"><input type="file" name="swf[photo][]" data-swf-image></div><div class="swf-image-previews" hidden></div>') });
+    input().files = [new File(['png'], 'photo.png', { type: 'image/png' })] as unknown as FileList;
+    change(input()); submit(); await flushPromises();
+    expect(document.querySelector('.swf-confirmation')).not.toBeNull();
+    expect(revoke).toHaveBeenCalledWith('blob:preview');
+  });
+
 });

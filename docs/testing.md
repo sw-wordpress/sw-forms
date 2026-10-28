@@ -86,7 +86,7 @@ CI fails on missing/unexecuted coverage or missing test-execution artifacts. It 
 - Full PHP line coverage of at least 80%.
 - Upload field/transport/storage classes at least 95%, submission service at least 85%.
 - Frontend form runtime at least 85%, filename parsing and entry-file presentation 100%,
-  and REST client at least 95% line coverage.
+  image-preview lifecycle at least 95%, and REST client at least 95% line coverage.
 
 SonarQube's configured quality gate remains independent; these checks do not waive it.
 The artifacts imported by its separate job are `coverage/clover.xml`, `coverage/junit.xml`,
@@ -99,12 +99,13 @@ Measured locally with PHP 8.2/PCOV and Vitest V8 during this change:
 | Scope | Line coverage |
 |-------|---------------|
 | Portable core alone, before adapter collection | 92.31% (480/520) |
-| Complete PHP application after CLI/HTTP/REST integration | 87.49% (3999/4571) |
+| Complete PHP application after CLI/HTTP/REST integration | 87.67% (4067/4639) |
 | Complete frontend before new tests | 30.81% |
-| Complete frontend after new tests | about 41% |
-| Frontend form runtime | 87.75% |
+| Complete frontend after image-upload tests | 41.74% |
+| Frontend form runtime | 88.88% |
 | Filename parser, REST client, entry-file component | 100% |
-| PHP upload field | 97.27% |
+| PHP upload field | 97.35% |
+| PHP image-upload field / local preview manager | 100% |
 | PHP incoming-file and upload-storage classes | 100% |
 
 Core-only and complete-application percentages are different scopes and must not be compared

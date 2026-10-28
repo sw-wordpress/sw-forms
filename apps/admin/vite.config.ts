@@ -64,6 +64,7 @@ export default defineConfig({
       exclude: ['**/*.d.ts'],
       thresholds: {
         'frontend/main.ts': { lines: 85 },
+        'frontend/imagePreviews.ts': { lines: 95 },
         'frontend/fileValues.ts': { lines: 100 },
         'src/api/client.ts': { lines: 95 },
         'src/features/entries/EntryFields.vue': { lines: 100 },

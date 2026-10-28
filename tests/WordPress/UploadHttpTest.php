@@ -280,4 +280,50 @@ final class UploadHttpTest extends TestCase
         self::assertSame(UPLOAD_ERR_PARTIAL, $files[0]->error);
         self::assertSame('', $files[0]->temporary);
     }
+    /** @return list<array{string, string, string}> */
+    public static function imageFormats(): array
+    {
+        return [['png', 'imagepng', 'image/png'], ['jpg', 'imagejpeg', 'image/jpeg'], ['jpeg', 'imagejpeg', 'image/jpeg'], ['gif', 'imagegif', 'image/gif'], ['webp', 'imagewebp', 'image/webp']];
+    }
+
+    #[DataProvider('imageFormats')]
+    public function testImageFormatsUseTheExistingUploadPipeline(string $extension, string $encode, string $mime): void
+    {
+        $this->document['fields'][0]['type'] = 'image';
+        unset($this->document['fields'][0]['settings']['extensions']);
+        $this->forms->save($this->formId, 'Image upload test', $this->document);
+        $image = imagecreatetruecolor(2, 3);
+        ob_start();
+        $encode($image);
+        $png = ob_get_clean();
+        imagedestroy($image);
+        $result = $this->submit([['name' => 'photo.' . $extension, 'content' => $png]]);
+        self::assertSame('success', $result['status'], json_encode($result));
+        $entry = (new EntryRepository())->find($this->entries()[0]['id']);
+        self::assertSame($mime, $entry['data']['documents'][0]['type']);
+        self::assertSame('photo.' . $extension, $entry['data']['documents'][0]['name']);
+        self::assertCount(1, $this->storedFiles());
+        self::assertSame([2, 3], array_slice(getimagesize($this->storedFiles()[0]), 0, 2));
+    }
+
+    public function testImageFieldsRejectNonImagesEvenWhenTheirExtensionWasConfigured(): void
+    {
+        $this->document['fields'][0]['type'] = 'image';
+        $this->forms->save($this->formId, 'Image upload test', $this->document);
+        $result = $this->submit([['name' => 'note.txt', 'content' => 'plain text']]);
+        self::assertSame('invalid', $result['status']);
+        self::assertArrayHasKey('upload', $result['errors']);
+        self::assertSame([], $this->storedFiles());
+    }
+
+    public function testImageFieldsRejectHeadersWithoutPositiveImageDimensions(): void
+    {
+        $this->document['fields'][0]['type'] = 'image';
+        $this->forms->save($this->formId, 'Image upload test', $this->document);
+        $header = "\x89PNG\r\n\x1a\n" . pack('N', 13) . 'IHDR' . pack('N', 0) . pack('N', 0) . "\x08\x06\x00\x00\x00";
+        $result = $this->submit([['name' => 'empty-dimensions.png', 'content' => $header]]);
+        self::assertSame('invalid', $result['status']);
+        self::assertStringContainsString('valid JPEG', $result['errors']['upload']);
+        self::assertSame([], $this->entries());
+    }
 }

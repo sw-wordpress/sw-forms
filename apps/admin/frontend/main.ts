@@ -3,6 +3,7 @@
  * Without this script forms still work (server side postback).
  */
 import './form.css';
+import { ImagePreviews } from './imagePreviews';
 import { fileNames } from './fileValues';
 import { parseInterval } from './intervalValues';
 import { parseTags } from './tagValues';
@@ -71,6 +72,7 @@ function cssEscape(value: string): string {
 
 class SwForm {
   private readonly config: Config;
+  private readonly imagePreviews: ImagePreviews;
   private readonly tree: Tree;
   private readonly evaluator: Evaluator;
   private nonce: string;
@@ -85,12 +87,15 @@ class SwForm {
     this.evaluator = new Evaluator(this.tree);
     this.nonce = this.config.nonce;
 
+    this.imagePreviews = new ImagePreviews(form);
     initSelectSearch(form);
     this.updateRangeOutputs(form);
     form.addEventListener('reset', () => {
       setTimeout(() => {
         form.querySelectorAll<HTMLInputElement>('.swf-select-search').forEach(filterSelect);
         this.updateRangeOutputs(form);
+        this.imagePreviews.clear();
+        this.apply();
       }, 0);
     });
     form.addEventListener('dragover', (event) => {
@@ -201,6 +206,7 @@ class SwForm {
 
   private onChange(event: Event): void {
     const target = event.target as HTMLElement | null;
+    if (event.type === 'change' && target instanceof HTMLInputElement && target.matches('[data-swf-image]')) this.imagePreviews.update(target);
     if (target instanceof HTMLInputElement && target.classList.contains('swf-select-search')) {
       filterSelect(target);
       return;
@@ -227,6 +233,7 @@ class SwForm {
   private apply(): void {
     const visibility = this.evaluator.evaluate(this.collect(this.tree.rootIds, this.form, 'swf'));
     this.applyTo(this.tree.rootIds, this.form, '', visibility);
+    this.imagePreviews.sync();
   }
 
   private applyTo(ids: string[], scope: ParentNode, prefix: string, visibility: Map<string, boolean>): void {
@@ -424,6 +431,7 @@ class SwForm {
       }
       return;
     }
+    this.imagePreviews.clear();
     wrapper.replaceWith(confirmation);
     confirmation.focus();
   }

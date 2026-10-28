@@ -25,6 +25,7 @@ foreach ($report->getElementsByTagName('file') as $file) {
     $executed += $hits;
 }
 $required = [
+    'src/WordPress/Fields/ImageField.php' => 95,
     'src/WordPress/Fields/FileField.php' => 95,
     'src/WordPress/Uploads/IncomingFile.php' => 95,
     'src/WordPress/Uploads/UploadStorage.php' => 95,
