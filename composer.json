@@ -5,7 +5,8 @@
     "license": "GPL-2.0-or-later",
     "require": {
         "php": ">=8.2",
-        "ext-json": "*"
+        "ext-json": "*",
+        "ext-fileinfo": "*"
     },
     "require-dev": {
         "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
@@ -59,6 +60,8 @@
             "@cs:wp",
             "@stan",
             "@test"
-        ]
+        ],
+        "test:wp": "@php tests/coverage/wordpress.php",
+        "coverage:wp": "@php tests/coverage/wordpress.php --coverage"
     }
 }

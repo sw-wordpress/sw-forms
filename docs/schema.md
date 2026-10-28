@@ -252,3 +252,63 @@ nonrepeatable groups, while `{all_fields}` renders the full hierarchy, including
 
 Checks: `php tests/wp-contact-fields.php`, `node apps/admin/scripts/e2e/contacts.mjs`.
 The PHP/TypeScript evaluators share `tests/fixtures/logic/contact-groups.json`.
+
+## File uploads
+
+The `file` type uses a native accessible file selector; `multiple=true` enables multiple files
+and the same control accepts drag and drop. Files work through AJAX and native multipart
+postback, including repeaters, columns, groups and conditional visibility. Registry additions
+still use the existing `swf_register_field_types` action.
+
+| Setting | Default | Limits |
+|---------|---------|--------|
+| `multiple` | `false` | Single file unless enabled. |
+| `extensions` | `pdf,jpg,jpeg,png,txt` | Comma-separated subset of `pdf,txt,csv,jpg,jpeg,png,gif,webp,zip`; also restricted by WordPress MIME policy. Empty/unsupported-only lists reject all files. |
+| `maxSize` | `10` | Integer 1–100 MiB **per file**, further limited by the host's upload limit. |
+| `maxFiles` | `5` | Integer 1–20, used only with multiple selection; single mode always permits one. |
+
+Files require `storeEntries=true`. The builder explains this and their storage visibility.
+They are stored under the normal WordPress uploads directory in `/swforms/` with cryptographically
+random 128-bit basenames, outside the Media Library. **The URLs are public bearer links**:
+anyone who knows a URL can fetch it. They are not authenticated downloads and should not be
+used for documents requiring private access. The setting's help text exposes this tradeoff.
+
+The request uses file parts named `swf[id][]`, or `swf[repeater_id][row][id][]` inside repeaters.
+REST and postback read PHP's file metadata separately from ordinary values. Strings, URLs,
+attachment IDs or client-supplied server paths in form data cannot become uploads. A trusted
+`swf_submit()` call may pass PHP's `$_FILES` shape via `$context['files']`; files must still be
+actual HTTP uploads (`is_uploaded_file`). The field's `required` rule requires at least one file.
+Count, nonempty content, effective byte size, PHP upload status, extension and detected MIME
+are checked server-side; images additionally need matching image metadata. These are structural
+checks and cannot be switched off. ZIPs are stored as archives, never unpacked.
+
+Preview validates without moving files. Spam, invalid forms and hidden fields never persist
+files. Only after all validation passes are visible uploads moved; failures while moving or
+storing the entry roll back this submission's files. Native postback cannot retain a file
+selection: users must choose files again after a validation error or reload. AJAX keeps the
+selection for correction. Host `post_max_size`, `max_file_uploads` and web-server body limits
+still apply to the **whole request**, independently of per-field settings. Configure them for
+the sum of all fields/repeater rows. PHP's discarded oversized POST body produces an error;
+a web server rejection may instead surface as a network error.
+
+Condition values remain lists of plain filenames in both PHP and JavaScript, so `empty`,
+`notempty`, `is` and `contains` work like other list fields, including row scopes. Stored data
+is always a list, even in single mode (empty `[]` for unanswered optional fields):
+
+```json
+{"documents": [{"name": "consent.pdf", "url": "https://example.test/wp-content/uploads/swforms/swf-<random>.pdf", "size": 12345, "type": "application/pdf"}]}
+```
+
+The entry index searches filenames. Entry details and `{all_fields}` show escaped file labels
+as links; plain text and `{field:documents}` give names and URLs. Actions/webhooks receive the
+same descriptors. No local temporary or absolute filesystem path is stored in entry data or
+returned to visitors. An entry's `meta.uploads` holds generated basenames for cleanup, independent
+of filtered public data. Trash retains files; permanent entry/form deletion, retention cleanup
+and opted-in uninstall remove them. Backups, offloaded storage and external copies require
+their own lifecycle handling; this implementation owns local files in `/swforms/` only.
+
+Image preview/cropping, camera capture, signatures and audio/video recording remain subsequent
+issue #2 work. Likert scales are excluded from #2 and tracked with matrices in issue #1.
+
+Checks: `php tests/wp-file-uploads.php`, `node apps/admin/scripts/e2e/uploads.mjs`.
+Shared PHP/TypeScript visibility fixture: `tests/fixtures/logic/files.json`.

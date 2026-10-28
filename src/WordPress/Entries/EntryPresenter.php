@@ -13,6 +13,7 @@ namespace SWForms\WordPress\Entries;
 
 use SWForms\Core\Form\Tree;
 use SWForms\WordPress\Fields\FieldRegistry;
+use SWForms\WordPress\Fields\FileField;
 
 final class EntryPresenter {
 
@@ -59,8 +60,30 @@ final class EntryPresenter {
 				$node['children'] = $this->present( $children, is_array( $data[ $key ] ) ? $data[ $key ] : array() );
 			} else {
 				$node['value'] = $type->format_text( $data[ $key ], $element );
+				if ( $type instanceof FileField ) {
+					$node['files'] = self::files( $data[ $key ] );
+				}
 			}
 			$out[] = $node;
+		}
+		return $out;
+	}
+
+	/**
+	 * @return list<array{name: string, url: string}>
+	 */
+	private static function files( mixed $value ): array {
+		$out = array();
+		foreach ( is_array( $value ) ? $value : array() as $file ) {
+			if ( is_array( $file ) && is_string( $file['name'] ?? null ) && is_string( $file['url'] ?? null ) ) {
+				$url = esc_url_raw( $file['url'], array( 'http', 'https' ) );
+				if ( '' !== $url ) {
+					$out[] = array(
+						'name' => $file['name'],
+						'url'  => $url,
+					);
+				}
+			}
 		}
 		return $out;
 	}
@@ -93,6 +116,10 @@ final class EntryPresenter {
 				}
 			} elseif ( isset( $node['children'] ) ) {
 				$html .= self::to_html( $node['children'] );
+			} elseif ( isset( $node['files'] ) ) {
+				foreach ( $node['files'] as $file ) {
+					$html .= '<a href="' . esc_url( $file['url'] ) . '">' . esc_html( $file['name'] ) . '</a><br>';
+				}
 			} else {
 				$html .= nl2br( esc_html( (string) $node['value'] ) );
 			}

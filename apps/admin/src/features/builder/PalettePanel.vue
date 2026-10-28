@@ -11,7 +11,7 @@ const store = useBuilderStore();
 const search = ref('');
 const listEl = ref<HTMLElement | null>(null);
 
-const ORDER = ['basic', 'choice', 'layout'];
+const ORDER = ['basic', 'choice', 'media', 'layout'];
 const groups = computed(() => {
   const q = search.value.trim().toLowerCase();
   const byCategory = new Map<string, typeof store.types>();

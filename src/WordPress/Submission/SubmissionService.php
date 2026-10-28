@@ -20,6 +20,8 @@ use SWForms\WordPress\Forms\FormRepository;
 use SWForms\WordPress\Support\Settings;
 use SWForms\WordPress\Support\Wpml;
 use SWForms\WordPress\Template\MergeTagResolver;
+use SWForms\WordPress\Uploads\IncomingFile;
+use SWForms\WordPress\Uploads\UploadStorage;
 
 final class SubmissionService {
 
@@ -39,6 +41,9 @@ final class SubmissionService {
 	 * @param array<string, mixed> $request honeypot, token, ip, user_id, source_url, preview (bool).
 	 */
 	public function submit( int $form_id, array $raw, array $request ): SubmissionResult {
+		if ( IncomingFile::request_too_large() ) {
+			return SubmissionResult::error( 'upload_size', __( 'The submission exceeds the server upload limit. Please choose fewer or smaller files.', 'sw-forms' ) );
+		}
 		$form    = $this->forms->find( $form_id );
 		$preview = ! empty( $request['preview'] );
 		if ( null === $form ) {
@@ -52,6 +57,8 @@ final class SubmissionService {
 		$settings = is_array( $document['settings'] ?? null ) ? $document['settings'] : array();
 		$ip       = (string) ( $request['ip'] ?? '' );
 
+		$files  = is_array( $request['files']['swf'] ?? null ) ? $request['files']['swf'] : array();
+		$raw    = IncomingFile::merge( $raw, $files );
 		$tree   = Tree::build( is_array( $document['fields'] ?? null ) ? $document['fields'] : array(), $this->registry );
 		$values = ( new ValueCollector( $tree, $this->registry ) )->collect( $raw );
 
@@ -70,7 +77,7 @@ final class SubmissionService {
 		}
 
 		$visibility = ( new Evaluator( $tree ) )->evaluate( $values );
-		$errors     = ( new SubmissionValidator( $tree, $this->registry ) )->validate( $values, $visibility, $raw );
+		$errors     = ( new SubmissionValidator( $tree, $this->registry ) )->validate( $values, $visibility, $raw, $preview || ! empty( $settings['storeEntries'] ) );
 		/**
 		 * Filters the field errors. Add an entry `path => message` to reject a submission.
 		 *
@@ -96,40 +103,57 @@ final class SubmissionService {
 			return new SubmissionResult( SubmissionResult::SUCCESS, 'preview', esc_html__( 'Preview: all entries are valid. Nothing was stored or sent.', 'sw-forms' ) );
 		}
 
-		$builder = new DataBuilder( $tree );
-		/**
-		 * Filters the data before it is stored and passed to actions.
-		 *
-		 * @since 0.1.0
-		 *
-		 * @param array<string, mixed> $data    Data keyed by field key.
-		 * @param array<string, mixed> $values  Clean values keyed by element id.
-		 * @param int                  $form_id Form id.
-		 */
-		$data     = (array) apply_filters( 'swf_submission_data', $builder->build( $values, $visibility ), $values, $form_id );
-		$entry_id = 0;
-		if ( ! empty( $settings['storeEntries'] ) ) {
-			$entry_id = $this->entries->insert(
-				$form_id,
-				$form['current_version'],
-				$data,
-				array( 'sourceUrl' => esc_url_raw( (string) ( $request['source_url'] ?? '' ) ) ),
-				// The index holds the display text (option labels, Yes/No): what people see and search for.
-				$builder->flatten(
-					$values,
-					$visibility,
-					function ( string $id, array $element, mixed $value ): string {
-						$type = $this->registry->get( (string) ( $element['type'] ?? '' ) );
-						return null === $type ? DataBuilder::stringify( $value ) : $type->format_text( $value, $element );
-					}
-				),
-				'hash' === Settings::all()['ip_mode'] && '' !== $ip ? hash_hmac( 'sha256', $ip, Settings::secret() ) : '',
-				(int) ( $request['user_id'] ?? 0 )
-			);
-			if ( 0 === $entry_id ) {
-				return SubmissionResult::error( 'storage', __( 'Your entry could not be saved. Please try again later.', 'sw-forms' ) );
-			}
+		$uploads = new UploadStorage();
+		try {
+			$stored_values = $uploads->store( $tree, $this->registry, $values, $raw, $visibility );
+		} catch ( \Throwable $exception ) {
+			$uploads->rollback();
+			return SubmissionResult::error( 'upload', __( 'Files could not be saved. Please try again.', 'sw-forms' ) );
 		}
+		try {
+			$builder = new DataBuilder( $tree );
+			/**
+			 * Filters the data before it is stored and passed to actions.
+			 *
+			 * @since 0.1.0
+			 *
+			 * @param array<string, mixed> $data    Data keyed by field key.
+			 * @param array<string, mixed> $values  Clean values keyed by element id.
+			 * @param int                  $form_id Form id.
+			 */
+			$data     = (array) apply_filters( 'swf_submission_data', $builder->build( $stored_values, $visibility ), $values, $form_id );
+			$entry_id = 0;
+			if ( ! empty( $settings['storeEntries'] ) ) {
+				$entry_id = $this->entries->insert(
+					$form_id,
+					$form['current_version'],
+					$data,
+					array(
+						'sourceUrl' => esc_url_raw( (string) ( $request['source_url'] ?? '' ) ),
+						'uploads'   => $uploads->manifest(),
+					),
+					// The index holds the display text (option labels, Yes/No): what people see and search for.
+					$builder->flatten(
+						$values,
+						$visibility,
+						function ( string $id, array $element, mixed $value ): string {
+							$type = $this->registry->get( (string) ( $element['type'] ?? '' ) );
+							return null === $type ? DataBuilder::stringify( $value ) : $type->format_text( $value, $element );
+						}
+					),
+					'hash' === Settings::all()['ip_mode'] && '' !== $ip ? hash_hmac( 'sha256', $ip, Settings::secret() ) : '',
+					(int) ( $request['user_id'] ?? 0 )
+				);
+				if ( 0 === $entry_id ) {
+					$uploads->rollback();
+					return SubmissionResult::error( 'storage', __( 'Your entry could not be saved. Please try again later.', 'sw-forms' ) );
+				}
+			}
+		} catch ( \Throwable $exception ) {
+			$uploads->rollback();
+			return SubmissionResult::error( 'storage', __( 'Your entry could not be saved. Please try again later.', 'sw-forms' ) );
+		}
+
 		$this->spam->record_success( $form_id, $token_id, $ip );
 
 		$submission = new Submission( $form, $form['current_version'], $document, $tree, $values, $visibility, $data, $entry_id, $this->entries );

@@ -6,6 +6,7 @@
          cacheDirectory=".phpunit.cache"
          failOnWarning="true"
          failOnRisky="true"
+         failOnEmptyTestSuite="true"
          beStrictAboutOutputDuringTests="true">
     <testsuites>
         <testsuite name="unit">
@@ -14,7 +15,10 @@
     </testsuites>
     <source>
         <include>
-            <directory>src/Core</directory>
+            <directory>src</directory>
+            <directory>includes</directory>
+            <file>sw-forms.php</file>
+            <file>uninstall.php</file>
         </include>
     </source>
 </phpunit>

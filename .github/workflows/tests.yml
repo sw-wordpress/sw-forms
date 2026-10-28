@@ -9,8 +9,20 @@ permissions:
 jobs:
   php:
     runs-on: ubuntu-latest
+    services:
+      database:
+        image: mariadb:11
+        env:
+          MARIADB_ROOT_PASSWORD: swf-test
+          MARIADB_DATABASE: swforms
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s --health-timeout=5s --health-retries=20
     env:
       XDEBUG_MODE: coverage
+      WP_ROOT: /tmp/swf-wordpress
     steps:
     - uses: actions/checkout@v4
     - uses: shivammathur/setup-php@v2
@@ -22,17 +34,34 @@ jobs:
     - run: composer install --prefer-dist --no-interaction --no-progress
     - run: composer validate --strict
     - run: composer cs && composer cs:wp && composer stan
-    - name: Unit and integration coverage
+    - name: Install disposable WordPress
+      run: |
+        curl --fail --location https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar --output /tmp/wp-cli.phar
+        php /tmp/wp-cli.phar core download --path="$WP_ROOT"
+        php /tmp/wp-cli.phar config create --path="$WP_ROOT" --dbname=swforms --dbuser=root --dbpass=swf-test --dbhost=127.0.0.1:3306
+        php /tmp/wp-cli.phar config set DISABLE_WP_CRON true --raw --path="$WP_ROOT"
+        php /tmp/wp-cli.phar core install --path="$WP_ROOT" --url=http://localhost --title="SW Forms tests" --admin_user=swf-admin --admin_password=swf-test-admin-password --admin_email=test@example.test --skip-email
+        ln -s "$GITHUB_WORKSPACE" "$WP_ROOT/wp-content/plugins/sw-forms"
+        php /tmp/wp-cli.phar plugin activate sw-forms --path="$WP_ROOT"
+    - name: Unit coverage
       run: |-
         mkdir -p coverage
-        vendor/bin/phpunit  --coverage-clover coverage/unit.xml
+        vendor/bin/phpunit --coverage-clover coverage/unit.xml --log-junit coverage/unit-junit.xml
+    - name: Real WordPress and multipart HTTP coverage
+      run: composer coverage:wp
     - name: Merge and normalize Clover paths
-      run: php tests/coverage/merge.php coverage/unit.xml
+      run: php tests/coverage/merge.php coverage/unit.xml coverage/wordpress/*.xml
+    - name: Merge PHPUnit test execution
+      run: php tests/coverage/junit.php coverage/unit-junit.xml coverage/wordpress-junit.xml
+    - name: Verify adapter coverage was imported
+      run: php tests/coverage/check.php
     - name: Upload Clover coverage
       uses: actions/upload-artifact@v4
       with:
         name: php-coverage
-        path: coverage/clover.xml
+        path: |
+          coverage/clover.xml
+          coverage/junit.xml
         if-no-files-found: error
         retention-days: 14
   frontend:
@@ -48,7 +77,16 @@ jobs:
         cache: npm
         cache-dependency-path: apps/admin/package-lock.json
     - run: npm ci
-    - run: npm run lint && npm run typecheck && npm test && npm run build
+    - run: npm run lint && npm run typecheck && npm run test:coverage && npm run build
+    - name: Upload frontend coverage
+      uses: actions/upload-artifact@v4
+      with:
+        name: frontend-coverage
+        path: |
+          apps/admin/coverage/lcov.info
+          apps/admin/coverage/test-execution.xml
+        if-no-files-found: error
+        retention-days: 14
   sonarqube:
     name: SonarQube Cloud
     needs:
@@ -68,6 +106,10 @@ jobs:
       with:
         name: php-coverage
         path: coverage
+    - uses: actions/download-artifact@v4
+      with:
+        name: frontend-coverage
+        path: apps/admin/coverage
     - name: Check SonarQube configuration
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -82,6 +124,9 @@ jobs:
           exit 1
         fi
         test -s coverage/clover.xml
+        test -s apps/admin/coverage/lcov.info
+        test -s coverage/junit.xml
+        test -s apps/admin/coverage/test-execution.xml
     - name: Analyze code and import coverage
       uses: SonarSource/sonarqube-scan-action@d209202bc7d53ff1cc128f7f907dac145c9d6ae9
       with:

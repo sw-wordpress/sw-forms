@@ -54,19 +54,21 @@ final class Postback {
 	}
 
 	public function handle(): void {
-		// phpcs:disable WordPress.Security.NonceVerification.Missing -- public form; protected by the signed submission token (SpamGuard).
+		// phpcs:disable WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended -- public form; protected by the signed submission token (SpamGuard).
 		$method = isset( $_SERVER['REQUEST_METHOD'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) : '';
-		if ( 'POST' !== $method || ! isset( $_POST['swf_form_id'] ) ) {
+		if ( 'POST' !== $method || ( ! isset( $_POST['swf_form_id'] ) && ! isset( $_GET['swf_form'] ) ) ) {
 			return;
 		}
 		$post    = wp_unslash( $_POST );
-		$form_id = absint( $post['swf_form_id'] );
+		$form_id = absint( $post['swf_form_id'] ?? wp_unslash( $_GET['swf_form'] ?? 0 ) );
 		$raw     = is_array( $post['swf'] ?? null ) ? $post['swf'] : array();
-		// phpcs:enable WordPress.Security.NonceVerification.Missing
+		$files   = $_FILES; // PHP owns the temporary paths; validation checks is_uploaded_file().
+		// phpcs:enable WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended
 		if ( 0 === $form_id ) {
 			return;
 		}
-		$meta = self::request_meta( $post );
+		$meta          = self::request_meta( $post );
+		$meta['files'] = $files;
 		if ( '' === (string) $meta['source_url'] ) {
 			$meta['source_url'] = home_url( add_query_arg( array() ) );
 		}

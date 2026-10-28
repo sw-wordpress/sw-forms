@@ -78,7 +78,7 @@ const en = {
     search: 'Find element',
     hint: 'Drag into the form or click to add.',
     addHint: 'Add {type}',
-    categories: { basic: 'Basic fields', choice: 'Choices', layout: 'Layout' },
+    categories: { media: 'Files and media', basic: 'Basic fields', choice: 'Choices', layout: 'Layout' },
   },
   canvas: {
     title: 'Form canvas',

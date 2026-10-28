@@ -80,7 +80,7 @@ const de: typeof en = {
     search: 'Element suchen',
     hint: 'In das Formular ziehen oder anklicken.',
     addHint: '{type} hinzufügen',
-    categories: { basic: 'Grundfelder', choice: 'Auswahl', layout: 'Layout' },
+    categories: { media: 'Dateien und Medien', basic: 'Grundfelder', choice: 'Auswahl', layout: 'Layout' },
   },
   canvas: {
     title: 'Formularfläche',

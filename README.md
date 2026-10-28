@@ -61,11 +61,14 @@ Phase 5: block, import/export, multi step, file upload, templates.
 
 ## SonarQube Cloud
 
-The test workflow uploads merged PHP Clover coverage and analyzes same-repository PRs
-and pushes to the default branch. Configure the `SONAR_TOKEN` Actions secret and
-`SONAR_ORGANIZATION` Actions variable (organization-level bindings may be reused).
-Project mapping and source paths are in `sonar-project.properties`. Fork PRs run tests
-without access to the scanner token. Coverage uses the existing PHPUnit scopes;
-unmeasured application code is not excluded from SonarQube. Frontend tests and builds
-run separately; JavaScript/TypeScript coverage is not collected by this PHP rollout.
-Generated assets and third-party dependencies are not application analysis inputs.
+The test workflow runs portable PHP tests, real WordPress/MariaDB and multipart HTTP
+integration tests, and frontend tests. It imports merged full-application PHP Clover,
+frontend LCOV, PHPUnit JUnit and frontend test-execution reports into SonarQube.
+Configure the `SONAR_TOKEN` Actions secret and `SONAR_ORGANIZATION` Actions variable
+(organization-level bindings may be reused). Project mapping and source paths are in
+`sonar-project.properties`; fork PRs run tests without the scanner token.
+
+Unmeasured application code remains in the coverage scope. CI checks full PHP coverage
+and focused upload/runtime minimums; generated assets and dependencies are not application
+analysis inputs. Commands, report formats, measured coverage and remaining UI gaps are
+explained in [Tests and coverage](docs/testing.md).

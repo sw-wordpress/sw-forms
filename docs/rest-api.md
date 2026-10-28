@@ -26,3 +26,15 @@ Cookie authentication with the `wp_rest` nonce (`X-WP-Nonce`). Errors are `WP_Er
 Submission token: `admin-ajax.php?action=swf_token&form={id}` returns `{token, nonce}` (nonce only
 for logged-in users). Anonymous submissions use the signed token instead of a nonce so that
 cached pages keep working.
+
+### Multipart file fields
+
+`POST /forms/{id}/submit` accepts native multipart files named `swf[field_id][]`, including
+`swf[repeater_id][row][field_id][]`. The same signed submission token and spam protections apply;
+there is no separate anonymous upload endpoint. Only a fully valid submission stores files.
+The `file` type can enable multiple selection and configure extensions, per-file size and count.
+See `docs/schema.md` for formats, host limits, public URL visibility and deletion behavior.
+
+Stored entry data contains lists of `{name, url, size, type}` descriptors. Presented entry
+nodes additionally contain `files: [{name, url}]` for rendering escaped links. Validation
+responses contain field paths and messages, without local temporary file paths or download URLs.

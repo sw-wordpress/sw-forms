@@ -75,7 +75,7 @@ final class FormView {
 		if ( ! empty( $options['title'] ) ) {
 			$html .= '<h2 class="swf-title">' . esc_html( $form['title'] ) . '</h2>';
 		}
-		$html .= '<form class="swf-form" method="post" novalidate data-swf-form="' . $form_id . '">';
+		$html .= '<form class="swf-form" method="post" action="' . esc_url( add_query_arg( 'swf_form', $form_id ) ) . '" enctype="multipart/form-data" novalidate data-swf-form="' . $form_id . '">';
 		$html .= self::summary( $form_id, $result );
 		$html .= '<div class="swf-fields">' . $renderer->render_ids( $tree->rootIds(), $context ) . '</div>';
 		$html .= '<input type="hidden" name="swf_form_id" value="' . $form_id . '">';

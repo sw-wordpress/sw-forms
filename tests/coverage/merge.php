@@ -6,7 +6,13 @@ declare(strict_types=1);
 
 $root = dirname(__DIR__, 2) . '/';
 $files = [];
-foreach (array_slice($argv, 1) as $report) {
+$output = $root . 'coverage/clover.xml';
+$reports = array_slice($argv, 1);
+if (($reports[0] ?? '') === '--output') {
+    $output = $reports[1] ?? throw new InvalidArgumentException('Missing output filename.');
+    $reports = array_slice($reports, 2);
+}
+foreach ($reports as $report) {
     $xml = new DOMDocument();
     if (!$xml->load($report, LIBXML_NONET)) {
         throw new RuntimeException('Invalid Clover report: ' . $report);
@@ -67,7 +73,7 @@ foreach ($files as $name => $lines) {
 if ($executed === 0) {
     throw new RuntimeException('No executed production lines in coverage reports.');
 }
-if ($document->save($root . 'coverage/clover.xml') === false) {
+if ($document->save($output) === false) {
     throw new RuntimeException('Could not write merged coverage.');
 }
-printf("Merged %d files, %d executed statement lines into coverage/clover.xml\n", count($files), $executed);
+printf("Merged %d files, %d executed statement lines into %s\n", count($files), $executed, $output);
