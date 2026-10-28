@@ -5,7 +5,7 @@
     {"id":"upload","type":"file","key":"upload","logic":{"action":"show","match":"all","rules":[{"field":"show","op":"notempty"}]}},
     {"id":"note","type":"input","key":"note","logic":{"action":"show","match":"all","rules":[{"field":"upload","op":"contains","value":".pdf"}]}},
     {"id":"rows","type":"group","key":"rows","settings":{"repeatable":true},"children":[
-      {"id":"attachment","type":"file","key":"attachment"},
+      {"id":"attachment","type":"image","key":"attachment"},
       {"id":"reason","type":"input","key":"reason","logic":{"action":"show","match":"all","rules":[{"field":"attachment","op":"notempty"}]}}
     ]}
   ],

@@ -307,8 +307,51 @@ of filtered public data. Trash retains files; permanent entry/form deletion, ret
 and opted-in uninstall remove them. Backups, offloaded storage and external copies require
 their own lifecycle handling; this implementation owns local files in `/swforms/` only.
 
-Image preview/cropping, camera capture, signatures and audio/video recording remain subsequent
-issue #2 work. Likert scales are excluded from #2 and tracked with matrices in issue #1.
+Image cropping, signatures and audio/video recording remain subsequent issue #2 work.
+Likert scales are excluded from #2 and tracked with matrices in issue #1.
 
 Checks: `php tests/wp-file-uploads.php`, `node apps/admin/scripts/e2e/uploads.mjs`.
 Shared PHP/TypeScript visibility fixture: `tests/fixtures/logic/files.json`.
+
+## Image uploads and mobile camera hints
+
+`image` is an image-only variation of `file`. It shares the same request layout, metadata lists,
+required/count/byte limits, repeaters, conditions, entry links, rollback and deletion lifecycle.
+It still requires entry storage and uses the same **public random URL** storage contract.
+Only a configured subset of JPEG (`jpg`, `jpeg`), PNG, GIF and WebP is accepted; defaults allow
+all five extensions. WordPress MIME policy additionally applies. SVG, HEIC and non-image files
+are rejected even when a raw document attempts to allow their extensions. An empty extension
+list permits no uploads. Validated HTTP files additionally need positive image dimensions.
+
+| Additional setting | Default | Behavior |
+|--------------------|---------|----------|
+| `preview` | `true` | Local image thumbnails when JavaScript/object URLs are available. |
+| `capture` | `""` | `""` (file picker), `environment` (rear camera) or `user` (front camera). |
+
+Camera preference emits the native `capture` attribute on the image file control, with
+image MIME types in `accept` for native camera support. Extension limits still apply server-side.
+Actual camera availability and which picker opens depend on the device/browser. This is a selection hint,
+not a request for microphone/camera access through `getUserMedia`. Native selection, capture
+hints and server validation also work without JavaScript.
+
+Previews use local `blob:` URLs, plain-text filenames and image elements, without sending bytes
+to a server or changing the selected files. Failed or unsupported previews leave native upload
+and server validation available. The selected original bytes are stored; there is no crop,
+resize, conversion or metadata stripping. Preview count is limited by the configured file
+count (at most 20 per control). Changing/clearing selections, hiding controls, removing repeater
+rows, resetting or completing a form releases their local object URLs. Visible selections
+restore their previews when a hidden field becomes visible again. A native postback error
+requires selecting images again, like other file uploads.
+
+`FileField` now exposes protected `upload_attributes()` and `upload_extra()` methods for this
+shared markup. `ImageField` reuses its actual validation/storage pipeline; both still register
+through `swf_register_field_types`. Existing `file` elements keep their behavior and do not gain
+previews or camera hints. Conditions continue to compare lists of plain filenames. No saved
+document migration is needed.
+
+Coverage includes real multipart image acceptance/rejection/dimensions in the WordPress suite,
+preview lifecycle/escaping/fallbacks in Vitest and
+`node apps/admin/scripts/e2e/images.mjs` for actual decoded pixels, camera attributes,
+repeater controls, unchanged downloaded bytes and palette/settings save/reload. These browser
+checks do not claim to exercise physical phone cameras. Image cropping, signatures and
+audio/video recording remain open in #2; Likert remains tracked with matrix issue #1.

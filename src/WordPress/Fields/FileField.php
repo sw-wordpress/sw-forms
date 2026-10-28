@@ -12,7 +12,7 @@ namespace SWForms\WordPress\Fields;
 use SWForms\WordPress\Frontend\RenderContext;
 use SWForms\WordPress\Uploads\IncomingFile;
 
-final class FileField extends AbstractFieldType {
+class FileField extends AbstractFieldType {
 	/** Restricted to inert formats; also intersected with WordPress's allowed MIME types. */
 	private const MIMES = array(
 		'pdf'  => 'application/pdf',
@@ -186,6 +186,21 @@ final class FileField extends AbstractFieldType {
 		return implode( "\n", array_map( static fn ( mixed $file ): string => is_array( $file ) ? (string) ( $file['name'] ?? '' ) . ': ' . (string) ( $file['url'] ?? '' ) : ( is_string( $file ) ? $file : '' ), is_array( $value ) ? $value : array() ) );
 	}
 
+	/**
+	 * Type-specific attributes and enhancements without duplicating the upload control.
+	 *
+	 * @param array<string, mixed> $element
+	 * @return array<string, string|int|bool|null>
+	 */
+	protected function upload_attributes( array $element ): array {
+		return array();
+	}
+
+	/** @param array<string, mixed> $element */
+	protected function upload_extra( array $element ): string {
+		return '';
+	}
+
 	public function render( array $element, RenderContext $context ): string {
 		$id                        = (string) $element['id'];
 		$hint                      = $context->dom_id( $id ) . '-file-hint';
@@ -201,11 +216,12 @@ final class FileField extends AbstractFieldType {
 					'multiple' => (bool) $this->setting( $element, 'multiple', false ),
 					'accept'   => implode( ',', array_map( static fn ( string $ext ): string => '.' . $ext, array_keys( $this->mimes( $element ) ) ) ),
 					'class'    => 'swf-input swf-file',
-				)
+				),
+				$this->upload_attributes( $element )
 			)
 		) . '></div>';
 		/* translators: 1: number of files, 2: size, 3: file extensions */
 		$text = sprintf( __( 'Choose or drop up to %1$d file(s), %2$s each. Allowed: %3$s. After a page reload, select files again.', 'sw-forms' ), $this->max_files( $element ), size_format( $this->max_size( $element ) ), implode( ', ', array_keys( $this->mimes( $element ) ) ) );
-		return $this->wrap( $element, $context, $control . '<p id="' . esc_attr( $hint ) . '" class="swf-description">' . esc_html( $text ) . '</p>' );
+		return $this->wrap( $element, $context, $control . '<p id="' . esc_attr( $hint ) . '" class="swf-description">' . esc_html( $text ) . '</p>' . $this->upload_extra( $element ) );
 	}
 }

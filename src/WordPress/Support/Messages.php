@@ -17,6 +17,7 @@ final class Messages {
 	public static function validation( string $code, array $params = array() ): string {
 		$message = match ( $code ) {
 			'file_upload' => __( 'The file could not be uploaded. Please select it again.', 'sw-forms' ),
+			'image' => __( 'Please upload a valid JPEG, PNG, GIF or WebP image.', 'sw-forms' ),
 			'file_type' => __( 'This file type is not allowed or does not match its extension.', 'sw-forms' ),
 			'file_size' => __( 'The file is empty or exceeds the upload size limit.', 'sw-forms' ),
 			'file_storage' => __( 'File uploads require entry storage to be enabled for this form.', 'sw-forms' ),

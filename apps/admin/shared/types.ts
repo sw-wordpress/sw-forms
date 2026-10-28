@@ -73,6 +73,7 @@ export const BUILT_IN_CATALOG = staticCatalog({
   'color': { data: true, container: '' },
   'tags': { data: true, container: '' },
 
+  image: { data: true, container: '' },
   file: { data: true, container: '' },
   textarea: { data: true, container: '' },
   checkbox: { data: true, container: '' },
