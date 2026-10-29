@@ -35,7 +35,7 @@ final class UploadStorage {
 		$uploads = wp_upload_dir();
 		$dir     = $uploads['basedir'] . '/swforms';
 		foreach ( $names as $name ) {
-			if ( is_string( $name ) && 1 === preg_match( '/^swf-[a-f0-9]{32}\.(pdf|txt|csv|jpe?g|png|gif|webp|zip)$/D', $name ) ) {
+			if ( is_string( $name ) && 1 === preg_match( '/^swf-[a-f0-9]{32}\.(pdf|txt|csv|jpe?g|png|gif|webp|zip|webm|ogg|m4a|mp3|wav|mp4)$/D', $name ) ) {
 				wp_delete_file_from_directory( $dir . '/' . $name, $dir );
 			}
 		}

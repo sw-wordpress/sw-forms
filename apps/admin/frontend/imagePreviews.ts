@@ -1,4 +1,6 @@
-/** Local previews never upload bytes or change the selected files or their names. */
+import { addImageCrop, cancelImageCrop } from './imageCrop';
+
+/** Local previews never upload bytes. Optional cropping requires an explicit Apply action. */
 export class ImagePreviews {
   private readonly previews = new Map<HTMLInputElement, { urls: string[]; host: HTMLElement; files: File[] }>();
 
@@ -35,6 +37,7 @@ export class ImagePreviews {
             figure.appendChild(message);
           }, { once: true });
           figure.prepend(image);
+          addImageCrop(input, figure, image, file, i);
         } catch {
           // The native file control and server validation remain usable if previews are unavailable.
         }
@@ -65,5 +68,6 @@ export class ImagePreviews {
     state.host.replaceChildren();
     state.host.hidden = true;
     this.previews.delete(input);
+    cancelImageCrop(input);
   }
 }

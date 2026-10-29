@@ -20,9 +20,28 @@ beforeEach(() => {
   vi.stubGlobal('URL', { createObjectURL: create, revokeObjectURL: revoke });
   previews = new ImagePreviews(form);
 });
-afterEach(() => { previews.clear(); vi.unstubAllGlobals(); document.body.replaceChildren(); });
+afterEach(() => { previews.clear(); vi.restoreAllMocks(); vi.unstubAllGlobals(); document.body.replaceChildren(); });
 
 describe('local image previews', () => {
+  it('cancels a hidden preview export without letting its late result finish a new export', async () => {
+    vi.stubGlobal('DataTransfer', class {
+      files: File[] = [];
+      items = { add: (file: File) => { this.files.push(file); } };
+    });
+    vi.spyOn(HTMLImageElement.prototype, 'naturalWidth', 'get').mockReturnValue(200);
+    vi.spyOn(HTMLImageElement.prototype, 'naturalHeight', 'get').mockReturnValue(100);
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ drawImage: vi.fn() } as unknown as CanvasRenderingContext2D);
+    const callbacks: BlobCallback[] = [];
+    vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation((callback) => { callbacks.push(callback); });
+    input.dataset.swfCrop = ''; select(new File(['original'], 'photo.png', { type: 'image/png' })); previews.update(input);
+    host.querySelector<HTMLButtonElement>('.swf-crop-apply')!.click();
+    input.disabled = true; previews.sync(); expect(input.dataset.swfMediaBusy).toBeUndefined();
+    input.disabled = false; previews.sync(); host.querySelector<HTMLButtonElement>('.swf-crop-apply')!.click();
+    callbacks[0]!(new Blob(['stale'])); await Promise.resolve(); await Promise.resolve();
+    expect(input.files?.[0]?.name).toBe('photo.png'); expect(input.dataset.swfMediaBusy).toBe('1');
+    callbacks[1]!(new Blob(['current'])); await Promise.resolve(); await Promise.resolve();
+    expect(input.files?.[0]?.name).toBe('photo-cropped.png'); expect(input.dataset.swfMediaBusy).toBeUndefined();
+  });
   it('shows bounded previews with literal file names and leaves selected files intact', () => {
     const first = new File(['image'], '<img src=x>.png', { type: 'image/png' });
     const second = new File(['image'], 'photo.jpg', { type: 'image/jpeg' });

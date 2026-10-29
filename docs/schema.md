@@ -307,7 +307,6 @@ of filtered public data. Trash retains files; permanent entry/form deletion, ret
 and opted-in uninstall remove them. Backups, offloaded storage and external copies require
 their own lifecycle handling; this implementation owns local files in `/swforms/` only.
 
-Image cropping, signatures and audio/video recording remain subsequent issue #2 work.
 Likert scales are excluded from #2 and tracked with matrices in issue #1.
 
 Checks: `php tests/wp-file-uploads.php`, `node apps/admin/scripts/e2e/uploads.mjs`.
@@ -326,6 +325,7 @@ list permits no uploads. Validated HTTP files additionally need positive image d
 | Additional setting | Default | Behavior |
 |--------------------|---------|----------|
 | `preview` | `true` | Local image thumbnails when JavaScript/object URLs are available. |
+| `crop` | `false` | Explicit client-side cropping when previews and PNG uploads are enabled. |
 | `capture` | `""` | `""` (file picker), `environment` (rear camera) or `user` (front camera). |
 
 Camera preference emits the native `capture` attribute on the image file control, with
@@ -336,8 +336,8 @@ hints and server validation also work without JavaScript.
 
 Previews use local `blob:` URLs, plain-text filenames and image elements, without sending bytes
 to a server or changing the selected files. Failed or unsupported previews leave native upload
-and server validation available. The selected original bytes are stored; there is no crop,
-resize, conversion or metadata stripping. Preview count is limited by the configured file
+and server validation available. The selected original bytes are stored unless the visitor
+explicitly applies a crop. Preview count is limited by the configured file
 count (at most 20 per control). Changing/clearing selections, hiding controls, removing repeater
 rows, resetting or completing a form releases their local object URLs. Visible selections
 restore their previews when a hidden field becomes visible again. A native postback error
@@ -353,5 +353,61 @@ Coverage includes real multipart image acceptance/rejection/dimensions in the Wo
 preview lifecycle/escaping/fallbacks in Vitest and
 `node apps/admin/scripts/e2e/images.mjs` for actual decoded pixels, camera attributes,
 repeater controls, unchanged downloaded bytes and palette/settings save/reload. These browser
-checks do not claim to exercise physical phone cameras. Image cropping, signatures and
-audio/video recording remain open in #2; Likert remains tracked with matrix issue #1.
+checks do not claim to exercise physical phone cameras. Likert remains tracked with matrix issue #1.
+
+## Image cropping, signatures and recordings
+
+With `image.settings.crop=true`, preview thumbnails offer percentage inputs for left, top,
+width and height, plus Apply/Cancel. These native number controls work with keyboard and touch.
+Cropping is optional and enabled only when `preview=true` and PNG is permitted. Cancel leaves
+the selection unchanged. Apply replaces just that file with `<stem>-cropped.png`, then updates
+conditions and the thumbnail. The resulting PNG is scaled down to at most 4096 pixels per side;
+animation and metadata are not preserved. PNG transparency is preserved. There is no upload
+before submission. Original files are not modified on disk. Invalid coordinates, decode/export
+failures and stale async results preserve the selection. The server validates the resulting
+multipart file exactly like any other PNG; it does not trust crop coordinates or client claims.
+
+Three further built-in types use the same list value, request layout, entry links, conditions,
+repeater handling, ownership manifest, rollback and deletion as `file`/`image`:
+
+| Type | Settings | Accepted content |
+|------|----------|------------------|
+| `signature` | `maxSize=10` MiB | Exactly one PNG with positive image dimensions. |
+| `audio` | `maxSize=10`, `extensions=webm,ogg,m4a,mp3,wav,mp4`, `maxSeconds=60` | Exactly one audio recording, with an audio stream and no video stream. |
+| `video` | `maxSize=10`, `extensions=webm,mp4`, `maxSeconds=60` | Exactly one video recording with positive video dimensions; audio is optional. |
+
+The builder can narrow recording extensions. WordPress MIME restrictions apply too. General
+`file` fields retain their previous allowlist and do not implicitly accept media extensions.
+Server checks include actual HTTP provenance, extension, detected MIME/container, stream kind
+using WordPress's bundled media reader, actual bytes, required and file count. The transport
+MIME sent by the browser is not trusted. `maxSize` is further limited by the host upload limit.
+`maxSeconds` is an integer 1–600 and limits **browser recording only**, not uploaded duration:
+streaming WebM output may lack duration metadata. The server always enforces bytes and stream
+kind. No transcoding or antivirus scanning is performed.
+
+The signature canvas accepts mouse, pen or touch. A blank canvas does not select a file.
+Visitors explicitly choose **Use signature** to produce a white-background 800×300 PNG;
+**Clear signature** removes the drawing and selection. A PNG file can be chosen instead,
+including with keyboard alone or without JavaScript. This is an image of a signature, without
+identity verification or a cryptographic signing protocol. Client drawing history is not stored.
+
+Audio/video uses `getUserMedia` and `MediaRecorder` only after **Start recording**, on HTTPS
+(or a browser-trusted localhost origin), with browser permission. The supported recorder MIME
+must match an allowed extension; unsupported APIs/formats leave the native selector available.
+Stop finalizes a local file; time limit/device disconnect also stop. Size overflow discards the
+new recording and retains any prior selection. Visitors can play or discard the selected clip
+before submitting. No autoplay or background upload occurs. Submission waits until recording
+and async image processing are finished. Denied permissions leave file upload usable.
+
+Microphone/camera tracks, timers and local playback URLs are released on stop/error,
+discard, replacement, condition hiding, row removal, reset, successful submission, tab hiding
+and page exit. Pending permission/export results cannot attach a file after cancellation.
+Native no-JS multipart submission remains available for all types; a postback error requires
+reselection. Entry storage is required and the existing **public random URL** contract applies
+to signatures and recordings as well. Own types still register via `swf_register_field_types`.
+
+Checks: WordPress PHPUnit real media fixtures, shared PHP/TypeScript `logic/media.json`,
+Vitest lifecycle tests and `node apps/admin/scripts/e2e/media.mjs`. The browser check uses
+real canvas pixels and MediaRecorder encoders with synthetic Chromium devices, plus no-JS
+fallback and builder save/reload; physical devices and other browser implementations need
+deployment testing.

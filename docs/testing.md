@@ -99,14 +99,18 @@ Measured locally with PHP 8.2/PCOV and Vitest V8 during this change:
 | Scope | Line coverage |
 |-------|---------------|
 | Portable core alone, before adapter collection | 92.31% (480/520) |
-| Complete PHP application after CLI/HTTP/REST integration | 87.67% (4067/4639) |
+| Complete PHP application after media integration | 87.95% (4175/4747) |
 | Complete frontend before new tests | 30.81% |
-| Complete frontend after image-upload tests | 41.74% |
-| Frontend form runtime | 88.88% |
+| Complete frontend after media tests | 44.93% |
+| Frontend form runtime | 88.74% |
 | Filename parser, REST client, entry-file component | 100% |
-| PHP upload field | 97.35% |
+| PHP upload field | 98.28% |
 | PHP image-upload field / local preview manager | 100% |
 | PHP incoming-file and upload-storage classes | 100% |
+| PHP signature/audio/video fields | 100% |
+| PHP shared recording field | 98.15% |
+| Browser crop/signature/file bridge/manager modules | 100% |
+| Browser recording control | 99.05% |
 
 Core-only and complete-application percentages are different scopes and must not be compared
 as a before/after regression. Remaining frontend gaps are chiefly other builder/settings
@@ -116,6 +120,17 @@ Clover/LCOV independently. SonarQube may report different percentages because it
 line model and branch accounting differ from the local runners.
 
 Browser smoke checks remain useful in addition to coverage tests. Against local WordPress,
-run `node apps/admin/scripts/e2e/frontend.mjs`, `admin.mjs` and `uploads.mjs` with the PHP helper
+run `node apps/admin/scripts/e2e/frontend.mjs`, `admin.mjs`, `uploads.mjs`, `images.mjs` and `media.mjs` with the PHP helper
 on PATH and the repository-pinned Playwright Chromium installed. These are not counted as
 Vitest coverage; the CI HTTP suite and DOM-runtime tests supply that report independently.
+
+`media.mjs` launches real Chromium recording with synthetic devices (no microphone/camera
+hardware needed). It checks crop pixel dimensions, drawn signature bytes, live browser-produced
+audio/video streams accepted by PHP, permission-free initial rendering, automatic limits,
+track shutdown on hiding/removal, busy-submit blocking, no-JS fallback and palette persistence.
+Synthetic media files in `tests/fixtures/media` are committed; FFmpeg was used only to generate
+those samples and is not needed in CI or at runtime. Stream-kind rejection and permanent
+file cleanup are verified over real multipart HTTP. Run upload browser suites sequentially:
+some assertions deliberately count all generated files in the disposable WordPress directory.
+The new PHP media fields and frontend media modules have 95% coverage guards (concrete
+audio/video PHP types require 100%). These do not waive SonarQube's separate quality gate.

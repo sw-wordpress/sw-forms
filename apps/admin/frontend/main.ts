@@ -4,6 +4,7 @@
  */
 import './form.css';
 import { ImagePreviews } from './imagePreviews';
+import { MediaInputs } from './mediaInputs';
 import { fileNames } from './fileValues';
 import { parseInterval } from './intervalValues';
 import { parseTags } from './tagValues';
@@ -73,6 +74,7 @@ function cssEscape(value: string): string {
 class SwForm {
   private readonly config: Config;
   private readonly imagePreviews: ImagePreviews;
+  private readonly mediaInputs: MediaInputs;
   private readonly tree: Tree;
   private readonly evaluator: Evaluator;
   private nonce: string;
@@ -88,6 +90,7 @@ class SwForm {
     this.nonce = this.config.nonce;
 
     this.imagePreviews = new ImagePreviews(form);
+    this.mediaInputs = new MediaInputs(form);
     initSelectSearch(form);
     this.updateRangeOutputs(form);
     form.addEventListener('reset', () => {
@@ -95,6 +98,7 @@ class SwForm {
         form.querySelectorAll<HTMLInputElement>('.swf-select-search').forEach(filterSelect);
         this.updateRangeOutputs(form);
         this.imagePreviews.clear();
+        this.mediaInputs.clear();
         this.apply();
       }, 0);
     });
@@ -234,6 +238,7 @@ class SwForm {
     const visibility = this.evaluator.evaluate(this.collect(this.tree.rootIds, this.form, 'swf'));
     this.applyTo(this.tree.rootIds, this.form, '', visibility);
     this.imagePreviews.sync();
+    this.mediaInputs.sync();
   }
 
   private applyTo(ids: string[], scope: ParentNode, prefix: string, visibility: Map<string, boolean>): void {
@@ -352,6 +357,8 @@ class SwForm {
 
   private async submit(allowRetry: boolean): Promise<void> {
     if (this.busy) return;
+    const pending = this.form.querySelector<HTMLInputElement>('input[data-swf-media-busy]:not(:disabled)');
+    if (pending) { this.showErrors(pending.dataset.swfBusyMessage ?? this.config.i18n.networkError, {}); return; }
     this.busy = true;
     const button = this.form.querySelector<HTMLButtonElement>('.swf-submit');
     const label = button?.textContent ?? '';
@@ -408,7 +415,10 @@ class SwForm {
   }
 
   private success(result: SubmitResponse): void {
+    this.mediaInputs.clear();
     if (result.redirect) {
+      this.mediaInputs.destroy();
+      this.imagePreviews.clear();
       window.location.assign(result.redirect);
       return;
     }
@@ -420,6 +430,7 @@ class SwForm {
     // Server side wp_kses_post() output of the configured confirmation message.
     confirmation.innerHTML = result.message;
     if (this.config.preview) {
+      this.mediaInputs.sync();
       this.showErrors('', {});
       const summary = this.form.querySelector<HTMLElement>('.swf-summary');
       if (summary) {
@@ -432,6 +443,7 @@ class SwForm {
       return;
     }
     this.imagePreviews.clear();
+    this.mediaInputs.destroy();
     wrapper.replaceWith(confirmation);
     confirmation.focus();
   }

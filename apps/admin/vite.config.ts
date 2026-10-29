@@ -65,6 +65,11 @@ export default defineConfig({
       thresholds: {
         'frontend/main.ts': { lines: 85 },
         'frontend/imagePreviews.ts': { lines: 95 },
+        'frontend/imageCrop.ts': { lines: 95 },
+        'frontend/mediaFiles.ts': { lines: 95 },
+        'frontend/mediaInputs.ts': { lines: 95 },
+        'frontend/recordingControl.ts': { lines: 95 },
+        'frontend/signaturePad.ts': { lines: 95 },
         'frontend/fileValues.ts': { lines: 100 },
         'src/api/client.ts': { lines: 95 },
         'src/features/entries/EntryFields.vue': { lines: 100 },

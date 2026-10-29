@@ -121,8 +121,14 @@ Built-in `range`, `rating`, `scale`, `color` and `tags` fields are documented in
 Built-in `birthdate`, `date-interval` and `time-interval` fields are also documented there.
 Built-in `name` and `address` are editable group presets (see `docs/schema.md`).
 Built-in `image` extends the file-upload pipeline with local previews and mobile camera hints (see `docs/schema.md`).
-Remaining issue #2 work covers image cropping, signatures and audio/video capture.
 Likert scales belong to matrix issue #1 and are excluded from #2.
+
+Built-in `signature`, `audio` and `video` fields reuse `FileField`'s multipart contract.
+`FileField::allowed_mimes()` and `detected_mimes()` are protected extension points for
+subclasses with narrow format/container requirements; normal file fields retain their
+previous allowlist. WordPress MIME policy still applies. Such subclasses should override
+`validate_uploads()` for content-specific checks after the parent provenance/size/MIME checks.
+See `RecordingField` for stream inspection and `SignatureField` for PNG-only drawing output.
 
 ## Preset groups
 

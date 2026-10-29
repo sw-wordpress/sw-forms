@@ -44,6 +44,38 @@ afterEach(() => {
 });
 
 describe('actual frontend form runtime', () => {
+  it('keeps submission blocked when another thumbnail is cancelled during a crop export', async () => {
+    vi.stubGlobal('URL', { createObjectURL: () => 'blob:preview', revokeObjectURL: vi.fn() });
+    vi.stubGlobal('DataTransfer', class {
+      files: File[] = [];
+      items = { add: (file: File) => { this.files.push(file); } };
+    });
+    vi.spyOn(HTMLImageElement.prototype, 'naturalWidth', 'get').mockReturnValue(200);
+    vi.spyOn(HTMLImageElement.prototype, 'naturalHeight', 'get').mockReturnValue(100);
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ drawImage: vi.fn() } as unknown as CanvasRenderingContext2D);
+    let complete: BlobCallback = () => {};
+    vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation((callback) => { complete = callback; });
+    await mountForm(true, { fields: [field('photo', 'image', 'list')], html: wrap('photo', '<div class="swf-upload"><input type="file" name="swf[photo][]" data-swf-image data-swf-crop data-swf-preview-limit="2" data-swf-busy-message="Finish crop"></div><div class="swf-image-previews" hidden></div>') });
+    input().files = [new File(['a'], 'a.png', { type: 'image/png' }), new File(['b'], 'b.png', { type: 'image/png' })] as unknown as FileList;
+    change(input());
+    const figures = document.querySelectorAll('figure');
+    figures[0]!.querySelector<HTMLButtonElement>('.swf-crop-apply')!.click();
+    figures[1]!.querySelectorAll<HTMLButtonElement>('button')[1]!.click();
+    submit(); await flushPromises();
+    expect(fetch).not.toHaveBeenCalled();
+    expect(document.querySelector('.swf-summary')!.textContent).toContain('Finish crop');
+    complete(new Blob(['cropped'], { type: 'image/png' })); await flushPromises();
+    expect(input().files?.[0]?.name).toBe('a-cropped.png');
+    expect(input().files?.[1]?.name).toBe('b.png');
+    submit(); await flushPromises(); expect(fetch).toHaveBeenCalledOnce();
+  });
+  it('blocks submission during media processing and allows it when processing finishes', async () => {
+    await mountForm(); enable();
+    input().dataset.swfMediaBusy = '1'; input().dataset.swfBusyMessage = 'Finish recording';
+    submit(); await flushPromises(); expect(fetch).not.toHaveBeenCalled();
+    expect(document.querySelector('.swf-summary')!.textContent).toContain('Finish recording');
+    delete input().dataset.swfMediaBusy; submit(); await flushPromises(); expect(fetch).toHaveBeenCalledOnce();
+  });
   it('disables hidden uploads and cascades visibility through plain file names', async () => {
     await mountForm();
     expect(input().disabled).toBe(true);

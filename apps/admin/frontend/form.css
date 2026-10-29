@@ -448,3 +448,9 @@
 .swf-image-previews figcaption {
   font-size: 0.85em;
 }
+.swf .swf-signature canvas { display: block; width: 100%; max-width: 800px; height: auto; border: 1px solid #777; touch-action: none; background: #fff; }
+.swf .swf-signature button, .swf .swf-recorder button, .swf .swf-image-crop button { margin: .5rem .5rem .5rem 0; }
+.swf .swf-recorder video, .swf .swf-recorder audio { display: block; max-width: 100%; }
+.swf .swf-image-crop { max-width: 22rem; }
+.swf .swf-image-crop label { display: inline-flex; flex-direction: column; width: 48%; padding: .25rem; }
+.swf .swf-image-crop input { width: 100%; }
