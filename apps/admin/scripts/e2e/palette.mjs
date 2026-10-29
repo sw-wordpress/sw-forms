@@ -1,0 +1,33 @@
+import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
+import { readdirSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { chromium } from 'playwright-core';
+const here = dirname(fileURLToPath(import.meta.url));
+const php = (...args) => JSON.parse(execFileSync('php', [join(here, 'palette-fixture.php'), ...args], { encoding: 'utf8' }));
+const fixture = php('setup');
+const auth = JSON.parse(execFileSync('php', [join(here, 'admin-auth.php')], { encoding: 'utf8' }));
+const base = join(homedir(), '.cache/ms-playwright');
+const chrome = readdirSync(base).filter((name) => /^chromium-\d+$/.test(name)).sort().pop();
+let browser;
+try {
+  browser = await chromium.launch({ executablePath: join(base, chrome, 'chrome-linux/chrome'), args: ['--no-sandbox'] });
+  const context = await browser.newContext({ viewport: { width: 1440, height: 1400 } });
+  await context.addCookies(auth.cookies.map((cookie) => ({ ...cookie, domain: 'localhost', path: '/' })));
+  const page = await context.newPage(); await page.goto(`${auth.admin}#/forms/${fixture.form}`);
+  const root = page.locator('.swf-list--root'); const cards = root.locator(':scope > .swf-el');
+  await cards.nth(3).waitFor();
+  await page.locator('.swf-palette__item[data-type=textarea]').dragTo(cards.nth(2), { targetPosition: { x: 50, y: 4 } });
+  await page.waitForFunction(() => document.querySelectorAll('.swf-list--root > .swf-el').length === 5);
+  await page.keyboard.press('Control+s'); await page.locator('.swf-builder__state--dirty').waitFor({ state: 'hidden' });
+  assert.deepEqual(php('document', String(fixture.form)).fields.map((field) => field.type), ['input', 'input', 'textarea', 'input', 'group']);
+  const group = cards.last().locator('.swf-list').first();
+  await page.locator('.swf-palette__item[data-type=textarea]').dragTo(group.locator(':scope > .swf-el').nth(1), { targetPosition: { x: 50, y: 4 } });
+  await page.waitForFunction(() => document.querySelector('.swf-list--root > .swf-el:last-child .swf-list').children.length === 3);
+  await page.keyboard.press('Control+s'); await page.locator('.swf-builder__state--dirty').waitFor({ state: 'hidden' }); await page.reload();
+  await cards.nth(4).waitFor();
+  assert.deepEqual(php('document', String(fixture.form)).fields[4].children.map((field) => field.type), ['input', 'textarea', 'input']);
+  console.log('PASS: Actual palette drops preserve root and nested positions after save/reload.');
+} finally { await browser?.close(); php('teardown', String(fixture.form)); }

@@ -793,7 +793,6 @@ msgid "Select"
 msgstr "Auswahlliste"
 
 #: src/WordPress/Fields/SelectField.php:39
-#: src/WordPress/Fields/SelectField.php:151
 msgid "Search options"
 msgstr "Optionen durchsuchen"
 
@@ -809,9 +808,13 @@ msgstr "Text der leeren Auswahl"
 msgid "Please choose"
 msgstr "Bitte wählen"
 
-#: src/WordPress/Fields/SelectField.php:153
+#: src/WordPress/Fields/SelectField.php:142
 msgid "No matching options."
 msgstr "Keine passenden Optionen."
+
+#: src/WordPress/Fields/SelectField.php:143
+msgid "Remove selection"
+msgstr "Auswahl entfernen"
 
 #: src/WordPress/Fields/SignatureField.php:18
 msgid "Signature"

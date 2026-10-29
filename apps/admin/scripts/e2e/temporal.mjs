@@ -57,6 +57,9 @@ try {
       assert.equal(await row.locator('.swf-time-picker').first().locator('[data-swf-time-unit=hour]').evaluate((select) => select === document.activeElement), true);
       await chooseTime(row, 'from', '11:00');
       await chooseTime(row, 'to', '12:00');
+      const search = row.locator('.ts-control input');
+      await search.fill('Beta'); await row.locator('.ts-dropdown [data-value=a]').waitFor({ state: 'detached' });
+      await row.locator('.ts-dropdown [data-value=b]').waitFor({ state: 'visible' }); await search.press('Enter');
       assert.equal(await row.locator('.swf-time-picker').first().locator('[data-swf-time-unit=hour]').getAttribute('id'), await row.locator('label').filter({ hasText: /^From$/ }).getAttribute('for'));
     }
     await page.locator('.swf-submit').click();
@@ -67,6 +70,7 @@ try {
     assert.deepEqual(stored.dates, [fixture.from, fixture.to]);
     assert.deepEqual(stored.times, ['09:00', '10:30']);
     if (javaScriptEnabled) assert.deepEqual(stored.rows[1].nested, ['11:00', '12:00']);
+    if (javaScriptEnabled) assert.equal(stored.rows[1].nested_choice, 'b');
     assert.deepEqual(errors, []);
     await context.close();
     console.log(`PASS: Temporal validation, conditions and storage (JavaScript ${javaScriptEnabled ? 'on' : 'off'}).`);

@@ -10,7 +10,7 @@ import { fileNames } from './fileValues';
 import { parseInterval } from './intervalValues';
 import { parseTags } from './tagValues';
 import { phoneValue } from './inputValues';
-import { filterSelect, initSelectSearch } from './selectSearch';
+import { SelectSearch } from './selectSearch';
 import { Evaluator } from '../shared/logic';
 import { Tree } from '../shared/tree';
 import type { ElementNode, FieldValue, TypeCatalog, Values } from '../shared/types';
@@ -77,6 +77,7 @@ class SwForm {
   private readonly timePickers: TimePickers;
   private readonly imagePreviews: ImagePreviews;
   private readonly mediaInputs: MediaInputs;
+  private readonly selects: SelectSearch;
   private readonly tree: Tree;
   private readonly evaluator: Evaluator;
   private nonce: string;
@@ -93,11 +94,11 @@ class SwForm {
 
     this.imagePreviews = new ImagePreviews(form);
     this.mediaInputs = new MediaInputs(form);
-    initSelectSearch(form);
+    this.selects = new SelectSearch(form);
     this.updateRangeOutputs(form);
     form.addEventListener('reset', () => {
       setTimeout(() => {
-        form.querySelectorAll<HTMLInputElement>('.swf-select-search').forEach(filterSelect);
+        this.selects.reset();
         this.updateRangeOutputs(form);
         this.imagePreviews.clear();
         this.mediaInputs.clear();
@@ -214,10 +215,6 @@ class SwForm {
   private onChange(event: Event): void {
     const target = event.target as HTMLElement | null;
     if (event.type === 'change' && target instanceof HTMLInputElement && target.matches('[data-swf-image]')) this.imagePreviews.update(target);
-    if (target instanceof HTMLInputElement && target.classList.contains('swf-select-search')) {
-      filterSelect(target);
-      return;
-    }
     if (target instanceof HTMLInputElement && target.type === 'range') {
       const output = target.parentElement?.querySelector('output.swf-range-value');
       if (output) output.textContent = target.value;
@@ -243,6 +240,7 @@ class SwForm {
     this.imagePreviews.sync();
     this.timePickers.sync();
     this.mediaInputs.sync();
+    this.selects.sync();
   }
 
   private applyTo(ids: string[], scope: ParentNode, prefix: string, visibility: Map<string, boolean>): void {
@@ -289,13 +287,12 @@ class SwForm {
     const token = String(this.rowCounter++);
     const fragment = template.content.cloneNode(true) as DocumentFragment;
     replacePlaceholder(fragment, token);
-    initSelectSearch(fragment);
     container.appendChild(fragment);
     this.updateRangeOutputs(container);
     this.updateRowButtons(repeater);
     this.apply();
     const rows = this.rows(repeater);
-    rows[rows.length - 1]?.querySelector<HTMLElement>('input:not([type="hidden"]):not([hidden]), select, textarea')?.focus();
+    this.selects.focus(rows[rows.length - 1]?.querySelector<HTMLElement>('input:not([type="hidden"]):not([hidden]), select, textarea'));
   }
 
   private removeRow(repeater: HTMLElement, row: HTMLElement | null): void {
@@ -309,7 +306,7 @@ class SwForm {
     const focusTarget =
       remaining[Math.max(0, index - 1)]?.querySelector<HTMLElement>('input:not([type="hidden"]):not([hidden]), select, textarea') ??
       repeater.querySelector<HTMLElement>(':scope > .swf-row-add');
-    focusTarget?.focus();
+    this.selects.focus(focusTarget);
   }
 
   private updateRowButtons(repeater: HTMLElement): void {
@@ -422,6 +419,7 @@ class SwForm {
     if (!this.config.preview || result.redirect) this.timePickers.destroy();
     this.mediaInputs.clear();
     if (result.redirect) {
+      this.selects.destroy();
       this.mediaInputs.destroy();
       this.imagePreviews.clear();
       window.location.assign(result.redirect);
@@ -449,6 +447,7 @@ class SwForm {
     }
     this.imagePreviews.clear();
     this.mediaInputs.destroy();
+    this.selects.destroy();
     wrapper.replaceWith(confirmation);
     confirmation.focus();
   }
@@ -509,7 +508,7 @@ class SwForm {
         link.href = slot?.id ? `#${slot.id}` : '#';
         link.addEventListener('click', (e) => {
           e.preventDefault();
-      wrapper?.querySelector<HTMLElement>('input:not([type="hidden"]):not([hidden]), select, textarea')?.focus();
+          this.selects.focus(wrapper?.querySelector<HTMLElement>('input:not([type="hidden"]):not([hidden]), select, textarea'));
         });
         item.appendChild(link);
         list.appendChild(item);
@@ -521,6 +520,7 @@ class SwForm {
     summary.hidden = title === '' && Object.keys(errors).length === 0;
     if (!summary.hidden) summary.focus();
     this.timePickers.sync();
+    this.selects.sync();
   }
 }
 
