@@ -1,5 +1,12 @@
 import { canSelectFiles, pngBlob, selectFiles } from './mediaFiles';
 
+const pendingCrops = new WeakMap<HTMLInputElement, symbol>();
+
+/** Selection/preview teardown cancels any crop belonging to that file control. */
+export function cancelImageCrop(input: HTMLInputElement): void {
+  if (pendingCrops.delete(input)) delete input.dataset.swfMediaBusy;
+}
+
 /** Percentage controls are usable with touch, mouse and keyboard; original bytes change only on Apply. */
 export function addImageCrop(input: HTMLInputElement, figure: HTMLElement, image: HTMLImageElement, file: File, index: number): void {
   if (!input.hasAttribute('data-swf-crop') || !canSelectFiles()) return;
@@ -23,16 +30,18 @@ export function addImageCrop(input: HTMLInputElement, figure: HTMLElement, image
   const cancel = document.createElement('button');
   cancel.type = 'button'; cancel.textContent = labels.cancel ?? '';
   const status = document.createElement('p'); status.setAttribute('role', 'status');
-  let version = 0;
+  let pending: symbol | undefined;
   cancel.addEventListener('click', () => {
-    version++; delete input.dataset.swfMediaBusy;
+    if (pending !== undefined && pendingCrops.get(input) === pending) cancelImageCrop(input);
+    pending = undefined;
     details.open = false; apply.disabled = false; status.textContent = '';
     for (const key of ['x', 'y', 'width', 'height'] as const) values[key].value = key === 'x' || key === 'y' ? '0' : '100';
   });
   apply.addEventListener('click', () => { void (async () => {
     if (input.disabled || input.dataset.swfMediaBusy) return;
     const selected = Array.from(input.files ?? []);
-    const current = ++version;
+    const operation = Symbol('crop');
+    pending = operation; pendingCrops.set(input, operation);
     apply.disabled = true; input.dataset.swfMediaBusy = '1';
     try {
       if (!image.naturalWidth || !image.naturalHeight || selected[index] !== file || Object.values(values).some((value) => !value.checkValidity() || value.value === '')) throw new Error('Invalid crop');
@@ -48,12 +57,15 @@ export function addImageCrop(input: HTMLInputElement, figure: HTMLElement, image
       if (!context) throw new Error('Canvas unavailable');
       context.drawImage(image, x, y, width, height, 0, 0, canvas.width, canvas.height);
       const blob = await pngBlob(canvas);
-      if (current !== version || input.disabled || !figure.isConnected || selected.some((original, i) => input.files?.[i] !== original) || selected.length !== input.files?.length) return;
+      if (pendingCrops.get(input) !== operation || input.disabled || !figure.isConnected || selected.some((original, i) => input.files?.[i] !== original) || selected.length !== input.files?.length) return;
       const name = file.name.replace(/\.[^.]*$/, '') + '-cropped.png';
       selected[index] = new File([blob], name, { type: 'image/png' });
       if (!selectFiles(input, selected)) throw new Error('File selection unavailable');
-    } catch { status.textContent = labels.error ?? ''; }
-    finally { if (version === current) { delete input.dataset.swfMediaBusy; apply.disabled = false; } }
+    } catch { if (pendingCrops.get(input) === operation) status.textContent = labels.error ?? ''; }
+    finally {
+      if (pendingCrops.get(input) === operation) cancelImageCrop(input);
+      if (pending === operation) { pending = undefined; apply.disabled = false; }
+    }
   })(); });
   details.append(apply, cancel, status); figure.appendChild(details);
 }

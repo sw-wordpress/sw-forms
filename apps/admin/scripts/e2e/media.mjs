@@ -25,13 +25,31 @@ try {
   await page.goto(fixture.url);
   await field('audio').locator('.swf-recorder').waitFor({ state: 'visible' });
   assert.equal(await page.evaluate(() => window.captureCalls), 0);
-  await field('photo').locator('input[type=file]').setInputFiles({ name: 'red.png', mimeType: 'image/png', buffer: Buffer.from(fixture.png, 'base64') });
+  await field('photo').locator('input[type=file]').setInputFiles(['red.png', 'second.png'].map((name) => ({ name, mimeType: 'image/png', buffer: Buffer.from(fixture.png, 'base64') })));
   await page.waitForFunction(() => document.querySelector('[data-swf-id=photo] img')?.naturalWidth === 100);
-  await field('photo').locator('summary').click();
-  await field('photo').getByLabel('Width (%)').fill('50');
-  await field('photo').getByRole('button', { name: 'Apply crop' }).click();
+  await page.evaluate(() => {
+    const original = HTMLCanvasElement.prototype.toBlob;
+    window.cropExports = [];
+    window.restoreCanvasExport = () => { HTMLCanvasElement.prototype.toBlob = original; };
+    HTMLCanvasElement.prototype.toBlob = function (callback, type, quality) {
+      original.call(this, (blob) => { window.cropExports.push(() => callback(blob)); }, type, quality);
+    };
+  });
+  const firstPhoto = field('photo').locator('figure').first();
+  const secondPhoto = field('photo').locator('figure').nth(1);
+  await firstPhoto.locator('summary').click();
+  await firstPhoto.getByLabel('Width (%)').fill('50');
+  await firstPhoto.getByRole('button', { name: 'Apply crop' }).click();
+  await page.waitForFunction(() => window.cropExports.length === 1);
+  await secondPhoto.locator('summary').click(); await secondPhoto.getByRole('button', { name: 'Cancel crop' }).click();
+  await page.locator('.swf-submit').click(); await page.locator('.swf-summary').filter({ hasText: 'Please finish recording or processing' }).waitFor();
+  assert.equal(await field('photo').locator('input[type=file]').getAttribute('data-swf-media-busy'), '1');
+  await secondPhoto.locator('summary').click(); await secondPhoto.getByRole('button', { name: 'Apply crop' }).click();
+  assert.equal(await page.evaluate(() => window.cropExports.length), 1);
+  await page.evaluate(() => { window.restoreCanvasExport(); window.cropExports.shift()(); });
   await page.waitForFunction(() => document.querySelector('[data-swf-id=photo] img')?.naturalWidth === 50);
   assert.equal(await field('photo').locator('input[type=file]').evaluate((input) => input.files[0].name), 'red-cropped.png');
+  assert.equal(await field('photo').locator('input[type=file]').evaluate((input) => input.files[1].name), 'second.png');
   const draw = async (canvas) => {
     await canvas.scrollIntoViewIfNeeded(); const box = await canvas.boundingBox();
     await page.mouse.move(box.x + 20, box.y + 20); await page.mouse.down(); await page.mouse.move(box.x + 80, box.y + 40, { steps: 6 }); await page.mouse.up();
@@ -62,7 +80,7 @@ try {
   await page.locator('.swf-submit').click();
   await page.locator('.swf-confirmation').waitFor();
   const entry = php('latest', String(fixture.form));
-  assert.equal(entry.data.photo[0].name, 'red-cropped.png'); assert.equal(entry.data.signature[0].type, 'image/png');
+  assert.equal(entry.data.photo[0].name, 'red-cropped.png'); assert.equal(entry.data.photo[1].name, 'second.png'); assert.equal(entry.data.signature[0].type, 'image/png');
   assert.equal(entry.data.audio[0].name, 'recording.webm'); assert.equal(entry.data.video[0].name, 'recording.webm'); assert.equal(entry.data.rows[0].initials[0].name, 'signature.png');
   const photo = await page.request.get(entry.data.photo[0].url); const photoBytes = await photo.body(); assert.equal(photoBytes.readUInt32BE(16), 50); assert.equal(photoBytes.readUInt32BE(20), 80);
   assert.equal(await page.evaluate(() => window.mediaTracks.every((track) => track.readyState === 'ended')), true);

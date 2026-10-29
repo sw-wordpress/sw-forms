@@ -1,4 +1,4 @@
-import { addImageCrop } from './imageCrop';
+import { addImageCrop, cancelImageCrop } from './imageCrop';
 
 /** Local previews never upload bytes. Optional cropping requires an explicit Apply action. */
 export class ImagePreviews {
@@ -68,6 +68,6 @@ export class ImagePreviews {
     state.host.replaceChildren();
     state.host.hidden = true;
     this.previews.delete(input);
-    delete input.dataset.swfMediaBusy;
+    cancelImageCrop(input);
   }
 }

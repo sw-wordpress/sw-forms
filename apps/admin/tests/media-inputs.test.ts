@@ -182,6 +182,32 @@ describe('explicit image crop', () => {
     Object.defineProperty(image, 'naturalWidth', { value: 200 }); Object.defineProperty(image, 'naturalHeight', { value: 100 });
     addImageCrop(input, figure, image, file, 0); return figure;
   }
+  it('lets only the owning thumbnail cancel its export and protects the next export from late completion', async () => {
+    const first = crop();
+    const second = document.createElement('figure'); const image = document.createElement('img'); second.appendChild(image); host.appendChild(second);
+    Object.defineProperty(image, 'naturalWidth', { value: 100 }); Object.defineProperty(image, 'naturalHeight', { value: 100 });
+    addImageCrop(input, second, image, input.files![1]!, 1);
+    const callbacks: BlobCallback[] = [];
+    vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation((callback) => { callbacks.push(callback); });
+    first.querySelector<HTMLButtonElement>('.swf-crop-apply')!.click();
+    second.querySelectorAll<HTMLButtonElement>('button')[1]!.click();
+    expect(input.dataset.swfMediaBusy).toBe('1');
+    second.querySelector<HTMLButtonElement>('.swf-crop-apply')!.click(); expect(callbacks).toHaveLength(1);
+    first.querySelectorAll<HTMLButtonElement>('button')[1]!.click(); expect(input.dataset.swfMediaBusy).toBeUndefined();
+    second.querySelector<HTMLButtonElement>('.swf-crop-apply')!.click(); expect(callbacks).toHaveLength(2);
+    callbacks[0]!(new Blob(['cancelled'])); await flush();
+    expect(input.dataset.swfMediaBusy).toBe('1'); expect(input.files?.[0]?.name).toBe('photo.jpg');
+    callbacks[1]!(new Blob(['second'])); await flush();
+    expect(input.dataset.swfMediaBusy).toBeUndefined(); expect(input.files?.[0]?.name).toBe('photo.jpg'); expect(input.files?.[1]?.name).toBe('other-cropped.png');
+  });
+  it('does not let a cancelled export failure alter the current crop state', async () => {
+    const figure = crop(); const callbacks: BlobCallback[] = [];
+    vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation((callback) => { callbacks.push(callback); });
+    figure.querySelector<HTMLButtonElement>('.swf-crop-apply')!.click(); figure.querySelectorAll<HTMLButtonElement>('button')[1]!.click();
+    figure.querySelector<HTMLButtonElement>('.swf-crop-apply')!.click(); callbacks[0]!(null); await flush();
+    expect(input.dataset.swfMediaBusy).toBe('1'); expect(figure.textContent).not.toContain('failed');
+    callbacks[1]!(new Blob(['current'])); await flush(); expect(input.files?.[0]?.name).toBe('photo-cropped.png');
+  });
   it('replaces only the requested image on Apply with correctly cropped PNG pixels', async () => {
     const figure = crop(); const widths = figure.querySelectorAll<HTMLInputElement>('input'); widths[2]!.value = '50';
     expect(input.files?.[0]?.name).toBe('photo.jpg'); figure.querySelector<HTMLButtonElement>('.swf-crop-apply')!.click(); await flush();

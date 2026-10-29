@@ -18,7 +18,7 @@ if ('latest' === ($argv[1] ?? '')) {
 $service = \SWForms\WordPress\Forms\FormService::create_default();
 $id = $service->create('E2E media completion');
 $document = ['fields' => [
-    ['id' => 'photo', 'type' => 'image', 'key' => 'photo', 'label' => 'Crop photo', 'required' => true, 'settings' => ['crop' => true]],
+    ['id' => 'photo', 'type' => 'image', 'key' => 'photo', 'label' => 'Crop photo', 'required' => true, 'settings' => ['crop' => true, 'multiple' => true, 'maxFiles' => 2]],
     ['id' => 'signature', 'type' => 'signature', 'key' => 'signature', 'label' => 'Signature', 'required' => true],
     ['id' => 'audio', 'type' => 'audio', 'key' => 'audio', 'label' => 'Audio', 'required' => true, 'settings' => ['maxSeconds' => 2]],
     ['id' => 'show', 'type' => 'checkbox', 'key' => 'show', 'label' => 'Show video', 'settings' => ['mode' => 'single', 'text' => 'Show video', 'checked' => true]],
