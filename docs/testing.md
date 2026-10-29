@@ -101,7 +101,7 @@ Measured locally with PHP 8.2/PCOV and Vitest V8 during this change:
 | Portable core alone, before adapter collection | 92.31% (480/520) |
 | Complete PHP application after media integration | 87.95% (4175/4747) |
 | Complete frontend before new tests | 30.81% |
-| Complete frontend after media tests | 44.92% |
+| Complete frontend after media tests | 44.93% |
 | Frontend form runtime | 88.74% |
 | Filename parser, REST client, entry-file component | 100% |
 | PHP upload field | 98.28% |
@@ -110,7 +110,7 @@ Measured locally with PHP 8.2/PCOV and Vitest V8 during this change:
 | PHP signature/audio/video fields | 100% |
 | PHP shared recording field | 98.15% |
 | Browser crop/signature/file bridge/manager modules | 100% |
-| Browser recording control | 99.04% |
+| Browser recording control | 99.05% |
 
 Core-only and complete-application percentages are different scopes and must not be compared
 as a before/after regression. Remaining frontend gaps are chiefly other builder/settings

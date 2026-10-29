@@ -49,6 +49,7 @@ try {
   await page.waitForFunction(() => window.mediaTracks.every((track) => track.readyState === 'ended'));
   await page.getByLabel('Show video').check();
   assert.equal(await field('video').locator('input[type=file]').evaluate((input) => input.files.length), 0);
+  assert.equal(await field('video').locator('.swf-record-stop').isDisabled(), true);
   await field('video').getByRole('button', { name: 'Start recording' }).click();
   await page.waitForFunction(() => document.querySelector('[data-swf-id=video] input').files.length === 1);
   const rows = field('rows'); await rows.locator(':scope > .swf-row-add').click();

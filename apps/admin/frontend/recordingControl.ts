@@ -28,6 +28,7 @@ export class RecordingControl {
     });
     this.startButton = host.querySelector('.swf-record-start')!;
     this.stopButton = host.querySelector('.swf-record-stop')!;
+    this.stopButton.disabled = true;
     this.status = host.querySelector('.swf-media-status')!;
     const options = { signal: this.events.signal };
     this.startButton.addEventListener('click', () => { void this.start(); }, options);

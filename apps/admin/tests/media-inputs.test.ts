@@ -159,7 +159,9 @@ describe('enhancement manager', () => {
   it('initializes visible inputs once and cancels hidden, removed and reset controls', async () => {
     manager = new MediaInputs(form); manager.sync(); manager.sync(); click('.swf-record-start'); await flush();
     input.disabled = true; manager.sync(); await flush(); expect(stopped).toHaveBeenCalled(); expect(host.hidden).toBe(true);
-    input.disabled = false; manager.sync(); expect(host.hidden).toBe(false); form.remove(); manager.sync(); expect(host.hidden).toBe(true);
+    input.disabled = false; host.querySelector<HTMLButtonElement>('.swf-record-stop')!.disabled = false;
+    manager.sync(); expect(host.hidden).toBe(false); expect(host.querySelector<HTMLButtonElement>('.swf-record-stop')!.disabled).toBe(true);
+    form.remove(); manager.sync(); expect(host.hidden).toBe(true);
     manager.destroy(); setup('signature'); manager = new MediaInputs(form); manager.sync(); expect(host.hidden).toBe(false); manager.clear(); expect(host.hidden).toBe(true);
     window.dispatchEvent(new Event('pageshow')); expect(host.hidden).toBe(false); window.dispatchEvent(new Event('pagehide')); expect(host.hidden).toBe(true);
     manager.destroy(); window.dispatchEvent(new Event('pageshow')); expect(host.hidden).toBe(true);
