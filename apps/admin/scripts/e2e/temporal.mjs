@@ -24,24 +24,40 @@ try {
     await page.locator('input[name="swf[birth]"]').fill(fixture.tooYoung);
     const dates = page.locator('[data-swf-id="dates"]');
     const times = page.locator('[data-swf-id="times"]');
+    const chooseTime = async (scope, part, value) => {
+      if (!javaScriptEnabled) return scope.locator(`[data-swf-interval="${part}"]`).fill(value);
+      const [hour, minute] = value.split(':');
+      const picker = scope.locator(`[data-swf-interval="${part}"]`).locator('..').locator('.swf-time-picker');
+      await picker.locator('[data-swf-time-unit=hour]').selectOption(hour);
+      await picker.locator('[data-swf-time-unit=minute]').selectOption(minute);
+    };
+    if (javaScriptEnabled) {
+      const picker = times.locator('.swf-time-picker').first();
+      await picker.locator('[data-swf-time-unit=hour]').selectOption('09');
+      assert.deepEqual(await picker.locator('[data-swf-time-unit=minute] option').evaluateAll((options) => options.map((o) => o.value)), ['', '00', '15', '30', '45']);
+      await picker.locator('[data-swf-time-unit=hour]').selectOption('17');
+      assert.deepEqual(await picker.locator('[data-swf-time-unit=minute] option').evaluateAll((options) => options.map((o) => o.value)), ['', '00']);
+    }
+
     await dates.locator('[data-swf-interval="from"]').fill(fixture.to);
     await dates.locator('[data-swf-interval="to"]').fill(fixture.from);
-    await times.locator('[data-swf-interval="from"]').fill('09:00');
+    await chooseTime(times, 'from', '09:00');
     await page.locator('.swf-submit').click();
     await page.locator('.swf-summary').waitFor({ state: 'visible' });
     assert.equal(await page.locator('.swf-summary li').count(), 4); // age, reversed dates, partial time, conditional note
     await page.locator('input[name="swf[birth]"]').fill(fixture.birth);
     await dates.locator('[data-swf-interval="from"]').fill(fixture.from);
     await dates.locator('[data-swf-interval="to"]').fill(fixture.to);
-    await times.locator('[data-swf-interval="to"]').fill('10:30');
+    await chooseTime(times, 'to', '10:30');
     await page.locator('[data-swf-id="note"]').waitFor({ state: 'visible' });
     await page.locator('input[name="swf[note]"]').fill('pair condition works');
     if (javaScriptEnabled) {
       await page.locator('[data-swf-id="rows"] .swf-row-add').click();
       const row = page.locator('[data-swf-id="rows"] .swf-rows > .swf-row').last();
-      await row.getByLabel('From', { exact: true }).fill('11:00');
-      await row.getByLabel('To', { exact: true }).fill('12:00');
-      assert.equal(await row.getByLabel('From', { exact: true }).getAttribute('id'), await row.locator('label').filter({ hasText: /^From$/ }).getAttribute('for'));
+      assert.equal(await row.locator('.swf-time-picker').first().locator('[data-swf-time-unit=hour]').evaluate((select) => select === document.activeElement), true);
+      await chooseTime(row, 'from', '11:00');
+      await chooseTime(row, 'to', '12:00');
+      assert.equal(await row.locator('.swf-time-picker').first().locator('[data-swf-time-unit=hour]').getAttribute('id'), await row.locator('label').filter({ hasText: /^From$/ }).getAttribute('for'));
     }
     await page.locator('.swf-submit').click();
     await page.locator('.swf-confirmation').waitFor({ state: 'visible' });

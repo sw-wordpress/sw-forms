@@ -64,6 +64,7 @@ export default defineConfig({
       exclude: ['**/*.d.ts'],
       thresholds: {
         'frontend/main.ts': { lines: 85 },
+        'frontend/timePicker.ts': { lines: 95 },
         'frontend/imagePreviews.ts': { lines: 95 },
         'frontend/imageCrop.ts': { lines: 95 },
         'frontend/mediaFiles.ts': { lines: 95 },

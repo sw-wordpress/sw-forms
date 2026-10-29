@@ -412,6 +412,8 @@
 
 .swf-interval { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--swf-gap); }
 .swf-interval label { display: block; margin-bottom: 0.35em; }
+.swf-time-picker { display: flex; gap: .4rem; }
+.swf-time-picker > label { flex: 1; min-width: 0; font-size: .85em; }
 @container (max-width: 479px) { .swf-interval { grid-template-columns: minmax(0, 1fr); } }
 
 /* File selection and dropping use the same native accessible control. */
