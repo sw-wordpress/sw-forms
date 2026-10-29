@@ -1033,3 +1033,150 @@ body > .swf-root .q-tooltip {
 .swf-preview__matrix { width: 100%; border-collapse: collapse; font-size: 12px; }
 .swf-preview__matrix th, .swf-preview__matrix td { padding: 8px; text-align: center; border-bottom: 1px solid var(--swf-border); }
 .swf-preview__matrix th[scope="row"] { text-align: start; }
+
+/* ---------- editor frame: edge-to-edge, quiet surfaces and independent panels ---------- */
+.swf-shell--editor {
+  --swf-gradient: var(--swf-primary);
+  --swf-gradient-soft: var(--swf-surface-2);
+  --swf-radius: 6px;
+  --swf-radius-sm: 4px;
+  --swf-shadow-1: none;
+  --swf-shadow-2: none;
+}
+.swf-shell--editor .q-btn,
+.swf-shell--editor .q-field--outlined .q-field__control,
+.swf-shell--editor .swf-preview__input,
+.swf-shell--editor .swf-preview__unknown,
+.swf-shell--editor .swf-list,
+.swf-shell--editor .swf-el,
+.swf-shell--editor .swf-col-box,
+.swf-shell--editor .swf-preset,
+.swf-shell--editor .swf-logic__rule,
+.swf-shell--editor .swf-fake-button {
+  border-radius: 4px;
+}
+.swf-shell--editor .swf-chip,
+.swf-shell--editor .swf-el__badge {
+  border-radius: 3px;
+  font-weight: 500;
+}
+.swf-shell--editor .swf-builder__title .q-field__native {
+  font-size: 16px;
+  font-weight: 600;
+}
+.swf-shell--editor .swf-palette__list {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 4px;
+}
+.swf-shell--editor .swf-palette__item {
+  flex-direction: row;
+  justify-content: flex-start;
+  min-height: 38px;
+  padding: 7px 10px;
+  gap: 10px;
+  border-color: transparent;
+  border-radius: 4px;
+  background: transparent;
+  font-weight: 500;
+  text-align: left;
+  transition: background-color 0.15s ease;
+}
+.swf-shell--editor .swf-palette__item .q-icon {
+  color: var(--swf-muted);
+}
+.swf-shell--editor .swf-palette__item:hover {
+  background: var(--swf-surface-3);
+  border-color: var(--swf-border);
+  transform: none;
+}
+.swf-shell--editor .swf-canvas {
+  padding: 24px clamp(12px, 2vw, 28px) 32px;
+  background: var(--swf-bg);
+}
+.swf-shell--editor .swf-canvas__paper {
+  padding: 24px clamp(12px, 2vw, 28px);
+  box-shadow: none;
+}
+.swf-shell--editor .swf-el--selected,
+.swf-shell--editor .swf-col-box--selected {
+  box-shadow: 0 0 0 1px var(--swf-primary);
+}
+.swf-shell--editor .swf-rail__logo,
+.swf-shell--editor .swf-fake-button {
+  background: var(--swf-primary);
+}
+@media (min-width: 961px) {
+  .swf-shell--editor {
+    height: calc(100dvh - var(--bar-h));
+    min-height: 0;
+    overflow: hidden;
+  }
+  .swf-shell--editor .swf-main {
+    overflow: hidden;
+  }
+  .swf-builder {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .swf-builder__bar {
+    position: relative;
+    top: auto;
+    flex: none;
+    gap: 6px 12px;
+    padding: 6px 12px;
+  }
+  .swf-builder__left {
+    flex-basis: 220px;
+  }
+  .swf-builder__title {
+    min-width: 100px;
+    flex: 1 1 180px;
+  }
+  .swf-builder__page {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+  .swf-builder__errors {
+    flex: none;
+    max-height: min(160px, 25dvh);
+    overflow: auto;
+  }
+  .swf-workspace {
+    overflow: hidden;
+  }
+  .swf-palette,
+  .swf-inspector {
+    position: relative;
+    top: auto;
+    align-self: stretch;
+    height: auto;
+    min-height: 0;
+    overscroll-behavior: contain;
+  }
+  .swf-canvas {
+    min-height: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+}
+@media (max-width: 960px) {
+  /* Stacked panels remain reachable on narrow/touch screens. */
+  .swf-shell--editor .swf-builder__bar {
+    position: static;
+  }
+  .swf-shell--editor .swf-palette__list {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+}
+
+.swf-shell--editor .swf-fade-enter-from {
+  transform: none;
+}
+.swf-shell--editor .swf-builder__tabs {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+}

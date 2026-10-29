@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SW Forms\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-29 15:10+0000\n"
+"POT-Creation-Date: 2026-10-29 23:30+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -909,8 +909,8 @@ msgid "Untitled form"
 msgstr ""
 
 #. translators: %s: title of the copied form
-#: src/WordPress/Forms/FormService.php:144
-#: src/WordPress/Forms/FormService.php:146
+#: src/WordPress/Forms/FormService.php:145
+#: src/WordPress/Forms/FormService.php:147
 #, php-format
 msgid "%s (copy)"
 msgstr ""
@@ -924,15 +924,15 @@ msgstr ""
 msgid "Thank you! Your message has been sent."
 msgstr ""
 
-#: src/WordPress/Forms/FormSettings.php:62
+#: src/WordPress/Forms/FormSettings.php:63
 msgid "Admin notification"
 msgstr ""
 
-#: src/WordPress/Forms/FormSettings.php:65
+#: src/WordPress/Forms/FormSettings.php:66
 msgid "New entry: {form:title}"
 msgstr ""
 
-#: src/WordPress/Forms/FormSettings.php:79
+#: src/WordPress/Forms/FormSettings.php:80
 msgid "Notification"
 msgstr ""
 
@@ -970,7 +970,7 @@ msgid "You are not allowed to preview this form."
 msgstr ""
 
 #: src/WordPress/Rest/EntriesController.php:122
-#: src/WordPress/Rest/FormsController.php:292
+#: src/WordPress/Rest/FormsController.php:296
 msgid "Form not found."
 msgstr ""
 
@@ -980,7 +980,7 @@ msgstr ""
 msgid "Entry not found."
 msgstr ""
 
-#: src/WordPress/Rest/FormsController.php:159
+#: src/WordPress/Rest/FormsController.php:160
 msgid "The form could not be saved. Please fix the marked problems."
 msgstr ""
 
@@ -1311,6 +1311,12 @@ msgstr ""
 
 #: src/WordPress/Support/Messages.php:98
 msgid "The form contains an error."
+msgstr ""
+
+#: src/WordPress/Webhooks/WebhookValidator.php:63
+msgid ""
+"Invalid webhook settings. Check the URL, method, format, headers, mapping "
+"and conditions."
 msgstr ""
 
 #. translators: 1: required PHP version, 2: current PHP version

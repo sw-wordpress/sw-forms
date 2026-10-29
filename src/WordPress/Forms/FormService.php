@@ -71,7 +71,7 @@ final class FormService {
 				}
 			}
 		}
-		return $errors;
+		return array_merge( $errors, \SWForms\WordPress\Webhooks\WebhookValidator::validate( $document['settings']['webhooks'] ?? array(), $tree ) );
 	}
 
 	public function create( string $title ): int {
@@ -104,8 +104,9 @@ final class FormService {
 				'document' => $document,
 			);
 		}
-		$title   = sanitize_text_field( $title );
-		$version = $this->forms->publish( $id, '' === $title ? __( 'Untitled form', 'sw-forms' ) : $title, $document );
+		$title    = sanitize_text_field( $title );
+		$version  = $this->forms->publish( $id, '' === $title ? __( 'Untitled form', 'sw-forms' ) : $title, $document );
+		$document = $this->forms->version( $id, $version ) ?? $document;
 		/**
 		 * Fires after a form was saved (published).
 		 *

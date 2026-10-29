@@ -27,6 +27,17 @@ Submission token: `admin-ajax.php?action=swf_token&form={id}` returns `{token, n
 for logged-in users). Anonymous submissions use the signed token instead of a nonce so that
 cached pages keep working.
 
+### Webhook settings
+
+Form managers edit `document.settings.webhooks` using the existing publish/draft routes;
+see `docs/schema.md` for the definition and mapping constraints. Signing `secret` is
+write-only. Empty/omitted input preserves the same webhook id's stored secret; responses
+return `hasSecret` only, never plaintext or ciphertext. Client-supplied `secretEncrypted`
+is ignored. Invalid publication returns a `webhook:<id>` error path and keeps an encrypted
+draft. Duplication creates new independent secrets; discarding a draft restores published
+secrets without creating a new version. Entry-only viewers do not receive webhook settings.
+There is currently no test-send or resend endpoint; delivery is still pending.
+
 ### Multipart file fields
 
 `POST /forms/{id}/submit` accepts native multipart files named `swf[field_id][]`, including

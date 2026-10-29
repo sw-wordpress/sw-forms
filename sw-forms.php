@@ -64,6 +64,15 @@ $swf_loader = require $swf_autoload;
 $swf_loader->addPsr4( 'SWForms\\', SWF_DIR . 'src/' );
 unset( $swf_autoload, $swf_loader );
 
+// AS coordinates versions across plugins and must load before plugins_loaded.
+// Keep its global API intact; release builds bundle this library separately.
+$swf_scheduler = SWF_DIR . 'libraries/action-scheduler/action-scheduler.php';
+if ( ! is_readable( $swf_scheduler ) ) {
+	$swf_scheduler = SWF_DIR . 'vendor/woocommerce/action-scheduler/action-scheduler.php';
+}
+require_once $swf_scheduler;
+unset( $swf_scheduler );
+
 require_once SWF_DIR . 'includes/functions.php';
 
 register_activation_hook( __FILE__, array( \SWForms\WordPress\Lifecycle::class, 'activate' ) );

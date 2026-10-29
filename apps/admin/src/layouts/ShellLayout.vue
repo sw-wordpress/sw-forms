@@ -28,7 +28,7 @@ const fullWidth = computed(() => route.meta.fullWidth === true);
 </script>
 
 <template>
-  <div class="swf-shell" :class="{ 'swf-shell--collapsed': app.railCollapsed }">
+  <div class="swf-shell" :class="{ 'swf-shell--collapsed': app.railCollapsed, 'swf-shell--editor': fullWidth }">
     <a href="#swf-main" class="swf-skip" @click.prevent="focusMain">{{
       t('app.skipToContent')
     }}</a>
@@ -284,6 +284,37 @@ const fullWidth = computed(() => route.meta.fullWidth === true);
 }
 .swf-main--full > * {
   max-width: none;
+}
+.swf-shell--editor .swf-main {
+  padding: 0;
+  min-height: 0;
+}
+.swf-shell--editor .swf-rail__logo {
+  border-radius: 4px;
+  box-shadow: none;
+}
+.swf-shell--editor .swf-nav-link {
+  border-radius: 4px;
+}
+@media (min-width: 961px) {
+  .swf-shell--editor.swf-shell--collapsed {
+    --rail-w: 56px;
+  }
+  .swf-shell--editor .swf-rail {
+    position: static;
+    height: 100%;
+    min-height: 0;
+  }
+  .swf-shell--editor.swf-shell--collapsed .swf-rail {
+    padding: 12px 6px;
+  }
+  .swf-shell--editor.swf-shell--collapsed .swf-rail__logo {
+    width: 32px;
+    height: 32px;
+  }
+  .swf-shell--editor.swf-shell--collapsed .swf-nav-link {
+    padding: 8px;
+  }
 }
 
 @media (max-width: 860px) {

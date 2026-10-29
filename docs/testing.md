@@ -54,6 +54,15 @@ random per-run key; its fault hooks are not installed in the plugin.
 The REST suite additionally tests publication versus drafts, invalid schema preservation,
 duplication, status changes, entry search/presentation, bulk operations, missing-resource
 responses and the distinction between viewing entries, editing forms and anonymous access.
+PHPUnit's WordPress bootstrap and its loopback HTTP fixture explicitly select `en_US`, since
+their assertions use English source messages. This does not change the site's stored locale.
+Webhook tests cover encrypted secrets, draft rotation/discard, REST redaction, independent
+duplicate secrets, field-id mapping, payload filters and signatures of exact JSON/form bodies.
+The browser configuration round-trip runs with `node apps/admin/scripts/e2e/webhooks.mjs`.
+`node apps/admin/scripts/e2e/editor-layout.mjs` verifies the editor's viewport frame at
+desktop widths, independent palette/canvas scrolling, every editor tab, narrow-screen
+panel access and releasing the document scroll lock when returning to the forms list.
+It also captures light/dark/mobile views under `/tmp/swf-editor-layout-*.png`.
 
 ## Frontend tests
 

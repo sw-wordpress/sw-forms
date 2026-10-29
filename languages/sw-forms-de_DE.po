@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SW Forms 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-29 15:05+0000\n"
+"POT-Creation-Date: 2026-10-29 23:30+0100\n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -679,7 +679,11 @@ msgid ""
 "Up to 50 questions. Use stable values starting with a letter, followed by "
 "letters, digits, underscores or hyphens (max. 64 characters). Changing a "
 "value changes the stored answer key."
-msgstr "Bis zu 50 Fragen. Verwende feste Werte, die mit einem Buchstaben beginnen und danach Buchstaben, Ziffern, Unterstriche oder Bindestriche enthalten (max. 64 Zeichen). Eine Änderung des Werts ändert den Schlüssel der gespeicherten Antwort."
+msgstr ""
+"Bis zu 50 Fragen. Verwende feste Werte, die mit einem Buchstaben beginnen "
+"und danach Buchstaben, Ziffern, Unterstriche oder Bindestriche enthalten "
+"(max. 64 Zeichen). Eine Änderung des Werts ändert den Schlüssel der "
+"gespeicherten Antwort."
 
 #: src/WordPress/Fields/MatrixField.php:43
 msgid "Question 1"
@@ -698,7 +702,10 @@ msgid ""
 "Up to 20 answers, one per question. The default is a five-point Likert "
 "scale; labels and stored values can be edited. Required matrices need an "
 "answer in every row."
-msgstr "Bis zu 20 Antworten, eine pro Frage. Voreingestellt ist eine fünfstufige Likert-Skala; Beschriftungen und gespeicherte Werte lassen sich bearbeiten. Bei Pflichtfeldern muss jede Zeile beantwortet werden."
+msgstr ""
+"Bis zu 20 Antworten, eine pro Frage. Voreingestellt ist eine fünfstufige "
+"Likert-Skala; Beschriftungen und gespeicherte Werte lassen sich bearbeiten. "
+"Bei Pflichtfeldern muss jede Zeile beantwortet werden."
 
 #: src/WordPress/Fields/MatrixField.php:61
 msgid "Strongly disagree"
@@ -950,8 +957,8 @@ msgid "Untitled form"
 msgstr "Unbenanntes Formular"
 
 #. translators: %s: title of the copied form
-#: src/WordPress/Forms/FormService.php:144
-#: src/WordPress/Forms/FormService.php:146
+#: src/WordPress/Forms/FormService.php:145
+#: src/WordPress/Forms/FormService.php:147
 #, php-format
 msgid "%s (copy)"
 msgstr "%s (Kopie)"
@@ -965,15 +972,15 @@ msgstr "Absenden"
 msgid "Thank you! Your message has been sent."
 msgstr "Vielen Dank! Die Nachricht wurde gesendet."
 
-#: src/WordPress/Forms/FormSettings.php:62
+#: src/WordPress/Forms/FormSettings.php:63
 msgid "Admin notification"
 msgstr "Admin-Benachrichtigung"
 
-#: src/WordPress/Forms/FormSettings.php:65
+#: src/WordPress/Forms/FormSettings.php:66
 msgid "New entry: {form:title}"
 msgstr "Neuer Eintrag: {form:title}"
 
-#: src/WordPress/Forms/FormSettings.php:79
+#: src/WordPress/Forms/FormSettings.php:80
 msgid "Notification"
 msgstr "Benachrichtigung"
 
@@ -1013,7 +1020,7 @@ msgid "You are not allowed to preview this form."
 msgstr "Keine Berechtigung für die Vorschau dieses Formulars."
 
 #: src/WordPress/Rest/EntriesController.php:122
-#: src/WordPress/Rest/FormsController.php:292
+#: src/WordPress/Rest/FormsController.php:296
 msgid "Form not found."
 msgstr "Formular nicht gefunden."
 
@@ -1023,7 +1030,7 @@ msgstr "Formular nicht gefunden."
 msgid "Entry not found."
 msgstr "Eintrag nicht gefunden."
 
-#: src/WordPress/Rest/FormsController.php:159
+#: src/WordPress/Rest/FormsController.php:160
 msgid "The form could not be saved. Please fix the marked problems."
 msgstr ""
 "Das Formular konnte nicht gespeichert werden. Bitte die markierten Probleme "
@@ -1376,6 +1383,14 @@ msgstr "Bedingungen hängen im Kreis voneinander ab."
 #: src/WordPress/Support/Messages.php:98
 msgid "The form contains an error."
 msgstr "Das Formular enthält einen Fehler."
+
+#: src/WordPress/Webhooks/WebhookValidator.php:63
+msgid ""
+"Invalid webhook settings. Check the URL, method, format, headers, mapping "
+"and conditions."
+msgstr ""
+"Ungültige Webhook-Einstellungen. URL, Methode, Format, Header, Mapping und "
+"Bedingungen prüfen."
 
 #. translators: 1: required PHP version, 2: current PHP version
 #: sw-forms.php:34

@@ -127,3 +127,18 @@ describe('columns', () => {
     expect(cols.columns!.map((c) => c.width)).toEqual([4, 4, 4]);
   });
 });
+
+describe('webhook references', () => {
+  it('warns before deletion and keeps mappings and conditions invalid until explicitly repaired', () => {
+    const form = sample();
+    form.settings.webhooks = [{
+      id: 'hook', name: 'Receiver', enabled: true, url: 'https://example.org/', method: 'POST', format: 'json', headers: [],
+      mapping: [{ field: 'a', target: 'receiver_name' }],
+      logic: { action: 'show', match: 'all', rules: [{ field: 'a', op: 'notempty' }] },
+    }];
+    expect(doc.dependents(form, new Set(['a']))).toContain('webhook:hook');
+    doc.remove(form, 'a');
+    expect(form.settings.webhooks[0]!.mapping).toEqual([{ field: 'a', target: 'receiver_name' }]);
+    expect(form.settings.webhooks[0]!.logic?.rules).toEqual([{ field: 'a', op: 'notempty' }]);
+  });
+});

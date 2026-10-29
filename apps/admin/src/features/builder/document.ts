@@ -275,6 +275,9 @@ export function dependents(document: FormDocument, ids: Set<string>): string[] {
     node.columns?.forEach((c) => check(c.id, c.logic));
   });
   document.settings.notifications.forEach((n) => check(`notification:${n.id}`, n.logic));
+  document.settings.webhooks?.forEach((w) => {
+    if (w.logic?.rules.some((r) => ids.has(r.field)) || w.mapping.some((m) => ids.has(m.field))) out.push(`webhook:${w.id}`);
+  });
   return out;
 }
 

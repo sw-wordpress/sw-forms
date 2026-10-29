@@ -1,0 +1,67 @@
+/** Webhook configuration round-trip; no HTTP delivery is implemented at this stage. */
+import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
+import { readdirSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { chromium } from 'playwright-core';
+
+const here = dirname(fileURLToPath(import.meta.url));
+const php = (file, ...args) => JSON.parse(execFileSync('php', [join(here, file), ...args], { encoding: 'utf8' }));
+const auth = php('admin-auth.php');
+const fixture = php('webhooks-fixture.php', 'setup', String(Date.now()));
+const base = join(homedir(), '.cache/ms-playwright');
+const chrome = readdirSync(base).filter((d) => /^chromium-\d+$/.test(d)).sort().pop();
+const browser = await chromium.launch({ executablePath: join(base, chrome, 'chrome-linux/chrome'), args: ['--no-sandbox'] });
+const errors = [];
+try {
+  const context = await browser.newContext({ viewport: { width: 1600, height: 1000 }, locale: 'de-DE' });
+  await context.addCookies(auth.cookies.map((cookie) => ({ ...cookie, domain: 'localhost', path: '/' })));
+  const page = await context.newPage();
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto(`${auth.admin}#/forms/${fixture.id}/webhooks`);
+  const panel = page.locator('.swf-webhooks');
+  await panel.getByRole('button', { name: 'Webhook hinzufügen', exact: true }).click();
+  await panel.getByLabel('Name', { exact: true }).fill('External receiver');
+  await panel.getByLabel('Ziel-URL', { exact: true }).fill('https://example.org/receive');
+  await panel.getByLabel('Signatur-Secret', { exact: true }).fill('E2E known signing secret');
+  await panel.getByRole('button', { name: 'Header hinzufügen', exact: true }).click();
+  await panel.getByLabel('Header-Name', { exact: true }).fill('X-Receiver');
+  await panel.getByLabel('Header-Wert', { exact: true }).fill('example');
+  await panel.getByRole('button', { name: 'Mapping hinzufügen', exact: true }).click();
+  await panel.getByLabel('Feld', { exact: true }).click();
+  await page.getByRole('option', { name: 'Name', exact: true }).click();
+  await panel.getByLabel('Empfängerschlüssel', { exact: true }).fill('receiver_name');
+  await panel.getByRole('switch', { name: 'Webhook aktivieren', exact: true }).click();
+  await panel.locator('.swf-logic .q-toggle').click();
+  const saved = page.waitForResponse((response) => response.url().includes(`/swforms/v1/forms/${fixture.id}`) && response.request().method() === 'PUT' && !response.url().includes('/draft'));
+  await page.keyboard.press('Control+s');
+  const response = await saved;
+  assert.equal(response.status(), 200);
+  const detail = await response.json();
+  const hook = detail.document.settings.webhooks[0];
+  assert.equal(hook.enabled, true);
+  assert.deepEqual(hook.mapping, [{ field: 'person', target: 'receiver_name' }]);
+  assert.equal(hook.logic.rules[0].field, 'person');
+  assert.equal(hook.hasSecret, true);
+  assert.equal('secret' in hook, false);
+  assert.equal('secretEncrypted' in hook, false);
+  const stored = php('webhooks-fixture.php', 'inspect', String(fixture.id));
+  assert.equal(stored.hasPlaintext, false);
+  assert.equal(stored.validSecret, true);
+  await page.reload();
+  await panel.getByLabel('Signatur-Secret', { exact: true }).waitFor();
+  assert.equal(await panel.getByLabel('Signatur-Secret', { exact: true }).inputValue(), '');
+  assert.equal(await panel.getByLabel('Empfängerschlüssel', { exact: true }).inputValue(), 'receiver_name');
+  await panel.getByLabel('Name', { exact: true }).fill('Renamed receiver');
+  const resaved = page.waitForResponse((r) => r.url().includes(`/swforms/v1/forms/${fixture.id}`) && r.request().method() === 'PUT' && !r.url().includes('/draft'));
+  await page.keyboard.press('Control+s');
+  assert.equal((await resaved).status(), 200);
+  assert.equal(php('webhooks-fixture.php', 'inspect', String(fixture.id)).ciphertext, stored.ciphertext);
+  assert.deepEqual(errors, []);
+  console.log('PASS: Webhook builder, mapping, headers, encrypted storage, redacted REST response and secret preservation after reload.');
+} finally {
+  await browser.close();
+  php('webhooks-fixture.php', 'cleanup', String(fixture.id));
+}

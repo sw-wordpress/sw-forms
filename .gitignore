@@ -1,5 +1,6 @@
 /vendor/
 /vendor-prefixed/
+/libraries/action-scheduler/
 /node_modules/
 /apps/admin/node_modules/
 /assets/admin/

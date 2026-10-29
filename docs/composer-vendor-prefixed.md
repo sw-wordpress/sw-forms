@@ -4,6 +4,24 @@ Wiederverwendbare Arbeitsanleitung nach dem Muster von SW Newspaper2 und SW Form
 Ziel: Releases liefern ausschließlich isolierte Produktionsbibliotheken aus;
 Quellcode-Checkouts funktionieren weiterhin mit normalem Composer-Autoloading.
 
+### Ausnahme: Action Scheduler in SW Forms
+
+Action Scheduler benötigt seine globale API zur Versionsabstimmung mit anderen Plugins.
+`woocommerce/action-scheduler` steht deshalb unter Mozarts `excluded_packages` und wird
+vor Mozart unverändert nach `libraries/action-scheduler/` kopiert. Releases enthalten dort
+auch die Lizenz und alle Laufzeitressourcen. Das AS-Archiv enthält keine `composer.json`;
+der Release-Workflow stellt diese Metadaten vor Mozart aus dem Lockfile im temporären
+Vendor-Verzeichnis wieder her, weil Mozart sie auch bei ausgeschlossenen Paketen liest.
+Der Bootstrap lädt diesen Einstiegspunkt vor
+`plugins_loaded`; im Quellcode-Checkout nutzt er den Composer-Pfad als Fallback.
+Der Release-Smoke-Test prüft ausdrücklich, dass die Bibliothek mitgeladen wurde.
+
+Die Composer-Vorgabe `~3.8.2` erhält die Plugin-Mindestanforderung WordPress 6.4.
+Beim Upgrade der Bibliothek ihre WordPress-Mindestversion ebenfalls prüfen. Die aktive
+Scheduler-Version kann höher sein, wenn ein anderes Plugin eine neuere Kopie bündelt.
+Die gemeinsame API und Tabellen dürfen weder isoliert noch beim Entfernen von SW Forms
+pauschal gelöscht werden.
+
 ## 1. Vor Beginn klären und lesen
 
 - Zielverzeichnis, Plugin-Slug und gewünschten Namespace eindeutig bestimmen.

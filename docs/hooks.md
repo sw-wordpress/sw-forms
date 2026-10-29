@@ -20,6 +20,7 @@ All hooks use the prefix `swf_`. Unless stated otherwise exceptions of callbacks
 | `swf_register_actions` | `list<ActionInterface> $actions, Submission $submission` | Add actions that run after a valid submission. Exceptions of an action are caught and logged on the entry. |
 | `swf_validation_errors` | `array<string,string> $errors, array $values, int $form_id` | Add `path => message` (path `id` or `repeater[0].id`) to reject a submission. |
 | `swf_submission_data` | `array $data, array $values, int $form_id` | Change the data (keyed by field key) before it is stored and sent. |
+| `swf_webhook_payload` | `array $payload, array $webhook, Submission $submission` | Prepared webhook envelope after mapping, before serialization/signing. Webhook settings exclude the signing secret. Used by `RequestBuilder`; automatic delivery is not connected yet. |
 | `swf_email_args` | `array{to, subject, message, headers} $args, array $notification, Submission $submission` | Change a notification e-mail. |
 | `swf_merge_tag` | `?string $value, string $tag, string $argument, Submission $submission` | Resolve custom merge tags (`null` = unknown, tag stays). |
 | `swf_element_markup` | `string $html, array $element, RenderContext $context` | Change the HTML of one element. |

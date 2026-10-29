@@ -107,7 +107,8 @@ try {
   check('column resize via keyboard', await eventually(async () => (await columns.locator('.swf-col-box__head .swf-num').first().textContent()) === '8/12'));
 
   // undo / redo
-  await page.locator('.swf-canvas').click({ position: { x: 5, y: 5 } });
+  // The resize separator is already focused; its non-editable target accepts shortcuts.
+  // The canvas's top edge may be covered by the sticky builder toolbar after scrolling.
   await page.keyboard.press('Control+z');
   check('undo', await eventually(async () => (await columns.locator('.swf-col-box__head .swf-num').first().textContent()) === '7/12'));
   await page.keyboard.press('Control+Shift+z');

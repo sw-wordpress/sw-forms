@@ -49,6 +49,21 @@ export interface FormSettings {
   retentionDays: number;
   spam: { honeypot: boolean; minSeconds: number; rateLimit: number };
   notifications: Notification[];
+  webhooks?: Webhook[];
+}
+
+export interface Webhook {
+  id: string;
+  name: string;
+  enabled: boolean;
+  url: string;
+  method: 'POST' | 'PUT';
+  format: 'json' | 'form';
+  headers: { name: string; value: string }[];
+  mapping: { field: string; target: string }[];
+  logic: Logic | null;
+  secret?: string;
+  hasSecret?: boolean;
 }
 
 export interface FormDocument {

@@ -12,16 +12,16 @@ Konzept: `/home/swarnat/.claude/plans/ich-m-chte-ein-plugin-parallel-glacier.md`
 
 ## Milestone 2 – Webhooks (0.2.0)
 
-- [ ] Action Scheduler per Composer bündeln, Queue-Wrapper (`swf_` Gruppe)
-- [ ] Webhook-Einstellungen pro Formular: URL, Methode (POST/PUT), Format (JSON / form-encoded), Header, Feld-Mapping (Standard: alle Felder), Bedingung (LogicEditor wiederverwenden)
-- [ ] Payload: `{event, eventId, form, entry, data}`; Filter `swf_webhook_payload`
-- [ ] Signatur `X-SWForms-Signature` (HMAC-SHA256, Secret pro Webhook, verschlüsselt gespeichert, nie im Export/REST im Klartext)
+- [x] Action Scheduler per Composer bündeln, Queue-Wrapper (`swf_background` Gruppe; Release-Bootstrap und Queue-Integrationstests)
+- [x] Webhook-Einstellungen pro Formular: URL, Methode (POST/PUT), Format (JSON / form-encoded), Header, Feld-Mapping (Standard: alle Felder), Bedingung (LogicEditor wiederverwenden)
+- [x] Payload: `{event, eventId, form, entry, data}`; Filter `swf_webhook_payload` (RequestBuilder; noch keine Zustellung)
+- [x] Signatur `X-SWForms-Signature` (HMAC-SHA256, Secret pro Webhook, verschlüsselt gespeichert, nie im Export/REST im Klartext)
 - [ ] Asynchrone Zustellung, Retries mit Backoff (z. B. 1 min, 5 min, 30 min, 2 h, 12 h), Timeout
 - [ ] SSRF-Schutz: nur http(s), keine privaten/lokalen IPs (Filter für Ausnahmen), `wp_safe_remote_request`
 - [ ] Zustellungslog in `swf_entry_log` (Status, HTTP-Code, Dauer, gekürzte Antwort) + „Erneut senden“ im Eintrag
 - [ ] Endgültiger Fehlschlag: Admin-Mail + Badge in der Formularliste; Hooks `swf_webhook_sent` / `swf_webhook_failed`
 - [ ] Speicherung aus: Eintrag temporär halten, nach Zustellung/letztem Retry löschen
-- [ ] Builder-Tab „Webhooks“ inkl. Test-Button mit Beispieldaten
+- [ ] Builder-Tab „Webhooks“ inkl. Test-Button mit Beispieldaten (Konfiguration fertig; Testversand offen)
 - [ ] Tests: Signatur (Unit), Queue/Retry (Integration), E2E gegen lokalen Echo-Endpoint
 
 ## Milestone 3 – Komfort & Export (0.3.0)

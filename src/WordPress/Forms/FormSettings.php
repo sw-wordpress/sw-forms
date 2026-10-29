@@ -49,6 +49,7 @@ final class FormSettings {
 				'rateLimit'  => min( 1000, absint( $spam['rateLimit'] ?? 10 ) ),
 			),
 			'notifications' => $notifications,
+			'webhooks'      => \SWForms\WordPress\Webhooks\WebhookSettings::normalize( $input['webhooks'] ?? array() ),
 		);
 	}
 

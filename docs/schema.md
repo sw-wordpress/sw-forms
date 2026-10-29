@@ -90,6 +90,65 @@ Yes/No) and the row path (`people[0].`) for fields inside repeaters.
 }
 ```
 
+## Webhook configuration (Milestone 2, preparation)
+
+`settings.webhooks` defaults to `[]`, with at most 20 definitions:
+
+```json
+{
+  "id": "receiver", "name": "CRM", "enabled": false,
+  "url": "https://example.org/receive", "method": "POST", "format": "json",
+  "headers": [{"name": "Authorization", "value": "Bearer example"}],
+  "mapping": [{"field": "immutable_element_id", "target": "receiver_name"}],
+  "logic": null
+}
+```
+
+Methods are `POST`/`PUT`, formats `json`/`form`. Header names must be unique ignoring case;
+line breaks and reserved transport/signature headers are rejected on publication. Enabled
+webhooks require an HTTP(S) URL without credentials or a fragment. Network/SSRF checks will
+be applied by the delivery service; URL syntax validation alone is not authorization to send.
+
+No mapping means all final visible data. A nonempty mapping selects only those values, with
+flat receiver keys matching the normal field-key pattern. Sources use immutable element ids,
+so renaming a source key does not break selection. Nonrepeatable nested fields and whole
+groups/repeaters can be selected; individual fields within repeater rows cannot. Hidden or
+missing sources are omitted, never replaced with all data. Deleted sources invalidate the
+webhook until the mapping or condition is explicitly repaired. Conditions use the shared
+logic model and form-level leaf fields outside repeaters.
+
+REST accepts a write-only `secret` for replacement; absent/empty input preserves the stored
+secret of the same form and webhook id. New webhooks without a secret get a random 256-bit
+secret. To verify signatures at the receiver, enter a secret known to that receiver.
+Documents in the database use authenticated AES-256-GCM `secretEncrypted` envelopes keyed
+from WordPress salts. REST returns only `hasSecret`; both plaintext and ciphertext are
+removed by `WebhookSettings::redact()` (also use this for future exports). Other header
+values are ordinary configuration, visible only to form managers. Entry-only viewers do
+not receive webhook configuration. Duplicated forms get independent signing secrets.
+Draft rotation does not affect the published version; discarding restores the original.
+Changing WordPress salts makes old encrypted secrets unreadable; replace them afterwards.
+
+The builder currently configures webhooks only. Automatic delivery, retries, the test-send
+button and resend/logging are still pending. No HTTP requests are made by these classes.
+
+### Prepared request contract
+
+`RequestBuilder` prepares `{event, eventId, form, entry, data}`. The event is `entry.created`;
+`form` contains `id`, `title`, `version`, and `entry` contains `id`, `date` (UTC). Its caller
+must generate one event id and persist it along with the filtered request for all retries.
+The `data` value is an object even when empty. The `swf_webhook_payload` filter runs after
+mapping and before serialization/signing. It receives no signing secret.
+
+`X-SWForms-Signature: sha256=<hex HMAC-SHA256>` signs the exact raw request body bytes using
+the configured secret. JSON uses UTF-8 with unescaped Unicode/slashes; form-encoded data
+uses RFC 3986 bracket notation, including nested groups/lists. Standard PHP form encoding
+omits empty arrays/objects. Receivers verify the raw bytes before parsing, using a constant
+time comparison. Do not reserialize the parsed body to verify a signature. The signature
+alone provides integrity/authentication, not replay prevention: retain processed event ids.
+
+Checks: `tests/Unit/WebhookTest.php`, `tests/WordPress/WebhookSettingsTest.php`,
+`node apps/admin/scripts/e2e/webhooks.mjs`.
+
 ## Merge tags
 
 `{field:key}` (`{field:group.key}` for plain groups), `{all_fields}`, `{form:id}`, `{form:title}`,

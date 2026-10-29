@@ -138,3 +138,27 @@ to return initial keyed component templates without ids, and register through th
 by the built-in name/address presets. The registry publishes normalized templates as
 `initialChildren`; the normalizer seeds omitted children for programmatic creation. This
 initialization never replaces an explicit child list. Persist generated ids when editing.
+
+## Background queue (Milestone 2 foundation)
+
+`SWForms\WordPress\Support\Queue` wraps Action Scheduler. Use it after
+`action_scheduler_init` (normally `init` priority greater than 1). Register callbacks with
+`add_action()` and the appropriate accepted argument count. Hooks must start with `swf_`
+and use lowercase letters, digits and underscores; jobs belong to `swf_background`.
+
+```php
+$queue = new \SWForms\WordPress\Support\Queue();
+$action_id = $queue->schedule( 'swf_my_job', array( $entry_id, 0 ) );
+$retry_id = $queue->schedule( 'swf_my_job', array( $entry_id, 1 ), time() + 60 );
+$queue->cancel( 'swf_my_job', array( $entry_id, 1 ) );
+```
+
+Arguments are a positional list. Pass identifiers, not submission data or secrets: Action
+Scheduler keeps job history. `schedule()` returns the persisted action id and throws on
+storage failure or use before initialization. It does not deduplicate jobs or retry them;
+the delivery service must implement its own idempotency and retry policy. Cancellation
+matches the hook and arguments within the SW Forms group only. Dispatch depends on
+WordPress cron/loopback processing; calling `schedule()` never performs the job inline.
+
+Webhook configuration and request signing are described in `docs/schema.md`. Automatic
+delivery and retries remain open in `TODO.md`.

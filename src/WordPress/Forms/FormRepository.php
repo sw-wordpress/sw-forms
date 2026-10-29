@@ -15,6 +15,7 @@ namespace SWForms\WordPress\Forms;
 // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- custom tables; reads are cheap and per request.
 
 use SWForms\WordPress\Database\Schema;
+use SWForms\WordPress\Webhooks\WebhookSettings;
 
 final class FormRepository {
 
@@ -25,7 +26,8 @@ final class FormRepository {
 	 */
 	public function create( string $title, array $document ): int {
 		global $wpdb;
-		$now = current_time( 'mysql', true );
+		$document = WebhookSettings::protect( $document );
+		$now      = current_time( 'mysql', true );
 		$wpdb->insert(
 			Schema::table( 'forms' ),
 			array(
@@ -91,6 +93,7 @@ final class FormRepository {
 	 */
 	public function save_draft( int $id, array $document ): void {
 		global $wpdb;
+		$document = WebhookSettings::protect( $document, $this->secret_source( $id ) );
 		$wpdb->update(
 			Schema::table( 'forms' ),
 			array(
@@ -115,9 +118,10 @@ final class FormRepository {
 		if ( null === $form ) {
 			return 0;
 		}
-		$json    = (string) wp_json_encode( $document );
-		$current = $form['current_version'];
-		$now     = current_time( 'mysql', true );
+		$document = WebhookSettings::protect( $document, $this->secret_source( $id ) );
+		$json     = (string) wp_json_encode( $document );
+		$current  = $form['current_version'];
+		$now      = current_time( 'mysql', true );
 		if ( 0 === $current || $this->version_json( $id, $current ) !== $json ) {
 			++$current;
 			$wpdb->insert(
@@ -160,6 +164,18 @@ final class FormRepository {
 			array( '%s', '%s' ),
 			array( '%d' )
 		);
+	}
+
+	/** Discarding a draft must restore the published secrets too, without a new version. */
+	public function discard_draft( int $id ): void {
+		global $wpdb;
+		$wpdb->update( Schema::table( 'forms' ), array( 'draft' => null ), array( 'id' => $id ), array( '%s' ), array( '%d' ) );
+	}
+
+	/** @return array<string, mixed> */
+	private function secret_source( int $id ): array {
+		$form = $this->find( $id );
+		return $form['draft'] ?? $this->published( $id ) ?? array();
 	}
 
 	/**

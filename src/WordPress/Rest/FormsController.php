@@ -13,6 +13,7 @@ use SWForms\WordPress\Fields\FieldRegistry;
 use SWForms\WordPress\Forms\FormService;
 use SWForms\WordPress\Frontend\Preview;
 use SWForms\WordPress\Support\Capabilities;
+use SWForms\WordPress\Webhooks\WebhookSettings;
 
 final class FormsController extends BaseController {
 
@@ -189,8 +190,7 @@ final class FormsController extends BaseController {
 			return $this->not_found();
 		}
 		if ( $form['current_version'] > 0 ) {
-			$published = $this->service->repository()->published( $id );
-			$this->service->repository()->publish( $id, $form['title'], is_array( $published ) ? $published : array() );
+			$this->service->repository()->discard_draft( $id );
 		}
 		return new \WP_REST_Response( $this->present( $id ) );
 	}
@@ -252,13 +252,17 @@ final class FormsController extends BaseController {
 			return array();
 		}
 		$published = $repository->published( $id );
+		$document  = WebhookSettings::redact( $this->service->editable_document( $id ) );
+		if ( ! current_user_can( Capabilities::MANAGE_FORMS ) ) {
+			unset( $document['settings']['webhooks'] );
+		}
 		return array(
 			'id'             => $form['id'],
 			'title'          => $form['title'],
 			'status'         => $form['status'],
 			'currentVersion' => $form['current_version'],
 			'hasDraft'       => null !== $form['draft'],
-			'document'       => $this->service->editable_document( $id ),
+			'document'       => $document,
 			// Keys of the published version: the builder warns before a key that receivers may rely on changes.
 			'publishedKeys'  => (object) self::keys( is_array( $published['fields'] ?? null ) ? $published['fields'] : array() ),
 			'previewUrl'     => Preview::url( $id ),
