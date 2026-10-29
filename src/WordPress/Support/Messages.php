@@ -16,6 +16,7 @@ final class Messages {
 	 */
 	public static function validation( string $code, array $params = array() ): string {
 		$message = match ( $code ) {
+			'media_stream' => __( 'Please choose a valid recording with the required audio or video stream.', 'sw-forms' ),
 			'file_upload' => __( 'The file could not be uploaded. Please select it again.', 'sw-forms' ),
 			'image' => __( 'Please upload a valid JPEG, PNG, GIF or WebP image.', 'sw-forms' ),
 			'file_type' => __( 'This file type is not allowed or does not match its extension.', 'sw-forms' ),

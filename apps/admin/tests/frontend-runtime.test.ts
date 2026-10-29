@@ -44,6 +44,13 @@ afterEach(() => {
 });
 
 describe('actual frontend form runtime', () => {
+  it('blocks submission during media processing and allows it when processing finishes', async () => {
+    await mountForm(); enable();
+    input().dataset.swfMediaBusy = '1'; input().dataset.swfBusyMessage = 'Finish recording';
+    submit(); await flushPromises(); expect(fetch).not.toHaveBeenCalled();
+    expect(document.querySelector('.swf-summary')!.textContent).toContain('Finish recording');
+    delete input().dataset.swfMediaBusy; submit(); await flushPromises(); expect(fetch).toHaveBeenCalledOnce();
+  });
   it('disables hidden uploads and cascades visibility through plain file names', async () => {
     await mountForm();
     expect(input().disabled).toBe(true);
