@@ -3,6 +3,7 @@
  * Without this script forms still work (server side postback).
  */
 import './form.css';
+import { TimePickers } from './timePicker';
 import { ImagePreviews } from './imagePreviews';
 import { MediaInputs } from './mediaInputs';
 import { fileNames } from './fileValues';
@@ -73,6 +74,7 @@ function cssEscape(value: string): string {
 
 class SwForm {
   private readonly config: Config;
+  private readonly timePickers: TimePickers;
   private readonly imagePreviews: ImagePreviews;
   private readonly mediaInputs: MediaInputs;
   private readonly selects: SelectSearch;
@@ -122,6 +124,7 @@ class SwForm {
       void this.submit(true);
     });
     this.form.querySelectorAll<HTMLElement>('.swf-repeater').forEach((r) => this.updateRowButtons(r));
+    this.timePickers = new TimePickers(form);
     this.apply();
     this.watchForToken();
   }
@@ -235,6 +238,7 @@ class SwForm {
     const visibility = this.evaluator.evaluate(this.collect(this.tree.rootIds, this.form, 'swf'));
     this.applyTo(this.tree.rootIds, this.form, '', visibility);
     this.imagePreviews.sync();
+    this.timePickers.sync();
     this.mediaInputs.sync();
     this.selects.sync();
   }
@@ -288,7 +292,7 @@ class SwForm {
     this.updateRowButtons(repeater);
     this.apply();
     const rows = this.rows(repeater);
-    this.selects.focus(rows[rows.length - 1]?.querySelector<HTMLElement>('input:not([type="hidden"]), select, textarea'));
+    this.selects.focus(rows[rows.length - 1]?.querySelector<HTMLElement>('input:not([type="hidden"]):not([hidden]), select, textarea'));
   }
 
   private removeRow(repeater: HTMLElement, row: HTMLElement | null): void {
@@ -300,7 +304,7 @@ class SwForm {
     this.apply();
     const remaining = this.rows(repeater);
     const focusTarget =
-      remaining[Math.max(0, index - 1)]?.querySelector<HTMLElement>('input, select, textarea') ??
+      remaining[Math.max(0, index - 1)]?.querySelector<HTMLElement>('input:not([type="hidden"]):not([hidden]), select, textarea') ??
       repeater.querySelector<HTMLElement>(':scope > .swf-row-add');
     this.selects.focus(focusTarget);
   }
@@ -412,6 +416,7 @@ class SwForm {
   }
 
   private success(result: SubmitResponse): void {
+    if (!this.config.preview || result.redirect) this.timePickers.destroy();
     this.mediaInputs.clear();
     if (result.redirect) {
       this.selects.destroy();
@@ -503,7 +508,7 @@ class SwForm {
         link.href = slot?.id ? `#${slot.id}` : '#';
         link.addEventListener('click', (e) => {
           e.preventDefault();
-          this.selects.focus(wrapper?.querySelector<HTMLElement>('input:not([type="hidden"]), select, textarea'));
+          this.selects.focus(wrapper?.querySelector<HTMLElement>('input:not([type="hidden"]):not([hidden]), select, textarea'));
         });
         item.appendChild(link);
         list.appendChild(item);
@@ -514,6 +519,7 @@ class SwForm {
     if (titleEl) titleEl.textContent = Object.keys(errors).length > 0 ? this.config.i18n.summary : title;
     summary.hidden = title === '' && Object.keys(errors).length === 0;
     if (!summary.hidden) summary.focus();
+    this.timePickers.sync();
     this.selects.sync();
   }
 }

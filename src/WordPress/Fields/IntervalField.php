@@ -146,15 +146,23 @@ abstract class IntervalField extends AbstractFieldType {
 				array_merge(
 					$this->aria( $element, $context ),
 					array(
-						'type'              => $validate ? $this->input_type() : 'text',
-						'id'                => $dom_id,
-						'name'              => $context->name( $id, '[' . $part . ']' ),
-						'class'             => 'swf-input',
-						'data-swf-interval' => $part,
-						'value'             => is_string( $value[ $index ] ?? null ) ? $value[ $index ] : '',
-						'min'               => $validate && '' !== $bounds['min'] ? $bounds['min'] : null,
-						'max'               => $validate && '' !== $bounds['max'] ? $bounds['max'] : null,
-						'step'              => $validate && 'time' === $this->input_type() ? (int) $this->setting( $element, 'step', 60 ) : null,
+						'type'                 => $validate ? $this->input_type() : 'text',
+						'id'                   => $dom_id,
+						'name'                 => $context->name( $id, '[' . $part . ']' ),
+						'class'                => 'swf-input',
+						'data-swf-interval'    => $part,
+						'value'                => is_string( $value[ $index ] ?? null ) ? $value[ $index ] : '',
+						'min'                  => $validate && '' !== $bounds['min'] ? $bounds['min'] : null,
+						'max'                  => $validate && '' !== $bounds['max'] ? $bounds['max'] : null,
+						'step'                 => $validate && 'time' === $this->input_type() ? (int) $this->setting( $element, 'step', 60 ) : null,
+						'data-swf-time-picker' => $validate && 'time' === $this->input_type(),
+						'data-swf-time-labels' => wp_json_encode(
+							array(
+								'hour'   => __( 'Hours', 'sw-forms' ),
+								'minute' => __( 'Minutes', 'sw-forms' ),
+								'second' => __( 'Seconds', 'sw-forms' ),
+							)
+						),
 					)
 				)
 			) . '></div>';

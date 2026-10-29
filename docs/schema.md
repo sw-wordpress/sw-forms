@@ -213,6 +213,19 @@ field documents and the `swf_register_field_types` extension action remain uncha
 Checks: `php tests/wp-temporal-fields.php`, `node apps/admin/scripts/e2e/temporal.mjs`.
 PHP/TypeScript interval collection shares `tests/fixtures/interval-values.json`.
 
+### Time interval picker
+
+Validated `time-interval` endpoints progressively use linked hour/minute/second selectors.
+Every offered combination lies on the configured seconds grid, starting at `min` (or
+midnight), and stays within `min`/`max`. For example, `step=900` offers quarter-hours;
+`min=09:07` shifts that grid to 09:07, 09:22, etc. Seconds appear only when needed.
+Even `step=1` uses at most 24 hour and 60 minute/second options per selector rather than
+an 86,400-item dropdown. Native names and `[from,to]` values stay unchanged. Reset,
+repeater rows, conditions, keyboard labels and validation errors are synchronized.
+Without JavaScript native time inputs remain available with the existing server validation.
+With `validate=false` the original unrestricted text inputs remain. Shared
+`tests/fixtures/time-options.json` cases verify that browser choices pass server checks.
+
 ## Name and address presets
 
 `name` and `address` are data-bearing `children` containers, using the same group rendering,

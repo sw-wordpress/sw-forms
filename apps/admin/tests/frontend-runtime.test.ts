@@ -44,6 +44,21 @@ afterEach(() => {
 });
 
 describe('actual frontend form runtime', () => {
+  it('keeps time pickers and searchable selects focusable together in repeater rows and error links', async () => {
+    const rows = field('rows', 'group', 'none', { container: 'children', settings: { repeatable: true }, children: [field('times', 'time-interval', 'list'), field('choice', 'select', 'text')] });
+    const row = `<div class="swf-row" data-swf-row="__INDEX__">${wrap('times', '<div><label for="from-__INDEX__">From</label><input type="time" id="from-__INDEX__" name="swf[rows][__INDEX__][times][from]" data-swf-time-picker step="900"></div><div><label for="to-__INDEX__">To</label><input type="time" id="to-__INDEX__" name="swf[rows][__INDEX__][times][to]" data-swf-time-picker step="900"></div>')}${wrap('choice', '<select id="choice-__INDEX__" name="swf[rows][__INDEX__][choice]" data-swf-search><option value="">Choose</option><option value="a">A</option></select>')}<button type="button" class="swf-row-remove">Remove</button></div>`;
+    await mountForm(true, { fields: [rows], html: `<fieldset class="swf-repeater" data-swf-id="rows" data-swf-min="0" data-swf-max="2"><div class="swf-rows"></div><template class="swf-row-template">${row}</template><button type="button" class="swf-row-add">Add</button></fieldset>` });
+    const add = document.querySelector<HTMLButtonElement>('.swf-row-add')!; add.click(); add.click();
+    const rendered = document.querySelectorAll<HTMLElement>('.swf-row');
+    expect(document.activeElement).toBe(rendered[1]!.querySelector('[data-swf-time-unit=hour]'));
+    vi.mocked(fetch).mockResolvedValue(response({ status: 'invalid', message: 'Fix row', errors: { 'rows[1].times': 'Required', 'rows[1].choice': 'Required' } }));
+    submit(); await flushPromises();
+    const links = document.querySelectorAll<HTMLAnchorElement>('.swf-summary a'); links[0]!.click();
+    expect(document.activeElement).toBe(rendered[1]!.querySelector('[data-swf-time-unit=hour]'));
+    links[1]!.click(); expect(document.activeElement).toBe(rendered[1]!.querySelector('.ts-control input'));
+    rendered[1]!.querySelector<HTMLButtonElement>('.swf-row-remove')!.click();
+    expect(document.activeElement).toBe(rendered[0]!.querySelector('[data-swf-time-unit=hour]'));
+  });
   it('focuses the visible searchable select from an error link and after adding a repeater row', async () => {
     const choice = field('choice', 'select', 'text');
     const rows = field('rows', 'group', 'none', { container: 'children', settings: { repeatable: true }, children: [field('nested', 'select', 'text')] });
