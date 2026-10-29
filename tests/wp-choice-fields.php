@@ -34,7 +34,7 @@ try {
     $document = swf_get_form($id);
     $check($document['fields'][2]['settings']['options'][0]['image'] === 'https://example.test/a.png', 'Persist image URL');
     $html = swf_render_form($id);
-    foreach (array( 'role="switch"', 'swf-choices--buttons', 'swf-choices--images', 'alt=""', 'swf-select-search', 'No matching options.' ) as $markup) {
+    foreach (array( 'role="switch"', 'swf-choices--buttons', 'swf-choices--images', 'alt=""', 'data-swf-search', 'No matching options.' ) as $markup) {
         $check(str_contains($html, $markup), 'Markup: ' . $markup);
     }
     $check(!str_contains($html, 'javascript:'), 'No unsafe image markup');

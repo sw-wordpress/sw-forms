@@ -394,13 +394,9 @@
   height: 6rem;
   object-fit: contain;
 }
-.swf-select-search {
-  margin-bottom: 0.5em;
-}
-.swf-search-status {
-  display: block;
-  color: var(--swf-muted);
-}
+.swf .ts-wrapper { width: 100%; }
+.swf .ts-wrapper .ts-control, .swf .ts-dropdown { background: var(--swf-bg); color: var(--swf-text); border-color: var(--swf-border); font: inherit; }
+.swf .ts-wrapper .ts-control > input { padding: 0 !important; min-height: 0; box-shadow: none; }
 
 .swf-range { width: 100%; accent-color: var(--swf-accent); }
 .swf-range-value { display: block; font-variant-numeric: tabular-nums; }

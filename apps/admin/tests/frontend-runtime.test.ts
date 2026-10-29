@@ -44,6 +44,17 @@ afterEach(() => {
 });
 
 describe('actual frontend form runtime', () => {
+  it('focuses the visible searchable select from an error link and after adding a repeater row', async () => {
+    const choice = field('choice', 'select', 'text');
+    const rows = field('rows', 'group', 'none', { container: 'children', settings: { repeatable: true }, children: [field('nested', 'select', 'text')] });
+    const row = `<div class="swf-row" data-swf-row="__INDEX__">${wrap('nested', '<select id="select-__INDEX__" name="swf[rows][__INDEX__][nested]" data-swf-search><option value="">Choose</option><option value="a">A</option></select>')}<button type="button" class="swf-row-remove">Remove</button></div>`;
+    await mountForm(true, { fields: [choice, rows], html: wrap('choice', '<select id="choice" name="swf[choice]" data-swf-search><option value="">Choose</option><option value="a">A</option></select>') + `<fieldset class="swf-repeater" data-swf-id="rows" data-swf-min="0" data-swf-max="2"><div class="swf-rows"></div><template class="swf-row-template">${row}</template><button type="button" class="swf-row-add">Add</button></fieldset>` });
+    vi.mocked(fetch).mockResolvedValue(response({ status: 'invalid', message: 'Fix choice', errors: { choice: 'Required' } }));
+    submit(); await flushPromises(); document.querySelector<HTMLAnchorElement>('.swf-summary a')!.click();
+    expect(document.activeElement).toBe(document.querySelector('[data-swf-id=choice] .ts-control input'));
+    document.querySelector<HTMLButtonElement>('.swf-row-add')!.click();
+    expect(document.activeElement).toBe(document.querySelector('.swf-row .ts-control input'));
+  });
   it('keeps submission blocked when another thumbnail is cancelled during a crop export', async () => {
     vi.stubGlobal('URL', { createObjectURL: () => 'blob:preview', revokeObjectURL: vi.fn() });
     vi.stubGlobal('DataTransfer', class {
