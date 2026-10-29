@@ -118,9 +118,9 @@ export class Evaluator {
 }
 
 function normalize(value: unknown): string | string[] {
-  if (Array.isArray(value)) {
+  if (value !== null && typeof value === 'object') {
     const list: string[] = [];
-    for (const item of value) {
+    for (const item of Object.values(value)) {
       if (typeof item === 'boolean') list.push(item ? '1' : '');
       else if (typeof item === 'string' || typeof item === 'number') list.push(String(item));
     }

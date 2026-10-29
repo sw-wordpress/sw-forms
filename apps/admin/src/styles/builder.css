@@ -1028,3 +1028,8 @@ body > .swf-root .q-tooltip {
 
 .swf-preview__interval { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 8px; align-items: center; }
 .swf-preview__interval input { min-width: 0; width: 100%; }
+
+.swf-preview__matrix-scroll { overflow-x: auto; }
+.swf-preview__matrix { width: 100%; border-collapse: collapse; font-size: 12px; }
+.swf-preview__matrix th, .swf-preview__matrix td { padding: 8px; text-align: center; border-bottom: 1px solid var(--swf-border); }
+.swf-preview__matrix th[scope="row"] { text-align: start; }

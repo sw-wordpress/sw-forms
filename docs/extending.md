@@ -121,7 +121,7 @@ Built-in `range`, `rating`, `scale`, `color` and `tags` fields are documented in
 Built-in `birthdate`, `date-interval` and `time-interval` fields are also documented there.
 Built-in `name` and `address` are editable group presets (see `docs/schema.md`).
 Built-in `image` extends the file-upload pipeline with local previews and mobile camera hints (see `docs/schema.md`).
-Likert scales belong to matrix issue #1 and are excluded from #2.
+Built-in `matrix` supports single-answer question grids and Likert scales (see `docs/schema.md`).
 
 Built-in `signature`, `audio` and `video` fields reuse `FileField`'s multipart contract.
 `FileField::allowed_mimes()` and `detected_mimes()` are protected extension points for

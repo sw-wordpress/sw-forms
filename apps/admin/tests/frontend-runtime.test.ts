@@ -44,6 +44,32 @@ afterEach(() => {
 });
 
 describe('actual frontend form runtime', () => {
+  it('reads matrix values for conditions and submits stable keys in independent repeater rows', async () => {
+    const controls = (prefix: string) => ['service', 'quality'].map((row) => [1, 5].map((value) => `<input type="radio" data-swf-matrix-row="${row}" name="${prefix}[${row}]" value="${value}">`).join('')).join('');
+    const rows = field('rows', 'group', 'none', { container: 'children', settings: { repeatable: true }, children: [field('nested', 'matrix', 'matrix'), field('why', 'input', 'text', { logic: condition('nested', 'is', '5') })] });
+    const row = `<div class="swf-row" data-swf-row="__INDEX__">${wrap('nested', '<span id="question-__INDEX__">Question</span><span id="answer-__INDEX__">Answer</span>' + controls('swf[rows][__INDEX__][nested]').replaceAll('type="radio"', 'type="radio" aria-labelledby="question-__INDEX__ answer-__INDEX__" aria-describedby="desc-__INDEX__ err-__INDEX__"'))}${wrap('why', '<input name="swf[rows][__INDEX__][why]">')}<button type="button" class="swf-row-remove">Remove</button></div>`;
+    await mountForm(true, { fields: [field('survey', 'matrix', 'matrix'), field('note', 'input', 'text', { logic: condition('survey', 'is', '5') }), rows], html: wrap('survey', controls('swf[survey]')) + wrap('note', '<input name="swf[note]">') + `<fieldset class="swf-repeater" data-swf-id="rows" data-swf-min="0" data-swf-max="2"><div class="swf-rows"></div><template class="swf-row-template">${row}</template><button type="button" class="swf-row-add">Add</button></fieldset>` });
+    expect(document.querySelector<HTMLElement>('[data-swf-id=note]')!.hidden).toBe(true);
+    const chosen = document.querySelector<HTMLInputElement>('[name="swf[survey][service]"][value="5"]')!;
+    chosen.checked = true; change(chosen);
+    expect(document.querySelector<HTMLElement>('[data-swf-id=note]')!.hidden).toBe(false);
+    const add = document.querySelector<HTMLButtonElement>('.swf-row-add')!; add.click(); add.click();
+    const renderedRows = document.querySelectorAll<HTMLElement>('.swf-rows > .swf-row');
+    const rowToken = renderedRows[1]!.dataset.swfRow!;
+    const nested = renderedRows[1]!.querySelector<HTMLInputElement>('[data-swf-matrix-row=quality][value="5"]')!;
+    expect(nested.getAttribute('aria-labelledby')).toBe(`question-${rowToken} answer-${rowToken}`);
+    expect(nested.getAttribute('aria-describedby')).toBe(`desc-${rowToken} err-${rowToken}`);
+    nested.checked = true; change(nested);
+    const why = document.querySelectorAll<HTMLElement>('[data-swf-id=why]');
+    expect(why[0]!.hidden).toBe(true); expect(why[1]!.hidden).toBe(false);
+    submit(); await flushPromises();
+    const body = vi.mocked(fetch).mock.calls[0]![1]!.body as FormData;
+    expect(body.get('swf[survey][service]')).toBe('5');
+    expect(body.get(`swf[rows][${rowToken}][nested][quality]`)).toBe('5');
+    expect(body.has('swf[rows][0][nested][quality]')).toBe(false);
+    document.querySelector<HTMLFormElement>('form')!.reset(); await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(document.querySelector<HTMLElement>('[data-swf-id=note]')!.hidden).toBe(true);
+  });
   it('keeps time pickers and searchable selects focusable together in repeater rows and error links', async () => {
     const rows = field('rows', 'group', 'none', { container: 'children', settings: { repeatable: true }, children: [field('times', 'time-interval', 'list'), field('choice', 'select', 'text')] });
     const row = `<div class="swf-row" data-swf-row="__INDEX__">${wrap('times', '<div><label for="from-__INDEX__">From</label><input type="time" id="from-__INDEX__" name="swf[rows][__INDEX__][times][from]" data-swf-time-picker step="900"></div><div><label for="to-__INDEX__">To</label><input type="time" id="to-__INDEX__" name="swf[rows][__INDEX__][times][to]" data-swf-time-picker step="900"></div>')}${wrap('choice', '<select id="choice-__INDEX__" name="swf[rows][__INDEX__][choice]" data-swf-search><option value="">Choose</option><option value="a">A</option></select>')}<button type="button" class="swf-row-remove">Remove</button></div>`;
