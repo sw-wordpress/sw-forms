@@ -1,50 +1,59 @@
-import { describe, expect, it } from 'vitest';
-import { filterSelect, initSelectSearch } from '../frontend/selectSearch';
-
-function fixture(): { search: HTMLInputElement; select: HTMLSelectElement; status: HTMLElement } {
-  document.body.innerHTML = `<div data-swf-id="a"><input class="swf-select-search" hidden data-swf-empty-message="No matches"><select multiple><option value="a" selected>Apfel</option><option value="b">Banane</option><option value="c">Äpfel</option></select><span class="swf-search-status"></span></div>`;
-  return { search: document.querySelector('input')!, select: document.querySelector('select')!, status: document.querySelector('span')! };
-}
-
-describe('native select search', () => {
-  it('enables search only after initialization, including cloned rows', () => {
-    const { search } = fixture();
-    expect(search.hidden).toBe(true);
-    initSelectSearch(document);
-    expect(search.hidden).toBe(false);
-    const fragment = document.createDocumentFragment();
-    const clone = search.cloneNode(true) as HTMLInputElement;
-    clone.hidden = true;
-    fragment.append(clone);
-    initSelectSearch(fragment);
-    expect(clone.hidden).toBe(false);
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import type TomSelect from 'tom-select';
+import { SelectSearch } from '../frontend/selectSearch';
+let form: HTMLFormElement;
+let select: HTMLSelectElement;
+let manager: SelectSearch;
+const control = () => (select as HTMLSelectElement & { tomselect: TomSelect }).tomselect;
+beforeEach(() => {
+  document.body.innerHTML = '<form><label for="fruit">Fruit</label><select id="fruit" name="fruit[]" data-swf-search data-swf-empty-message="No matches" aria-describedby="hint" multiple><option value="a" selected>Apfel</option><option value="b">Banane</option><option value="c">Äpfel</option></select><p id="hint">Choose fruit</p><select id="native"><option>Native</option></select></form>';
+  form = document.querySelector('form')!; select = form.querySelector('select')!;
+  manager = new SelectSearch(form); manager.sync();
+});
+afterEach(() => { manager.destroy(); document.body.replaceChildren(); });
+describe('locally bundled Tom Select', () => {
+  it('keeps a single-select search query while the empty placeholder is selected', () => {
+    manager.destroy(); select.multiple = false; select.insertAdjacentHTML('afterbegin', '<option value="">Please choose</option>'); select.value = '';
+    manager = new SelectSearch(form); manager.sync(); control().setTextboxValue('Gamma'); manager.sync();
+    expect(control().control_input.value).toBe('Gamma');
+    control().setValue('b'); expect(select.value).toBe('b');
   });
-  it('filters labels without losing selected values or changing option values', () => {
-    const { search, select } = fixture();
-    search.value = ' BAN ';
-    filterSelect(search);
-    expect(Array.from(select.options).map((option) => option.hidden)).toEqual([false, false, true]);
-    expect(Array.from(select.selectedOptions).map((option) => option.value)).toEqual(['a']);
-    expect(select.options[1]!.value).toBe('b');
+  it('provides one combined searchable control, preserves selection and skips plain selects', () => {
+    expect(form.querySelectorAll('.ts-wrapper')).toHaveLength(1);
+    expect(control().items).toEqual(['a']); expect(control().control_input.getAttribute('aria-describedby')).toBe('hint');
+    expect(control().control_input.getAttribute('aria-labelledby')).toBeTruthy();
+    expect(control().search('BAN').items.map((item) => item.id)).toEqual(['b']);
+    expect(control().search('Äpf').items.map((item) => item.id)).toContain('c');
+    expect(select.selectedOptions[0]?.value).toBe('a');
+    manager.sync(); expect(form.querySelectorAll('.ts-wrapper')).toHaveLength(1);
   });
-  it('announces empty results and restores all choices when cleared', () => {
-    const { search, select, status } = fixture();
-    search.value = 'unknown';
-    filterSelect(search);
-    expect(status.textContent).toBe('No matches');
-    search.value = '';
-    filterSelect(search);
-    expect(status.textContent).toBe('');
-    expect(Array.from(select.options).every((option) => !option.hidden)).toBe(true);
+  it('keeps native multipart values and change events in sync, without allowing free text', () => {
+    let changes = 0; select.addEventListener('change', () => { changes++; });
+    control().setValue(['a', 'b']); expect(new FormData(form).getAll('fruit[]')).toEqual(['a', 'b']); expect(changes).toBeGreaterThan(0);
+    control().setValue(['unconfigured']); expect(control().items).toEqual([]);
+    select.querySelector<HTMLOptionElement>('option[value=c]')!.selected = true; manager.sync(); expect(control().items).toEqual(['c']);
+    expect(control().settings.create).toBe(false);
   });
-  it('matches non-ASCII labels and affects only its own field', () => {
-    const { search, select } = fixture();
-    const second = select.cloneNode(true) as HTMLSelectElement;
-    document.body.append(second);
-    search.value = 'ÄPF';
-    filterSelect(search);
-    expect(select.options[2]!.hidden).toBe(false);
-    expect(select.options[1]!.hidden).toBe(true);
-    expect(second.options[1]!.hidden).toBe(false);
+  it('synchronizes hidden/visible controls and server error accessibility', () => {
+    select.disabled = true; select.setAttribute('aria-invalid', 'true'); manager.sync();
+    expect(control().isDisabled).toBe(true); expect(control().control_input.disabled).toBe(true);
+    expect(control().control_input.getAttribute('aria-invalid')).toBe('true');
+    select.disabled = false; select.removeAttribute('aria-invalid'); manager.sync(); expect(control().isDisabled).toBe(false);
+    expect(control().control_input.hasAttribute('aria-invalid')).toBe(false);
+  });
+  it('initializes added repeater controls and destroys removed instances', () => {
+    const added = select.cloneNode(true) as HTMLSelectElement; added.id = 'repeat'; added.removeAttribute('class'); form.appendChild(added); manager.sync();
+    const instance = (added as HTMLSelectElement & { tomselect: TomSelect }).tomselect;
+    expect(instance).toBeTruthy(); added.remove(); manager.sync(); expect((added as HTMLSelectElement & { tomselect?: TomSelect }).tomselect).toBeUndefined();
+  });
+  it('restores defaults and clears search on reset', () => {
+    control().setValue(['b']); control().setTextboxValue('missing'); form.reset(); manager.reset();
+    expect(control().items).toEqual(['a']); expect(control().control_input.value).toBe('');
+  });
+  it('escapes the translated no-results message and retains native controls on teardown', () => {
+    select.dataset.swfEmptyMessage = '<img src=x>';
+    control().setTextboxValue('missing'); control().refreshOptions(false);
+    expect(form.querySelector('.no-results')?.textContent).toBe('<img src=x>'); expect(form.querySelector('.no-results img')).toBeNull();
+    manager.destroy(); expect(form.querySelectorAll('.ts-wrapper')).toHaveLength(0); expect(select.classList.contains('ts-hidden-accessible')).toBe(false);
   });
 });

@@ -115,10 +115,12 @@ URLs are rendered; images do not alter the stored option values. Standard presen
 ignore images. Bulk editing preserves images for options whose values are retained.
 
 Required checks, allowed-option validation and existing checkbox min/max selection settings
-continue to apply to every presentation. Search changes only option visibility; it never
-removes selections or changes the submitted values. No matching results are announced by
-a status region. Without JavaScript the search input stays hidden and all native options
-remain available. Button and image presentations work without JavaScript as well.
+continue to apply to every presentation. Searchable selects use a combined Tom Select control,
+bundled locally into the plugin JavaScript/CSS (no CDN), with keyboard search and removable
+multiple selections. The original select remains the submitted value source. Reset,
+conditional disabling, validation descriptions and dynamically added/removed repeater rows
+are synchronized. Without JavaScript all native options remain available. Button and image
+presentations work without JavaScript as well. Third-party licenses are in `licenses/`.
 
 Checks: `php tests/wp-choice-fields.php`, and with local WordPress and Playwright Chromium,
 `node apps/admin/scripts/e2e/choices.mjs` (honors `WP_ROOT` for the WordPress installation).

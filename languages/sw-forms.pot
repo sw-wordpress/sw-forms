@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SW Forms\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-29 07:00+0000\n"
+"POT-Creation-Date: 2026-10-29 09:40+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -744,7 +744,6 @@ msgid "Select"
 msgstr ""
 
 #: src/WordPress/Fields/SelectField.php:39
-#: src/WordPress/Fields/SelectField.php:151
 msgid "Search options"
 msgstr ""
 
@@ -760,8 +759,12 @@ msgstr ""
 msgid "Please choose"
 msgstr ""
 
-#: src/WordPress/Fields/SelectField.php:153
+#: src/WordPress/Fields/SelectField.php:142
 msgid "No matching options."
+msgstr ""
+
+#: src/WordPress/Fields/SelectField.php:143
+msgid "Remove selection"
 msgstr ""
 
 #: src/WordPress/Fields/SignatureField.php:18

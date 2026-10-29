@@ -133,28 +133,18 @@ final class SelectField extends ChoiceField {
 		$control = '<select' . $this->attrs(
 			array_merge(
 				array(
-					'id'       => $context->dom_id( $id ),
-					'name'     => $context->name( $id, $multiple ? '[]' : '' ),
-					'class'    => 'swf-select',
-					'multiple' => $multiple,
-					'size'     => $multiple ? min( 8, max( 3, count( $this->options( $element ) ) ) ) : null,
+					'id'                     => $context->dom_id( $id ),
+					'name'                   => $context->name( $id, $multiple ? '[]' : '' ),
+					'class'                  => 'swf-select',
+					'multiple'               => $multiple,
+					'size'                   => $multiple ? min( 8, max( 3, count( $this->options( $element ) ) ) ) : null,
+					'data-swf-search'        => (bool) $this->setting( $element, 'searchable', false ),
+					'data-swf-empty-message' => __( 'No matching options.', 'sw-forms' ),
+					'data-swf-remove-label' => __( 'Remove selection', 'sw-forms' ),
 				),
 				$this->aria( $element, $context )
 			)
 		) . '>' . $options . '</select>';
-		if ( $this->setting( $element, 'searchable', false ) ) {
-			$search  = '<input' . $this->attrs(
-				array(
-					'type'                   => 'search',
-					'class'                  => 'swf-input swf-select-search',
-					'hidden'                 => true,
-					'aria-label'             => __( 'Search options', 'sw-forms' ),
-					'aria-controls'          => $context->dom_id( $id ),
-					'data-swf-empty-message' => __( 'No matching options.', 'sw-forms' ),
-				)
-			) . '>';
-			$control = $search . $control . '<span class="swf-search-status" role="status"></span>';
-		}
 		return $this->wrap( $element, $context, $control );
 	}
 }
