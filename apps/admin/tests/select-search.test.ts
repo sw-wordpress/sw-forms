@@ -12,6 +12,11 @@ beforeEach(() => {
 });
 afterEach(() => { manager.destroy(); document.body.replaceChildren(); });
 describe('locally bundled Tom Select', () => {
+  it('routes programmatic focus to the visible widget and preserves ordinary focus targets', () => {
+    manager.focus(select); expect(document.activeElement).toBe(control().control_input);
+    const ordinary = document.createElement('input'); form.appendChild(ordinary); manager.focus(ordinary); expect(document.activeElement).toBe(ordinary);
+    manager.focus(null); manager.focus(undefined);
+  });
   it('keeps a single-select search query while the empty placeholder is selected', () => {
     manager.destroy(); select.multiple = false; select.insertAdjacentHTML('afterbegin', '<option value="">Please choose</option>'); select.value = '';
     manager = new SelectSearch(form); manager.sync(); control().setTextboxValue('Gamma'); manager.sync();

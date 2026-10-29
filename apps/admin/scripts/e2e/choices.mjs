@@ -21,6 +21,10 @@ try {
     const errors = [];
     page.on('pageerror', (error) => errors.push(error.message));
     await page.goto(fixture.url);
+    if (javaScriptEnabled) {
+      await page.locator('.swf-submit').click(); await page.locator('.swf-summary a[href$="search-err"]').click();
+      assert.equal(await page.locator('[data-swf-id=search] .ts-control input').evaluate((input) => input === document.activeElement), true);
+    }
     const search = page.locator('[data-swf-id="search"] .ts-control input');
     assert.equal(await search.isVisible(), javaScriptEnabled);
     const toggle = page.getByRole('switch', { name: /Consent switch/ });
@@ -57,6 +61,7 @@ try {
       await page.locator('[data-swf-id="rows"] .swf-row-add').click();
       const row = page.locator('[data-swf-id="rows"] .swf-rows > .swf-row').last();
       const nestedSearch = row.locator('.ts-control input');
+      assert.equal(await nestedSearch.evaluate((input) => input === document.activeElement), true);
       assert.equal(await nestedSearch.isVisible(), true);
       assert.equal(await nestedSearch.getAttribute('aria-controls'), await row.locator('.ts-dropdown-content').getAttribute('id'));
       await nestedSearch.fill('Gamma');

@@ -288,7 +288,7 @@ class SwForm {
     this.updateRowButtons(repeater);
     this.apply();
     const rows = this.rows(repeater);
-    rows[rows.length - 1]?.querySelector<HTMLElement>('input:not([type="hidden"]), select, textarea')?.focus();
+    this.selects.focus(rows[rows.length - 1]?.querySelector<HTMLElement>('input:not([type="hidden"]), select, textarea'));
   }
 
   private removeRow(repeater: HTMLElement, row: HTMLElement | null): void {
@@ -302,7 +302,7 @@ class SwForm {
     const focusTarget =
       remaining[Math.max(0, index - 1)]?.querySelector<HTMLElement>('input, select, textarea') ??
       repeater.querySelector<HTMLElement>(':scope > .swf-row-add');
-    focusTarget?.focus();
+    this.selects.focus(focusTarget);
   }
 
   private updateRowButtons(repeater: HTMLElement): void {
@@ -503,7 +503,7 @@ class SwForm {
         link.href = slot?.id ? `#${slot.id}` : '#';
         link.addEventListener('click', (e) => {
           e.preventDefault();
-          wrapper?.querySelector<HTMLElement>('input:not([type="hidden"]), select, textarea')?.focus();
+          this.selects.focus(wrapper?.querySelector<HTMLElement>('input:not([type="hidden"]), select, textarea'));
         });
         item.appendChild(link);
         list.appendChild(item);

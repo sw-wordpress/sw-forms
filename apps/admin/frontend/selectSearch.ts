@@ -42,5 +42,10 @@ export class SelectSearch {
     for (const control of this.controls.values()) { control.sync(); control.setTextboxValue(''); control.close(); }
   }
 
+  focus(element: HTMLElement | null | undefined): void {
+    const control = element instanceof HTMLSelectElement ? this.controls.get(element) : undefined;
+    if (control) control.focus(); else element?.focus();
+  }
+
   destroy(): void { for (const control of this.controls.values()) control.destroy(); this.controls.clear(); }
 }
