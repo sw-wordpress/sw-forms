@@ -25,6 +25,7 @@ foreach ($report->getElementsByTagName('file') as $file) {
     $executed += $hits;
 }
 $required = [
+    'src/WordPress/Fields/MatrixField.php' => 95,
     'src/WordPress/Fields/SignatureField.php' => 95,
     'src/WordPress/Fields/RecordingField.php' => 95,
     'src/WordPress/Fields/AudioField.php' => 100,

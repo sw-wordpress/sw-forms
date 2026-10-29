@@ -15,6 +15,7 @@ const options = computed(() => {
   const list = settings.value.options;
   return Array.isArray(list) ? (list as { label: string; value: string; image?: string }[]) : [];
 });
+const matrixRows = computed(() => Array.isArray(settings.value.rows) ? settings.value.rows as { label: string; value: string }[] : []);
 const inputType = computed(() => String(settings.value.inputType ?? 'text'));
 const scores = computed(() => {
   const min = props.element.type === 'rating' ? 1 : Math.max(0, Number(settings.value.min ?? 1));
@@ -88,6 +89,11 @@ const defaults = computed(() => {
           <span class="swf-preview__radio" />{{ settings.otherLabel }} <span class="swf-preview__input swf-preview__input--inline" />
         </label>
         <span v-if="options.length === 0" class="swf-muted">{{ t('canvas.noOptions') }}</span>
+      </div>
+      <div v-else-if="element.type === 'matrix'" class="swf-preview__matrix-scroll">
+        <table class="swf-preview__matrix"><thead><tr><td></td><th v-for="option in options" :key="option.value" scope="col">{{ option.label }}</th></tr></thead>
+          <tbody><tr v-for="row in matrixRows" :key="row.value"><th scope="row">{{ row.label }}</th><td v-for="option in options" :key="option.value"><span class="swf-preview__radio" /></td></tr></tbody>
+        </table>
       </div>
       <input v-else-if="element.type === 'birthdate'" type="date" disabled />
       <div v-else-if="element.type === 'date-interval' || element.type === 'time-interval'" class="swf-preview__interval">

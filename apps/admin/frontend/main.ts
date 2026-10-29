@@ -34,7 +34,7 @@ interface SubmitResponse {
 }
 
 const INDEX = '__INDEX__';
-const ROW_ATTRIBUTES = ['name', 'id', 'for', 'aria-describedby', 'aria-controls', 'data-swf-path', 'data-swf-row', 'href'];
+const ROW_ATTRIBUTES = ['name', 'id', 'for', 'aria-describedby', 'aria-labelledby', 'aria-controls', 'data-swf-path', 'data-swf-row', 'href'];
 
 /**
  * Replaces the first `__INDEX__` (the one of the row being added) in all row specific attributes,
@@ -44,7 +44,13 @@ function replacePlaceholder(root: ParentNode, token: string): void {
   root.querySelectorAll<HTMLElement>('*').forEach((el) => {
     for (const attribute of ROW_ATTRIBUTES) {
       const value = el.getAttribute(attribute);
-      if (value && value.includes(INDEX)) el.setAttribute(attribute, value.replace(INDEX, token));
+      if (value && value.includes(INDEX)) {
+        // ARIA IDREF lists can mention several controls in the same row.
+        const resolved = attribute.startsWith('aria-')
+          ? value.split(/\s+/).map((reference) => reference.replace(INDEX, token)).join(' ')
+          : value.replace(INDEX, token);
+        el.setAttribute(attribute, resolved);
+      }
     }
     if (el instanceof HTMLTemplateElement) replacePlaceholder(el.content, token);
   });
@@ -158,6 +164,10 @@ class SwForm {
           .filter((el) => el.checked)
           .map((el) => el.value);
       }
+      case 'matrix':
+        return Object.fromEntries(Array.from(scope.querySelectorAll<HTMLInputElement>('input[data-swf-matrix-row]'))
+          .filter((input) => input.name === `${name}[${input.dataset.swfMatrixRow}]` && input.checked)
+          .map((input) => [input.dataset.swfMatrixRow!, input.value]));
       case 'radio': {
         const checked = this.control(scope, name).find((el) => el.checked);
         if (!checked) return '';

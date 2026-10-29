@@ -452,3 +452,11 @@
 .swf .swf-image-crop { max-width: 22rem; }
 .swf .swf-image-crop label { display: inline-flex; flex-direction: column; width: 48%; padding: .25rem; }
 .swf .swf-image-crop input { width: 100%; }
+
+/* Keep matrix headers and native radio groups together on narrow screens. */
+.swf-matrix-scroll { max-width: 100%; overflow-x: auto; }
+.swf-matrix { width: 100%; border-collapse: collapse; }
+.swf-matrix th, .swf-matrix td { padding: .75rem; border-bottom: 1px solid var(--swf-border, #d1d5db); text-align: center; min-width: 5rem; }
+.swf-matrix th[scope="row"] { text-align: start; min-width: 9rem; }
+.swf-matrix input[type="radio"] { width: 1.25rem; height: 1.25rem; cursor: pointer; }
+.swf-field--matrix { min-width: 0; }

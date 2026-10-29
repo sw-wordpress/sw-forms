@@ -26,6 +26,7 @@ final class StaticTypeCatalog implements TypeCatalog
             'input' => ['data' => true, 'container' => self::CONTAINER_NONE],
             'textarea' => ['data' => true, 'container' => self::CONTAINER_NONE],
             'checkbox' => ['data' => true, 'container' => self::CONTAINER_NONE],
+            'matrix' => ['data' => true, 'container' => self::CONTAINER_NONE],
             'radio' => ['data' => true, 'container' => self::CONTAINER_NONE],
             'select' => ['data' => true, 'container' => self::CONTAINER_NONE],
             'range' => ['data' => true, 'container' => self::CONTAINER_NONE],

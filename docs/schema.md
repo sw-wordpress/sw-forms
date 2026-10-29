@@ -322,8 +322,6 @@ of filtered public data. Trash retains files; permanent entry/form deletion, ret
 and opted-in uninstall remove them. Backups, offloaded storage and external copies require
 their own lifecycle handling; this implementation owns local files in `/swforms/` only.
 
-Likert scales are excluded from #2 and tracked with matrices in issue #1.
-
 Checks: `php tests/wp-file-uploads.php`, `node apps/admin/scripts/e2e/uploads.mjs`.
 Shared PHP/TypeScript visibility fixture: `tests/fixtures/logic/files.json`.
 
@@ -426,3 +424,48 @@ Vitest lifecycle tests and `node apps/admin/scripts/e2e/media.mjs`. The browser 
 real canvas pixels and MediaRecorder encoders with synthetic Chromium devices, plus no-JS
 fallback and builder save/reload; physical devices and other browser implementations need
 deployment testing.
+
+## Matrix and Likert scales
+
+`matrix` is a leaf field in the choice palette. It starts with two questions and a five-point
+Likert scale from strongly disagree (`"1"`) to strongly agree (`"5"`), with no answer selected.
+Both `settings.rows` and `settings.options` use editable `{label, value}` lists. A visitor
+chooses exactly one option per answered row; every row has its own native radio group.
+Setting `required: true` requires all rows. Optional matrices allow unanswered or partial rows.
+
+Row values are stable answer keys, limited to 64 ASCII letters/digits/underscores/hyphens,
+starting with a letter. Invalid/duplicate rows are removed on save. Matrices have at most
+50 rows and 20 answer columns; empty lists restore the defaults so the field remains usable.
+The editor supports bulk text entry and explicitly edited values stay fixed on label changes.
+Use “Show values” to set stable row keys before publishing; changing row values changes the
+data contract. Option values are stored as strings, including numeric Likert scores.
+
+For example:
+
+```json
+{
+  "id": "survey", "type": "matrix", "key": "feedback", "label": "Experience",
+  "required": true,
+  "settings": {
+    "rows": [{"label": "Service", "value": "service"}, {"label": "Quality", "value": "quality"}],
+    "options": [{"label": "Disagree", "value": "1"}, {"label": "Agree", "value": "5"}]
+  }
+}
+```
+
+Posts use `swf[survey][service]=5`. Stored entry/webhook data is
+`{"feedback":{"service":"5","quality":"1"}}`; unanswered rows are omitted and a completely
+unanswered matrix is `[]`. Unknown row keys are ignored and nonempty invalid option values or
+malformed answers are rejected. Repeater/group nesting follows the ordinary data shape.
+Entry views, search text and `{all_fields}` pair each question label with its answer label.
+
+The runtime uses the `matrix` value kind to collect checked answers into a map. Conditions
+compare its answer values, as PHP already does for associative arrays: `is`/`contains` match
+any answer and `empty`/`notempty` check the entire matrix. Row keys are not compared, and
+numeric `gt`/`lt` comparisons on a matrix are false. Individual row conditions are not exposed.
+PHP and TypeScript share `tests/fixtures/logic/matrix.json`.
+
+A fieldset/legend and a semantic table connect each radio to its question and column header.
+Descriptions and errors are linked to all radios. The grid scrolls horizontally on narrow
+screens. Native keyboard navigation, server validation and postback work without JavaScript.
+Browser checks: `node apps/admin/scripts/e2e/matrix.mjs`.

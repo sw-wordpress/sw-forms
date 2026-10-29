@@ -24,6 +24,7 @@ final class Messages {
 			'file_storage' => __( 'File uploads require entry storage to be enabled for this form.', 'sw-forms' ),
 			/* translators: %d: maximum number of files */
 			'max_files' => sprintf( __( 'Please upload at most %d file(s).', 'sw-forms' ), (int) ( $params['max'] ?? 1 ) ),
+			'matrix_complete' => __( 'Please answer every question in this matrix.', 'sw-forms' ),
 			'required'     => __( 'This field is required.', 'sw-forms' ),
 			'email_confirmation' => __( 'The email addresses do not match.', 'sw-forms' ),
 			/* translators: %d: minimum number of characters */

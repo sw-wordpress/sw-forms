@@ -31,6 +31,7 @@ final class FieldRegistry implements TypeCatalog {
 				new TextareaField(),
 				new CheckboxField(),
 				new RadioField(),
+				new MatrixField(),
 				new SelectField(),
 				new RangeField(),
 				new RatingField(),

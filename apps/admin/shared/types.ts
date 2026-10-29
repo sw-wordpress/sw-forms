@@ -39,11 +39,11 @@ export interface ElementNode {
   /** Frontend tree only: produces data / container kind / how to read the value. */
   data?: boolean;
   container?: ContainerKind;
-  kind?: 'text' | 'bool' | 'list' | 'radio' | 'none';
+  kind?: 'text' | 'bool' | 'list' | 'radio' | 'matrix' | 'none';
 }
 
-/** Value of a field (string, list, bool) or the rows of a repeater. */
-export type FieldValue = string | boolean | string[] | Values[] | null | undefined;
+/** Value of a field (string, list, bool, matrix answer map) or the rows of a repeater. */
+export type FieldValue = string | boolean | string[] | Record<string, string> | Values[] | null | undefined;
 export type Values = Record<string, FieldValue>;
 
 export interface TypeCatalog {
@@ -80,6 +80,7 @@ export const BUILT_IN_CATALOG = staticCatalog({
   file: { data: true, container: '' },
   textarea: { data: true, container: '' },
   checkbox: { data: true, container: '' },
+  matrix: { data: true, container: '' },
   radio: { data: true, container: '' },
   select: { data: true, container: '' },
   name: { data: true, container: 'children' },
