@@ -1,4 +1,4 @@
-/** Webhook configuration round-trip; no HTTP delivery is implemented at this stage. */
+/** Webhook configuration round-trip; the separate webhook-delivery script tests HTTP and resend. */
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { readdirSync } from 'node:fs';

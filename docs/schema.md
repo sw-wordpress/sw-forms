@@ -40,17 +40,17 @@ of a 12 column grid (rendered as `fr` tracks). Columns are layout only.
 ### Logic
 
 ```json
-{ "action": "show|hide", "match": "all|any", "rules": [ { "field": "<element id>", "op": "is", "value": "x" } ] }
+{ "action": "show|hide|require|disable", "match": "all|any", "rules": [ { "field": "<element id>", "op": "is", "value": "x" } ] }
 ```
 
 Operators: `is`, `isnot`, `contains`, `gt`, `lt`, `empty`, `notempty`. Comparisons trim and ignore
 case; lists (checkbox list, multi select) match per item; numbers accept `1.5` and `1,5`.
 
 * A node is hidden when its parent is hidden or its own logic says so.
-* A rule that references a hidden field sees an empty value (cascade).
+* A rule that references a hidden or disabled field sees an empty value (cascade).
 * Inside a repeater row rules see the same row and all enclosing scopes; a rule can never look
   into repeater rows from outside.
-* Cycles are rejected on save. Hidden fields are neither validated nor stored nor sent.
+* Cycles are rejected on save. Hidden and disabled fields are neither validated nor stored nor sent.
 
 The PHP (`src/Core/Logic/Evaluator.php`) and TypeScript (`apps/admin/shared/logic.ts`)
 evaluators are tested against the same fixtures in `tests/fixtures/logic/`.
@@ -90,7 +90,7 @@ Yes/No) and the row path (`people[0].`) for fields inside repeaters.
 }
 ```
 
-## Webhook configuration (Milestone 2, preparation)
+## Webhook configuration (Milestone 2)
 
 `settings.webhooks` defaults to `[]`, with at most 20 definitions:
 
@@ -106,8 +106,8 @@ Yes/No) and the row path (`people[0].`) for fields inside repeaters.
 
 Methods are `POST`/`PUT`, formats `json`/`form`. Header names must be unique ignoring case;
 line breaks and reserved transport/signature headers are rejected on publication. Enabled
-webhooks require an HTTP(S) URL without credentials or a fragment. Network/SSRF checks will
-be applied by the delivery service; URL syntax validation alone is not authorization to send.
+webhooks require an HTTP(S) URL without credentials or a fragment. The delivery service checks destinations again before every attempt; URL syntax validation
+alone is not authorization to send.
 
 No mapping means all final visible data. A nonempty mapping selects only those values, with
 flat receiver keys matching the normal field-key pattern. Sources use immutable element ids,
@@ -128,14 +128,62 @@ not receive webhook configuration. Duplicated forms get independent signing secr
 Draft rotation does not affect the published version; discarding restores the original.
 Changing WordPress salts makes old encrypted secrets unreadable; replace them afterwards.
 
-The builder currently configures webhooks only. Automatic delivery, retries, the test-send
-button and resend/logging are still pending. No HTTP requests are made by these classes.
+### Delivery and lifecycle
+
+A valid non-preview submission queues its enabled webhooks whose conditions match. Submission
+HTTP requests never wait for the receiver. `DeliveryService` stores the exact signed URL,
+method, body and headers as an authenticated encrypted snapshot in `swf_webhook_deliveries`;
+Action Scheduler receives only the delivery id in group `swf_background`. Form edits, secret
+rotation and retries do not change an already queued snapshot. Delete its entry/form to
+cancel pending delivery. Turning a webhook off affects future submissions.
+
+Every non-2xx response or transport failure is retried after 1 minute, 5 minutes, 30 minutes,
+2 hours and 12 hours (six attempts total). Each attempt has a 15-second timeout, no redirects,
+TLS verification, no cookies and a 2048-byte response limit. Logs retain HTTP code, elapsed
+milliseconds and at most 1000 response characters, with request header values redacted.
+Delivery metadata is shown on entries; pending status refreshes while the entry is open.
+Final failures notify the site administrator, show a form-list badge and fire
+`swf_webhook_failed`. Success fires `swf_webhook_sent`. Manual resend of a terminal delivery
+reuses the original event id/body and resets the attempt budget; pending/running deliveries
+cannot be resent concurrently. Receivers must deduplicate event ids: recovery and retries
+provide at-least-once delivery, not exactly-once execution at the remote service.
+
+Destination policy accepts HTTP(S) only, ports 80/443, with no credentials or fragments.
+It rejects private, loopback, link-local, reserved, multicast and mixed public/private DNS
+answers, including IPv4-mapped IPv6 addresses. WordPress additionally validates the request
+through `wp_safe_remote_request`. Hosts resolving only to IPv6 literals remain subject to
+WordPress's own URL restrictions. The `swf_webhook_allow_private_url` filter can grant a
+trusted per-URL exception; it cannot permit other schemes or credentials. Its temporary
+WordPress host/port exceptions apply only to that request and are always removed afterwards.
+Use HTTPS for sensitive data; HTTP destinations do not provide transport encryption.
+
+A two-minute delivery lease prevents concurrent processing; stale workers cannot overwrite
+newer attempts. A five-minute WP-Cron recovery task repairs expired leases and missing queue
+jobs, including after reactivation. WordPress cron/loopback processing must run for timely
+background delivery. Queue outages preserve pending snapshots for recovery. Retention or
+permanent deletion of a stored entry cancels and erases its pending requests.
+
+With `storeEntries=false`, matching webhooks require a temporary entry. It is excluded from
+entry lists, counters and direct REST access (including update/delete/bulk), and visitors
+still receive entry id 0. It survives until every delivery is terminal. Then the temporary
+entry, search index, logs, encrypted requests and response excerpts are deleted. Only
+delivery counters/status remain detached for up to 30 days (event ids are also erased) to support
+failure badges; no manual resend is available after that erasure. Recovery also removes old
+orphan temporary entries left by interrupted submissions. No temporary entry is needed when
+all webhooks are disabled or their conditions do not match.
+
+The builder's **Send test** saves the draft and sends synthetic example values immediately,
+with event `webhook.test` and entry id 0. It ignores the webhook's enabled flag/condition;
+field visibility and mapping still apply. No real entry or upload is used. It reports the
+HTTP code, duration and sanitized response. This uses the same destination policy, signing
+and transport limits, with no automatic retries and no stored entry. Test-send requires
+form management; manual resend requires both form and entry management capabilities.
 
 ### Prepared request contract
 
 `RequestBuilder` prepares `{event, eventId, form, entry, data}`. The event is `entry.created`;
-`form` contains `id`, `title`, `version`, and `entry` contains `id`, `date` (UTC). Its caller
-must generate one event id and persist it along with the filtered request for all retries.
+`form` contains `id`, `title`, `version`, and `entry` contains `id`, `date` (UTC). The delivery
+service generates one event id and persists it with the filtered request for all retries.
 The `data` value is an object even when empty. The `swf_webhook_payload` filter runs after
 mapping and before serialization/signing. It receives no signing secret.
 
@@ -147,7 +195,7 @@ time comparison. Do not reserialize the parsed body to verify a signature. The s
 alone provides integrity/authentication, not replay prevention: retain processed event ids.
 
 Checks: `tests/Unit/WebhookTest.php`, `tests/WordPress/WebhookSettingsTest.php`,
-`node apps/admin/scripts/e2e/webhooks.mjs`.
+`node apps/admin/scripts/e2e/webhooks.mjs`, `node apps/admin/scripts/e2e/webhook-delivery.mjs`.
 
 ## Merge tags
 
@@ -528,3 +576,29 @@ A fieldset/legend and a semantic table connect each radio to its question and co
 Descriptions and errors are linked to all radios. The grid scrolls horizontally on narrow
 screens. Native keyboard navigation, server validation and postback work without JavaScript.
 Browser checks: `node apps/admin/scripts/e2e/matrix.mjs`.
+
+
+## Milestone 3: conditions, tags and CAPTCHA
+
+`require` adds required validation when its condition matches; a statically required field
+stays required. It is available for leaf data fields. `disable` keeps a field visible but
+makes its controls inactive; on a container it propagates to descendants. These actions do
+not toggle visibility. PHP enforces both effects independently of browser controls, including
+forged submissions. Each repeater row has its own state. An element has one logic action.
+
+`{field:key:raw}` returns stored scalar/boolean values, or JSON for lists/objects, instead of
+option labels. Existing HTML/URL escaping still applies. `{form:url}` returns the submitted
+source URL, including when entry storage is disabled. `{entry:ip}` resolves to an empty string:
+SW Forms currently supports only hashed or omitted IP storage; a hash is never exposed as an IP.
+
+`settings.spam.provider` defaults to `""` (disabled); built-in values are `"turnstile"` and
+`"hcaptcha"`. Configure site keys and secret keys in global settings before publishing an
+enabled form. Secret keys are encrypted at rest and write-only. CAPTCHA-enabled public pages
+load that provider's external JavaScript and require JavaScript to submit. Preview and trusted
+`swf_submit()` calls bypass verification. Public requests supply `swf_captcha`; tokens are
+verified server-side, never stored in entries, and no visitor IP is sent to the verification
+API. Missing/invalid tokens and provider failures reject submission. Verification requires
+an allowed hostname and, for Turnstile, action `swforms`.
+
+The searchable select already uses the Tom Select combobox with keyboard navigation; it
+retains its native select for submission and the no-JavaScript fallback.

@@ -25,7 +25,7 @@ final class EntryRepository {
 	 * @param array<string, mixed>                                   $meta
 	 * @param list<array{field: string, row: string, value: string}> $values
 	 */
-	public function insert( int $form_id, int $version, array $data, array $meta, array $values, string $ip_hash, int $user_id ): int {
+	public function insert( int $form_id, int $version, array $data, array $meta, array $values, string $ip_hash, int $user_id, bool $temporary = false ): int {
 		global $wpdb;
 		$now = current_time( 'mysql', true );
 		$wpdb->query( 'START TRANSACTION' );
@@ -34,7 +34,7 @@ final class EntryRepository {
 			array(
 				'form_id'      => $form_id,
 				'form_version' => $version,
-				'status'       => 'unread',
+				'status'       => $temporary ? 'temporary' : 'unread',
 				'starred'      => 0,
 				'data'         => (string) wp_json_encode( $data ),
 				'meta'         => (string) wp_json_encode( $meta ),
@@ -164,6 +164,12 @@ final class EntryRepository {
 		return is_array( $row ) ? self::hydrate( $row ) : null;
 	}
 
+	/** @return array<string, mixed>|null Public entry access excludes temporary queue storage. */
+	public function find_visible( int $id ): ?array {
+		$entry = $this->find( $id );
+		return null !== $entry && 'temporary' !== $entry['status'] ? $entry : null;
+	}
+
 	/**
 	 * @param array{status?: string, starred?: bool} $changes
 	 */
@@ -189,6 +195,7 @@ final class EntryRepository {
 
 	public function delete( int $id ): void {
 		global $wpdb;
+		( new \SWForms\WordPress\Webhooks\DeliveryRepository() )->delete_for_entry( $id );
 		$entry = $this->find( $id );
 		$wpdb->query( $wpdb->prepare( 'DELETE FROM %i WHERE entry_id = %d', Schema::table( 'entry_values' ), $id ) );
 		$wpdb->query( $wpdb->prepare( 'DELETE FROM %i WHERE entry_id = %d', Schema::table( 'entry_log' ), $id ) );
@@ -198,12 +205,61 @@ final class EntryRepository {
 		}
 	}
 
+	/** @param array<string, mixed>                                   $data
+	 * @param list<array{field: string, row: string, value: string}> $values
+	 */
+	public function replace_data( int $id, array $data, array $values, string $revision ): bool {
+		global $wpdb;
+		$wpdb->query( 'START TRANSACTION' );
+		$old = $wpdb->get_row( $wpdb->prepare( 'SELECT data, status, form_id FROM %i WHERE id = %d FOR UPDATE', Schema::table( 'entries' ), $id ), ARRAY_A );
+		if ( ! is_array( $old ) || 'temporary' === $old['status'] || ! hash_equals( EntryEditor::revision( (array) json_decode( $old['data'], true ) ), $revision ) ) {
+			$wpdb->query( 'ROLLBACK' );
+			return false;
+		}
+		$ok = $wpdb->update(
+			Schema::table( 'entries' ),
+			array(
+				'data'       => (string) wp_json_encode( $data ),
+				'updated_at' => current_time( 'mysql', true ),
+			),
+			array( 'id' => $id )
+		);
+		$ok = false !== $ok && false !== $wpdb->delete( Schema::table( 'entry_values' ), array( 'entry_id' => $id ) );
+		foreach ( $values as $value ) {
+			if ( ! $ok ) {
+				break; }
+			$ok = false !== $wpdb->insert(
+				Schema::table( 'entry_values' ),
+				array(
+					'entry_id' => $id,
+					'form_id'  => $old['form_id'],
+					'field_id' => $value['field'],
+					'row_path' => $value['row'],
+					'value'    => $value['value'],
+				)
+			);
+		}
+		if ( $ok ) {
+			$wpdb->query( 'COMMIT' );
+		} else {
+			$wpdb->query( 'ROLLBACK' );
+		}
+		return $ok;
+	}
+
+	/** @return list<array<string, mixed>> Internal privacy pagination includes temporary/trash/spam entries. */
+	public function privacy_batch( int $after ): array {
+		global $wpdb;
+		$rows = $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM %i WHERE id > %d ORDER BY id LIMIT 100', Schema::table( 'entries' ), $after ), ARRAY_A );
+		return array_map( self::hydrate( ... ), is_array( $rows ) ? $rows : array() );
+	}
+
 	/** Deletes entries of a form older than the retention period. Returns the number of deleted entries. */
 	public function purge_older_than( int $form_id, int $days ): int {
 		global $wpdb;
 		$cutoff = gmdate( 'Y-m-d H:i:s', time() - $days * DAY_IN_SECONDS );
 		$ids    = $wpdb->get_col(
-			$wpdb->prepare( 'SELECT id FROM %i WHERE form_id = %d AND created_at < %s LIMIT 500', Schema::table( 'entries' ), $form_id, $cutoff )
+			$wpdb->prepare( "SELECT id FROM %i WHERE form_id = %d AND status <> 'temporary' AND created_at < %s LIMIT 500", Schema::table( 'entries' ), $form_id, $cutoff )
 		);
 		foreach ( $ids as $id ) {
 			$this->delete( (int) $id );

@@ -1,14 +1,30 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import SwfCard from '@/components/ui/SwfCard.vue';
+import { formsApi } from '@/api';
+import { useNotify } from '@/composables/useNotify';
 import { useBuilderStore } from '@/stores/builder';
-import type { Webhook } from '@/types/api';
+import type { Webhook, WebhookTestResult } from '@/types/api';
 import LogicEditor from './LogicEditor.vue';
 import { newId } from './document';
 
 const { t } = useI18n();
 const store = useBuilderStore();
+const notify = useNotify();
+const testing = ref<string | null>(null);
+const results = ref<Record<string, WebhookTestResult>>({});
+async function test(id: string): Promise<void> {
+  testing.value = id;
+  try {
+    if (await store.saveDraft() === null) throw new Error(t('webhooks.saveFailed'));
+    results.value[id] = await formsApi.testWebhook(store.formId, id);
+  } catch (error) {
+    notify.error(error);
+  } finally {
+    testing.value = null;
+  }
+}
 const webhooks = computed(() => store.document?.settings.webhooks ?? []);
 const fields = computed(() => store.tree.ids()
   .filter((id) => store.tree.isData(id) && store.tree.scopeOf(id) === null)
@@ -58,13 +74,15 @@ function mapping(w: Webhook, index: number, key: 'field' | 'target', value: unkn
       <p class="swf-muted">{{ t('webhooks.intro') }}</p>
       <q-btn unelevated no-caps color="primary" icon="r_add" :label="t('webhooks.add')" :disable="webhooks.length >= 20" @click="add" />
     </div>
-    <p role="status" class="swf-muted">{{ t('webhooks.deliveryPending') }}</p>
+    <p class="swf-muted">{{ t('webhooks.deliveryInfo') }}</p>
     <SwfCard v-for="w in webhooks" :key="w.id" :title="w.name">
       <template #actions>
         <q-toggle :model-value="w.enabled" :aria-label="t('webhooks.enabled')" @update:model-value="update(w.id, { enabled: !!$event })" />
+        <q-btn flat no-caps icon="r_send" :label="t('webhooks.test')" :loading="testing === w.id" :disable="testing !== null" @click="test(w.id)" />
         <q-btn flat round dense icon="r_delete" :aria-label="t('common.delete')" @click="remove(w.id)" />
       </template>
       <div class="swf-stack">
+        <p v-if="results[w.id]" role="status" :class="results[w.id]!.success ? 'text-positive' : 'text-negative'">{{ t('webhooks.testResult', { code: results[w.id]!.code, duration: results[w.id]!.duration, status: t(results[w.id]!.success ? 'webhooks.states.success' : 'webhooks.states.failed') }) }} {{ results[w.id]!.message }}</p>
         <p v-if="store.errorsById.has(`webhook:${w.id}`)" role="alert" class="text-negative">{{ store.errorsById.get(`webhook:${w.id}`)?.join(' ') }}</p>
         <q-input :model-value="w.name" outlined dense :label="t('webhooks.name')" @update:model-value="update(w.id, { name: String($event ?? '') })" />
         <q-input :model-value="w.url" outlined dense type="url" :label="t('webhooks.url')" @update:model-value="update(w.id, { url: String($event ?? '') })" />

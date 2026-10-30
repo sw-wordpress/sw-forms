@@ -117,6 +117,7 @@ const bulkActions = computed<{ action: BulkAction; label: string; icon: string }
       <q-input v-model="search" dense outlined clearable debounce="0" class="swf-entries__search" :placeholder="t('entries.search')" :aria-label="t('entries.search')">
         <template #prepend><q-icon name="r_search" /></template>
       </q-input>
+      <q-btn outline no-caps icon="r_download" :label="t('m3.exportCsv')" :href="entriesApi.exportUrl(formId, { filter, search: search.trim(), order })" />
     </div>
 
     <SwfCard :padding="false">

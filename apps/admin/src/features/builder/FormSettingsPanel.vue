@@ -81,7 +81,7 @@ const php = computed(() => `<?php echo swf_render_form( ${store.formId} ); ?>`);
             :hint="t('formSettings.messageHint')"
             @update:model-value="set((s) => (s.confirmation.message = String($event ?? '')), 'confirmMessage')"
           />
-          <MergeTagMenu @insert="set((s) => (s.confirmation.message += $event), '')" />
+          <MergeTagMenu />
         </div>
         <q-select
           v-else-if="settings.confirmation.type === 'page'"
@@ -101,12 +101,12 @@ const php = computed(() => `<?php echo swf_render_form( ${store.formId} ); ?>`);
             :model-value="settings.confirmation.url"
             outlined
             dense
-            type="url"
+            type="text" inputmode="url"
             :label="t('formSettings.url')"
             :hint="t('formSettings.urlHint')"
             @update:model-value="set((s) => (s.confirmation.url = String($event ?? '')), 'confirmUrl')"
           />
-          <MergeTagMenu @insert="set((s) => (s.confirmation.url += $event), '')" />
+          <MergeTagMenu />
         </div>
       </div>
     </SwfCard>
@@ -131,6 +131,7 @@ const php = computed(() => `<?php echo swf_render_form( ${store.formId} ); ?>`);
     <SwfCard :title="t('formSettings.spam')" :subtitle="t('formSettings.spamText')" icon="r_shield">
       <div class="swf-stack swf-stack--tight">
         <q-toggle :model-value="settings.spam.honeypot" :label="t('formSettings.honeypot')" @update:model-value="set((s) => (s.spam.honeypot = !!$event), '')" />
+        <q-select :model-value="settings.spam.provider ?? ''" outlined dense emit-value map-options :label="t('m3.captcha')" :options="[{ value: '', label: t('m3.noCaptcha') }, { value: 'turnstile', label: 'Cloudflare Turnstile' }, { value: 'hcaptcha', label: 'hCaptcha' }]" @update:model-value="set((s) => (s.spam.provider = String($event ?? '')), '')" />
         <q-input
           :model-value="settings.spam.minSeconds"
           type="number"

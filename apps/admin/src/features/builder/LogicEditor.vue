@@ -138,6 +138,8 @@ function removeRule(index: number): void {
           :options="[
             { value: 'show', label: t('logic.show') },
             { value: 'hide', label: t('logic.hide') },
+            ...(ownerId && store.tree.isLeafData(ownerId) ? [{ value: 'require', label: t('m3.require') }] : []),
+            { value: 'disable', label: t('m3.disable') },
           ]"
           :aria-label="t('logic.action')"
           @update:model-value="emitLogic({ action: $event })"

@@ -21,14 +21,6 @@ function update(id: string, patch: Partial<Notification>, coalesce = ''): void {
   }, coalesce === '' ? '' : `${id}:${coalesce}`);
 }
 
-function append(id: string, field: 'to' | 'subject' | 'message' | 'replyTo', tag: string): void {
-  const n = notifications.value.find((x) => x.id === id);
-  if (!n) return;
-  const current = n[field];
-  const separator = field === 'to' && current.trim() !== '' ? ', ' : current === '' || field === 'message' ? '' : ' ';
-  update(id, { [field]: `${current}${separator}${tag}` });
-}
-
 function add(): void {
   const id = newId('n');
   store.updateFormSettings((s) =>
@@ -101,11 +93,11 @@ function remove(id: string): void {
             :hint="t('notifications.toHint')"
             @update:model-value="update(n.id, { to: String($event ?? '') }, 'to')"
           />
-          <MergeTagMenu email-only @insert="append(n.id, 'to', $event)" />
+          <MergeTagMenu email-only />
         </div>
         <div class="swf-with-tags">
           <q-input :model-value="n.subject" outlined dense :label="t('notifications.subject')" @update:model-value="update(n.id, { subject: String($event ?? '') }, 'subject')" />
-          <MergeTagMenu @insert="append(n.id, 'subject', $event)" />
+          <MergeTagMenu />
         </div>
         <div class="swf-with-tags">
           <q-input
@@ -118,12 +110,12 @@ function remove(id: string): void {
             input-style="min-height: 140px"
             @update:model-value="update(n.id, { message: String($event ?? '') }, 'message')"
           />
-          <MergeTagMenu html @insert="append(n.id, 'message', $event)" />
+          <MergeTagMenu html />
         </div>
         <div class="swf-grid">
           <div class="swf-with-tags">
             <q-input :model-value="n.replyTo" outlined dense :label="t('notifications.replyTo')" @update:model-value="update(n.id, { replyTo: String($event ?? '') }, 'replyTo')" />
-            <MergeTagMenu email-only @insert="append(n.id, 'replyTo', $event)" />
+            <MergeTagMenu email-only />
           </div>
           <q-input :model-value="n.fromName" outlined dense :label="t('notifications.fromName')" :hint="t('notifications.fromHint')" @update:model-value="update(n.id, { fromName: String($event ?? '') }, 'fromName')" />
         </div>

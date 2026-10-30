@@ -34,11 +34,14 @@ final class SettingsController extends BaseController {
 	}
 
 	public function get_settings(): \WP_REST_Response {
-		return new \WP_REST_Response( Settings::all() );
+		return new \WP_REST_Response( Settings::all() + array( 'captcha' => \SWForms\WordPress\Spam\CaptchaSettings::public_settings() ) );
 	}
 
 	public function update_settings( \WP_REST_Request $request ): \WP_REST_Response {
 		Settings::update( $this->body( $request ) );
-		return new \WP_REST_Response( Settings::all() );
+		$body = $this->body( $request );
+		if ( is_array( $body['captcha'] ?? null ) ) {
+			\SWForms\WordPress\Spam\CaptchaSettings::update( $body['captcha'] ); }
+		return $this->get_settings();
 	}
 }

@@ -1,3 +1,4 @@
+import type { ElementNode } from '@shared/types';
 import { getConfig } from '@/config';
 import type {
   BulkAction,
@@ -13,6 +14,7 @@ import type {
   FormSummary,
   GlobalSettings,
   WpPage,
+  WebhookTestResult,
 } from '@/types/api';
 import { ApiClient } from './client';
 
@@ -54,9 +56,14 @@ export const formsApi = {
   duplicate: (id: number) => api().post<FormDetail>(`forms/${id}/duplicate`),
   remove: (id: number) => api().delete<{ deleted: boolean }>(`forms/${id}`),
   fieldTypes: () => api().get<{ items: FieldTypeDefinition[] }>('field-types').then((r) => r.items),
+  testWebhook: (id: number, webhook: string) => api().post<WebhookTestResult>(`forms/${id}/webhooks/${webhook}/test`),
 };
 
 export const entriesApi = {
+  editValues: (id: number) => api().get<{ fields: ElementNode[]; values: Record<string, unknown>; revision: string }>(`entries/${id}/values`),
+  saveValues: (id: number, values: Record<string, unknown>, revision: string) => api().put<EntrySummary>(`entries/${id}/values`, { values, revision }),
+  addNote: (id: number, note: string) => api().post<{ saved: boolean }>(`entries/${id}/notes`, { note }),
+  exportUrl: (formId: number, query: { filter: EntryFilter; search: string; order: 'asc' | 'desc' }) => api().authenticatedUrl(`forms/${formId}/entries/export`, query),
   list: (formId: number, query: { filter: EntryFilter; search: string; page: number; per_page: number; order: 'asc' | 'desc' }) =>
     api().get<EntryList>(`forms/${formId}/entries`, query),
   get: (id: number) => api().get<EntryDetail>(`entries/${id}`),
@@ -64,6 +71,7 @@ export const entriesApi = {
     api().request<EntrySummary>('PATCH', `entries/${id}`, { body: changes }),
   remove: (id: number) => api().delete<{ deleted: boolean }>(`entries/${id}`),
   bulk: (ids: number[], action: BulkAction) => api().post<{ affected: number }>('entries/bulk', { ids, action }),
+  resendWebhook: (id: number, delivery: number) => api().post<{ queued: boolean }>(`entries/${id}/webhooks/${delivery}/resend`),
 };
 
 export const settingsApi = {

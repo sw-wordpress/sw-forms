@@ -163,7 +163,7 @@ final class EntriesController extends BaseController {
 	 * @return \WP_REST_Response|\WP_Error
 	 */
 	public function get_entry( \WP_REST_Request $request ) {
-		$entry = $this->entries->find( (int) $request['id'] );
+		$entry = $this->entries->find_visible( (int) $request['id'] );
 		if ( null === $entry ) {
 			return $this->error( 'swf_not_found', __( 'Entry not found.', 'sw-forms' ), 404 );
 		}
@@ -171,10 +171,11 @@ final class EntriesController extends BaseController {
 		$user     = $entry['userId'] > 0 ? get_userdata( $entry['userId'] ) : false;
 		return new \WP_REST_Response(
 			array(
-				'entry'  => $entry,
-				'fields' => ( new EntryPresenter( FieldRegistry::instance() ) )->present( is_array( $document['fields'] ?? null ) ? $document['fields'] : array(), $entry['data'] ),
-				'user'   => $user instanceof \WP_User ? $user->display_name : '',
-				'log'    => $this->entries->logs( $entry['id'] ),
+				'entry'    => $entry,
+				'fields'   => ( new EntryPresenter( FieldRegistry::instance() ) )->present( is_array( $document['fields'] ?? null ) ? $document['fields'] : array(), $entry['data'] ),
+				'user'     => $user instanceof \WP_User ? $user->display_name : '',
+				'log'      => $this->entries->logs( $entry['id'] ),
+				'webhooks' => ( new \SWForms\WordPress\Webhooks\DeliveryRepository() )->for_entry( $entry['id'] ),
 			)
 		);
 	}
@@ -184,7 +185,7 @@ final class EntriesController extends BaseController {
 	 */
 	public function update_entry( \WP_REST_Request $request ) {
 		$id = (int) $request['id'];
-		if ( null === $this->entries->find( $id ) ) {
+		if ( null === $this->entries->find_visible( $id ) ) {
 			return $this->error( 'swf_not_found', __( 'Entry not found.', 'sw-forms' ), 404 );
 		}
 		$changes = array();
@@ -195,7 +196,7 @@ final class EntriesController extends BaseController {
 			$changes['starred'] = (bool) $request['starred'];
 		}
 		$this->entries->update( $id, $changes );
-		return new \WP_REST_Response( $this->entries->find( $id ) );
+		return new \WP_REST_Response( $this->entries->find_visible( $id ) );
 	}
 
 	/**
@@ -203,7 +204,7 @@ final class EntriesController extends BaseController {
 	 */
 	public function delete_entry( \WP_REST_Request $request ) {
 		$id = (int) $request['id'];
-		if ( null === $this->entries->find( $id ) ) {
+		if ( null === $this->entries->find_visible( $id ) ) {
 			return $this->error( 'swf_not_found', __( 'Entry not found.', 'sw-forms' ), 404 );
 		}
 		$this->entries->delete( $id );
@@ -214,7 +215,7 @@ final class EntriesController extends BaseController {
 		$action = (string) $request['action'];
 		$count  = 0;
 		foreach ( array_unique( array_map( 'absint', (array) $request['ids'] ) ) as $id ) {
-			if ( 0 === $id || null === $this->entries->find( $id ) ) {
+			if ( 0 === $id || null === $this->entries->find_visible( $id ) ) {
 				continue;
 			}
 			match ( $action ) {

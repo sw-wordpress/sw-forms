@@ -61,11 +61,14 @@ final class MergeTagResolver {
 				'id'    => (string) $this->submission->entry_id,
 				'date'  => wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ) ),
 				'url'   => $this->submission->entry_id > 0 ? admin_url( 'admin.php?page=sw-forms#/forms/' . $this->submission->form_id() . '/entries/' . $this->submission->entry_id ) : '',
+				// The existing privacy modes never retain a raw address. Do not expose hashes as IPs.
+				'ip' => '',
 				default => null,
 			},
 			'form'        => match ( $arg ) {
 				'id'    => (string) $form['id'],
 				'title' => (string) $form['title'],
+				'url' => $this->submission->source_url,
 				default => null,
 			},
 			'site'        => match ( $arg ) {
@@ -94,6 +97,10 @@ final class MergeTagResolver {
 
 	/** Formatted value of `key` or `group.key`; empty when hidden or unknown. */
 	private function field( string $path ): string {
+		$raw = str_ends_with( $path, ':raw' );
+		if ( $raw ) {
+			$path = substr( $path, 0, -4 );
+		}
 		$element = $this->elements()[ $path ] ?? null;
 		$value   = $this->submission->data;
 		foreach ( explode( '.', $path ) as $segment ) {
@@ -101,6 +108,9 @@ final class MergeTagResolver {
 		}
 		if ( null === $value || null === $element ) {
 			return '';
+		}
+		if ( $raw ) {
+			return is_array( $value ) ? (string) wp_json_encode( $value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) : ( is_bool( $value ) ? ( $value ? '1' : '0' ) : ( is_scalar( $value ) ? (string) $value : '' ) );
 		}
 		$type = $this->registry->get( (string) $element['type'] );
 		if ( null === $type || ( is_array( $value ) && ! array_is_list( $value ) ) ) {

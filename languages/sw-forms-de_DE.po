@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SW Forms 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-29 23:30+0100\n"
+"POT-Creation-Date: 2026-10-30 10:59+0100\n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -48,6 +48,24 @@ msgstr ""
 #: src/WordPress/Admin/AdminPage.php:48
 msgid "SW Forms requires JavaScript."
 msgstr "SW Forms benötigt JavaScript."
+
+#: src/WordPress/Entries/EntryEditor.php:77
+#: src/WordPress/Submission/SubmissionService.php:96
+msgid "Please correct the marked fields."
+msgstr "Bitte die markierten Felder korrigieren."
+
+#: src/WordPress/Entries/EntryEditor.php:95
+msgid ""
+"The entry changed or could not be saved. Reload it before editing again."
+msgstr "Der Eintrag wurde geändert oder konnte nicht gespeichert werden. Bitte vor dem erneuten Bearbeiten neu laden."
+
+#: src/WordPress/Entries/EntryEditor.php:97
+msgid "Entry values updated."
+msgstr "Eintragswerte aktualisiert."
+
+#: src/WordPress/Entries/EntryEditor.php:118
+msgid "Keep the existing repeater rows when editing an entry."
+msgstr "Beim Bearbeiten eines Eintrags müssen die vorhandenen Wiederholungszeilen erhalten bleiben."
 
 #: src/WordPress/Fields/AbstractFieldType.php:167
 #: src/WordPress/Fields/CheckboxField.php:246
@@ -456,7 +474,7 @@ msgstr "URL"
 msgid "Number"
 msgstr "Zahl"
 
-#: src/WordPress/Fields/InputField.php:75
+#: src/WordPress/Fields/InputField.php:75 src/WordPress/Support/Privacy.php:97
 msgid "Date"
 msgstr "Datum"
 
@@ -951,14 +969,18 @@ msgstr "Zeitspanne"
 msgid "Video recording"
 msgstr "Videoaufnahme"
 
-#: src/WordPress/Forms/FormService.php:78
-#: src/WordPress/Forms/FormService.php:108
+#: src/WordPress/Forms/FormService.php:65
+msgid "Configure the selected CAPTCHA provider in SW Forms settings first."
+msgstr "Bitte zuerst den gewählten CAPTCHA-Anbieter in den Einstellungen von SW Forms konfigurieren."
+
+#: src/WordPress/Forms/FormService.php:86
+#: src/WordPress/Forms/FormService.php:116
 msgid "Untitled form"
 msgstr "Unbenanntes Formular"
 
 #. translators: %s: title of the copied form
-#: src/WordPress/Forms/FormService.php:145
-#: src/WordPress/Forms/FormService.php:147
+#: src/WordPress/Forms/FormService.php:153
+#: src/WordPress/Forms/FormService.php:155
 #, php-format
 msgid "%s (copy)"
 msgstr "%s (Kopie)"
@@ -972,15 +994,15 @@ msgstr "Absenden"
 msgid "Thank you! Your message has been sent."
 msgstr "Vielen Dank! Die Nachricht wurde gesendet."
 
-#: src/WordPress/Forms/FormSettings.php:63
+#: src/WordPress/Forms/FormSettings.php:64
 msgid "Admin notification"
 msgstr "Admin-Benachrichtigung"
 
-#: src/WordPress/Forms/FormSettings.php:66
+#: src/WordPress/Forms/FormSettings.php:67
 msgid "New entry: {form:title}"
 msgstr "Neuer Eintrag: {form:title}"
 
-#: src/WordPress/Forms/FormSettings.php:80
+#: src/WordPress/Forms/FormSettings.php:81
 msgid "Notification"
 msgstr "Benachrichtigung"
 
@@ -1014,21 +1036,38 @@ msgstr "Bitte folgende Felder korrigieren:"
 msgid "Leave this field empty"
 msgstr "Dieses Feld leer lassen"
 
+#: src/WordPress/Frontend/FormView.php:93
+msgid "Spam protection"
+msgstr "Spamschutz"
+
+#: src/WordPress/Frontend/FormView.php:93
+msgid "JavaScript is required to complete the CAPTCHA."
+msgstr "Für das CAPTCHA ist JavaScript erforderlich."
+
 #: src/WordPress/Frontend/Preview.php:38
 #: src/WordPress/Rest/SubmitController.php:43
 msgid "You are not allowed to preview this form."
 msgstr "Keine Berechtigung für die Vorschau dieses Formulars."
 
 #: src/WordPress/Rest/EntriesController.php:122
+#: src/WordPress/Rest/ExportController.php:52
 #: src/WordPress/Rest/FormsController.php:296
+#: src/WordPress/Rest/WebhooksController.php:56
 msgid "Form not found."
 msgstr "Formular nicht gefunden."
 
 #: src/WordPress/Rest/EntriesController.php:168
-#: src/WordPress/Rest/EntriesController.php:188
-#: src/WordPress/Rest/EntriesController.php:207
+#: src/WordPress/Rest/EntriesController.php:189
+#: src/WordPress/Rest/EntriesController.php:208
+#: src/WordPress/Rest/EntryEditingController.php:47
+#: src/WordPress/Rest/EntryEditingController.php:61
+#: src/WordPress/Rest/WebhooksController.php:92
 msgid "Entry not found."
 msgstr "Eintrag nicht gefunden."
+
+#: src/WordPress/Rest/EntryEditingController.php:65
+msgid "Enter a note of at most 2000 characters."
+msgstr "Bitte eine Notiz mit höchstens 2000 Zeichen eingeben."
 
 #: src/WordPress/Rest/FormsController.php:160
 msgid "The form could not be saved. Please fix the marked problems."
@@ -1036,7 +1075,27 @@ msgstr ""
 "Das Formular konnte nicht gespeichert werden. Bitte die markierten Probleme "
 "beheben."
 
-#: src/WordPress/Submission/SubmissionService.php:45
+#: src/WordPress/Rest/WebhooksController.php:67
+msgid "Webhook not found."
+msgstr "Webhook nicht gefunden."
+
+#: src/WordPress/Rest/WebhooksController.php:72
+msgid "Save a valid webhook configuration before sending a test."
+msgstr "Vor dem Testversand eine gültige Webhook-Konfiguration speichern."
+
+#: src/WordPress/Rest/WebhooksController.php:81
+#: src/WordPress/Webhooks/DeliveryService.php:78
+msgid ""
+"Webhook could not be prepared. Check its signing secret and configuration."
+msgstr ""
+"Der Webhook konnte nicht vorbereitet werden. Signatur-Secret und "
+"Konfiguration prüfen."
+
+#: src/WordPress/Rest/WebhooksController.php:95
+msgid "This delivery is already queued or running."
+msgstr "Diese Zustellung ist bereits vorgemerkt oder wird gerade ausgeführt."
+
+#: src/WordPress/Submission/SubmissionService.php:46
 msgid ""
 "The submission exceeds the server upload limit. Please choose fewer or "
 "smaller files."
@@ -1044,51 +1103,51 @@ msgstr ""
 "Die Übermittlung überschreitet das Upload-Limit des Servers. Bitte weniger "
 "oder kleinere Dateien auswählen."
 
-#: src/WordPress/Submission/SubmissionService.php:50
+#: src/WordPress/Submission/SubmissionService.php:51
 msgid "This form does not exist."
 msgstr "Dieses Formular existiert nicht."
 
-#: src/WordPress/Submission/SubmissionService.php:54
+#: src/WordPress/Submission/SubmissionService.php:55
 msgid "This form is currently not available."
 msgstr "Dieses Formular ist derzeit nicht verfügbar."
 
-#: src/WordPress/Submission/SubmissionService.php:95
-msgid "Please correct the marked fields."
-msgstr "Bitte die markierten Felder korrigieren."
-
-#: src/WordPress/Submission/SubmissionService.php:103
+#: src/WordPress/Submission/SubmissionService.php:104
 msgid "Preview: all entries are valid. Nothing was stored or sent."
 msgstr ""
 "Vorschau: Alle Angaben sind gültig. Es wurde nichts gespeichert oder "
 "versendet."
 
-#: src/WordPress/Submission/SubmissionService.php:111
+#: src/WordPress/Submission/SubmissionService.php:112
+msgid "Please complete the CAPTCHA and try again."
+msgstr "Bitte das CAPTCHA abschließen und erneut versuchen."
+
+#: src/WordPress/Submission/SubmissionService.php:119
 msgid "Files could not be saved. Please try again."
 msgstr "Die Dateien konnten nicht gespeichert werden. Bitte erneut versuchen."
 
-#: src/WordPress/Submission/SubmissionService.php:149
-#: src/WordPress/Submission/SubmissionService.php:154
+#: src/WordPress/Submission/SubmissionService.php:160
+#: src/WordPress/Submission/SubmissionService.php:165
 msgid "Your entry could not be saved. Please try again later."
 msgstr ""
 "Die Angaben konnten nicht gespeichert werden. Bitte später erneut versuchen."
 
-#: src/WordPress/Submission/SubmissionService.php:226
+#: src/WordPress/Submission/SubmissionService.php:239
 msgid "The page was open for a long time. Please submit the form again."
 msgstr "Die Seite war lange geöffnet. Bitte das Formular erneut absenden."
 
-#: src/WordPress/Submission/SubmissionService.php:227
+#: src/WordPress/Submission/SubmissionService.php:240
 msgid "That was very fast. Please wait a moment and submit again."
 msgstr "Das ging sehr schnell. Bitte einen Moment warten und erneut absenden."
 
-#: src/WordPress/Submission/SubmissionService.php:228
+#: src/WordPress/Submission/SubmissionService.php:241
 msgid "This form has already been submitted."
 msgstr "Dieses Formular wurde bereits abgesendet."
 
-#: src/WordPress/Submission/SubmissionService.php:229
+#: src/WordPress/Submission/SubmissionService.php:242
 msgid "Too many submissions. Please try again in a few minutes."
 msgstr "Zu viele Einsendungen. Bitte in einigen Minuten erneut versuchen."
 
-#: src/WordPress/Submission/SubmissionService.php:230
+#: src/WordPress/Submission/SubmissionService.php:243
 msgid "The form could not be verified. Please reload the page and try again."
 msgstr ""
 "Das Formular konnte nicht überprüft werden. Bitte die Seite neu laden und "
@@ -1383,6 +1442,63 @@ msgstr "Bedingungen hängen im Kreis voneinander ab."
 #: src/WordPress/Support/Messages.php:98
 msgid "The form contains an error."
 msgstr "Das Formular enthält einen Fehler."
+
+#: src/WordPress/Support/Privacy.php:84
+msgid "Form entries"
+msgstr "Formulareinträge"
+
+#: src/WordPress/Support/Privacy.php:85
+msgid "Entries submitted through SW Forms."
+msgstr "Über SW Forms übermittelte Einträge."
+
+#: src/WordPress/Support/Privacy.php:89
+msgid "Entry"
+msgstr "Eintrag"
+
+#: src/WordPress/Support/Privacy.php:93
+msgid "Form"
+msgstr "Formular"
+
+#: src/WordPress/Support/Privacy.php:101
+msgid "Values"
+msgstr "Werte"
+
+#: src/WordPress/Support/Privacy.php:105
+msgid "Notes"
+msgstr "Notizen"
+
+#: src/WordPress/Webhooks/DeliveryService.php:38
+msgid "Every five minutes (SW Forms)"
+msgstr "Alle fünf Minuten (SW Forms)"
+
+#: src/WordPress/Webhooks/DeliveryService.php:74
+msgid "Webhook queued for delivery."
+msgstr "Webhook zur Zustellung vorgemerkt."
+
+#. translators: 1: delivery id, 2: attempt number, 3: HTTP status, 4: milliseconds, 5: response excerpt
+#: src/WordPress/Webhooks/DeliveryService.php:132
+#, php-format
+msgid "Delivery #%1$d, attempt %2$d, HTTP %3$d, %4$d ms: %5$s"
+msgstr "Zustellung #%1$d, Versuch %2$d, HTTP %3$d, %4$d ms: %5$s"
+
+#: src/WordPress/Webhooks/DeliveryService.php:187
+msgid "SW Forms: webhook delivery failed"
+msgstr "SW Forms: Webhook-Zustellung fehlgeschlagen"
+
+#. translators: 1: form id, 2: delivery id
+#: src/WordPress/Webhooks/DeliveryService.php:190
+#, php-format
+msgid ""
+"Webhook delivery failed for form #%1$d (delivery #%2$d). Open SW Forms to "
+"review its configuration and entry log."
+msgstr ""
+"Die Webhook-Zustellung für Formular #%1$d ist fehlgeschlagen (Zustellung "
+"#%2$d). SW Forms öffnen, um die Konfiguration und das Eintragsprotokoll zu "
+"prüfen."
+
+#: src/WordPress/Webhooks/Transport.php:61
+msgid "Webhook destination blocked or request failed."
+msgstr "Webhook-Ziel blockiert oder Anfrage fehlgeschlagen."
 
 #: src/WordPress/Webhooks/WebhookValidator.php:63
 msgid ""

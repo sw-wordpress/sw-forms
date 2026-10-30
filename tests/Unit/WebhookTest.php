@@ -12,6 +12,13 @@ use SWForms\Core\Webhooks\Signature;
 
 final class WebhookTest extends TestCase
 {
+    public function testBackoffStopsAfterFiveRetries(): void
+    {
+        foreach ([1 => 60, 2 => 300, 3 => 1800, 4 => 7200, 5 => 43200, 6 => null, 7 => null] as $attempt => $delay) {
+            self::assertSame($delay, \SWForms\Core\Webhooks\RetryPolicy::delay($attempt));
+        }
+    }
+
     public function testSignatureUsesExactBodyBytesAndKnownHmacVector(): void
     {
         // RFC 4231, test case 2.

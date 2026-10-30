@@ -45,8 +45,10 @@ final class Postback {
 		 */
 		$ip = (string) apply_filters( 'swf_client_ip', $ip );
 		return array(
+			'wp_armour'  => \SWForms\WordPress\Spam\WpArmour::request_data( $post ),
 			'honeypot'   => is_scalar( $post[ SpamGuard::HONEYPOT_FIELD ] ?? null ) ? (string) $post[ SpamGuard::HONEYPOT_FIELD ] : '',
 			'token'      => is_scalar( $post['swf_token'] ?? null ) ? (string) $post['swf_token'] : '',
+			'captcha'    => is_string( $post['swf_captcha'] ?? null ) ? $post['swf_captcha'] : '',
 			'ip'         => $ip,
 			'user_id'    => get_current_user_id(),
 			'source_url' => is_scalar( $post['swf_source'] ?? null ) ? (string) $post['swf_source'] : wp_get_referer(),

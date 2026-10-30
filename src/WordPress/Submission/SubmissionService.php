@@ -22,6 +22,7 @@ use SWForms\WordPress\Support\Wpml;
 use SWForms\WordPress\Template\MergeTagResolver;
 use SWForms\WordPress\Uploads\IncomingFile;
 use SWForms\WordPress\Uploads\UploadStorage;
+use SWForms\WordPress\Webhooks\DeliveryService;
 
 final class SubmissionService {
 
@@ -38,7 +39,7 @@ final class SubmissionService {
 
 	/**
 	 * @param array<string, mixed> $raw     Unslashed `swf` request array.
-	 * @param array<string, mixed> $request honeypot, token, ip, user_id, source_url, preview (bool).
+	 * @param array<string, mixed> $request honeypot, token, ip, user_id, source_url, preview (bool), wp_armour (array).
 	 */
 	public function submit( int $form_id, array $raw, array $request ): SubmissionResult {
 		if ( IncomingFile::request_too_large() ) {
@@ -66,7 +67,7 @@ final class SubmissionService {
 		// Trusted: programmatic submissions via swf_submit().
 		if ( ! $preview && empty( $request['trusted'] ) ) {
 			$check = $this->spam->check( $form_id, is_array( $settings['spam'] ?? null ) ? $settings['spam'] : array(), (string) ( $request['honeypot'] ?? '' ), (string) ( $request['token'] ?? '' ), $ip );
-			if ( 'spam' === $check['status'] ) {
+			if ( 'spam' === $check['status'] || ( 'ok' === $check['status'] && \SWForms\WordPress\Spam\WpArmour::is_spam( is_array( $request['wp_armour'] ?? null ) ? $request['wp_armour'] : array() ) ) ) {
 				// Bots get the normal confirmation so they learn nothing.
 				return new SubmissionResult( SubmissionResult::SUCCESS, '', wp_kses_post( (string) ( $settings['confirmation']['message'] ?? '' ) ) );
 			}
@@ -103,7 +104,14 @@ final class SubmissionService {
 			return new SubmissionResult( SubmissionResult::SUCCESS, 'preview', esc_html__( 'Preview: all entries are valid. Nothing was stored or sent.', 'sw-forms' ) );
 		}
 
-		$uploads = new UploadStorage();
+		$uploads       = new UploadStorage();
+		$provider_name = (string) ( $settings['spam']['provider'] ?? '' );
+		if ( '' !== $provider_name && empty( $request['trusted'] ) ) {
+			$provider = \SWForms\WordPress\Spam\ProviderRegistry::instance()->get( $provider_name );
+			if ( null === $provider || ! $provider->verify( is_string( $request['captcha'] ?? null ) ? $request['captcha'] : '' ) ) {
+				return SubmissionResult::error( 'captcha', __( 'Please complete the CAPTCHA and try again.', 'sw-forms' ) );
+			}
+		}
 		try {
 			$stored_values = $uploads->store( $tree, $this->registry, $values, $raw, $visibility );
 		} catch ( \Throwable $exception ) {
@@ -121,9 +129,10 @@ final class SubmissionService {
 			 * @param array<string, mixed> $values  Clean values keyed by element id.
 			 * @param int                  $form_id Form id.
 			 */
-			$data     = (array) apply_filters( 'swf_submission_data', $builder->build( $stored_values, $visibility ), $values, $form_id );
-			$entry_id = 0;
-			if ( ! empty( $settings['storeEntries'] ) ) {
+			$data      = (array) apply_filters( 'swf_submission_data', $builder->build( $stored_values, $visibility ), $values, $form_id );
+			$entry_id  = 0;
+			$temporary = empty( $settings['storeEntries'] ) && array() !== DeliveryService::eligible( $document, $tree, $values );
+			if ( ! empty( $settings['storeEntries'] ) || $temporary ) {
 				$entry_id = $this->entries->insert(
 					$form_id,
 					$form['current_version'],
@@ -131,6 +140,7 @@ final class SubmissionService {
 					array(
 						'sourceUrl' => esc_url_raw( (string) ( $request['source_url'] ?? '' ) ),
 						'uploads'   => $uploads->manifest(),
+						'temporary' => $temporary,
 					),
 					// The index holds the display text (option labels, Yes/No): what people see and search for.
 					$builder->flatten(
@@ -142,7 +152,8 @@ final class SubmissionService {
 						}
 					),
 					'hash' === Settings::all()['ip_mode'] && '' !== $ip ? hash_hmac( 'sha256', $ip, Settings::secret() ) : '',
-					(int) ( $request['user_id'] ?? 0 )
+					(int) ( $request['user_id'] ?? 0 ),
+					$temporary
 				);
 				if ( 0 === $entry_id ) {
 					$uploads->rollback();
@@ -156,7 +167,7 @@ final class SubmissionService {
 
 		$this->spam->record_success( $form_id, $token_id, $ip );
 
-		$submission = new Submission( $form, $form['current_version'], $document, $tree, $values, $visibility, $data, $entry_id, $this->entries );
+		$submission = new Submission( $form, $form['current_version'], $document, $tree, $values, $visibility, $data, $entry_id, $this->entries, esc_url_raw( (string) ( $request['source_url'] ?? '' ) ) );
 		if ( $entry_id > 0 ) {
 			/**
 			 * Fires after an entry was stored, before actions run.
@@ -178,11 +189,13 @@ final class SubmissionService {
 		 */
 		do_action( 'swf_after_actions', $submission );
 
-		return $this->confirmation( $submission, $settings );
+		$result = $this->confirmation( $submission, $settings );
+		( new DeliveryService() )->cleanup_entry( $entry_id );
+		return $result;
 	}
 
 	private function run_actions( Submission $submission ): void {
-		$actions = array( new EmailNotifications( $this->registry ) );
+		$actions = array( new EmailNotifications( $this->registry ), new DeliveryService() );
 		/**
 		 * Actions executed after a valid submission.
 		 *
@@ -218,7 +231,7 @@ final class SubmissionService {
 			$redirect = (string) get_permalink( (int) $confirmation['pageId'] );
 		}
 		$message = wp_kses_post( $resolver->replace( (string) ( $confirmation['message'] ?? '' ), MergeTagResolver::CONTEXT_HTML ) );
-		return new SubmissionResult( SubmissionResult::SUCCESS, '', $message, array(), $redirect, $submission->entry_id );
+		return new SubmissionResult( SubmissionResult::SUCCESS, '', $message, array(), $redirect, empty( $settings['storeEntries'] ) ? 0 : $submission->entry_id );
 	}
 
 	private static function spam_message( string $status ): string {

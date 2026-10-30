@@ -57,6 +57,14 @@ final class FormService {
 		}
 		// Conditions of notifications are evaluated at form level: only fields outside repeaters.
 		$tree          = Tree::build( $document['fields'], $this->registry );
+		$provider_name = (string) ( $document['settings']['spam']['provider'] ?? '' );
+		if ( '' !== $provider_name && ! \SWForms\WordPress\Spam\ProviderRegistry::instance()->get( $provider_name )?->configured() ) {
+			$errors[] = array(
+				'path'    => 'settings',
+				'code'    => 'captcha_configuration',
+				'message' => __( 'Configure the selected CAPTCHA provider in SW Forms settings first.', 'sw-forms' ),
+			);
+		}
 		$notifications = $document['settings']['notifications'] ?? array();
 		foreach ( is_array( $notifications ) ? $notifications : array() as $notification ) {
 			foreach ( $notification['logic']['rules'] ?? array() as $rule ) {

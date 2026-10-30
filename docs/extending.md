@@ -160,5 +160,35 @@ the delivery service must implement its own idempotency and retry policy. Cancel
 matches the hook and arguments within the SW Forms group only. Dispatch depends on
 WordPress cron/loopback processing; calling `schedule()` never performs the job inline.
 
-Webhook configuration and request signing are described in `docs/schema.md`. Automatic
-delivery and retries remain open in `TODO.md`.
+Webhook configuration and request signing are described in `docs/schema.md`. Delivery, retries, leases, temporary-entry erasure and destination exceptions are
+implemented by the WordPress webhook services; see `docs/schema.md` and `docs/hooks.md`.
+
+
+## Spam providers (M3)
+
+Implement `SWForms\WordPress\Spam\ProviderInterface`: `slug(): string`,
+`configured(): bool`, `public_config(): array`, and `verify(string $token): bool`.
+Register an instance through `swf_register_spam_providers` using `$registry->register($provider)`.
+Slugs use lowercase letters, digits, underscores or hyphens, beginning with a letter (40
+characters maximum); registering the same slug replaces its implementation. Return only
+public widget configuration, keep secrets server-side, and reject verification failures.
+
+Built-in form settings expose Turnstile and hCaptcha. An add-on provider must supply its own
+settings/selection and browser widget integration, posting its response as `swf_captcha`.
+The core widget loader recognizes the two built-in providers only. The public submission
+pipeline invokes the selected registered provider before file storage or submission actions.
+
+### WP Armour (Basis und Extended)
+
+Wenn WP Armour aktiv ist, schützt SW Forms öffentliche Formulare automatisch zusätzlich
+über dessen `wpa_form`-Klasse und `wpa_check_is_spam()`. Die Basisversion genügt;
+Extended ergänzt über dieselbe Schnittstelle unter anderem den Wortfilter.
+Besucher benötigen dafür JavaScript. Vorschauen und vertrauenswürdige `swf_submit()`-
+Aufrufe sind ausgenommen. Der bestehende SW-Forms-Spamschutz bleibt aktiv.
+
+Erkannte Versuche werden ohne Speicherung, E-Mail oder Webhook bestätigt und über
+`wpa_handle_spammers` als `sw_forms` gemeldet. Extended kann dadurch gemäß seinen
+Einstellungen Formularinhalte/IPs protokollieren und IPs sperren. Übergeben werden
+Formularwerte und WP-Armour-Schutzfelder, keine SW-Forms-Tokens oder sonstigen
+Request-Metadaten. Nach Aktivierung oder Deaktivierung sollte der Seitencache geleert
+werden, damit Markup und aktiver Schutz zusammenpassen.

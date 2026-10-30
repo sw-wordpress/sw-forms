@@ -9,7 +9,7 @@ export interface LogicRule {
 }
 
 export interface Logic {
-  action: 'show' | 'hide';
+  action: 'show' | 'hide' | 'require' | 'disable';
   match: 'all' | 'any';
   rules: LogicRule[];
 }

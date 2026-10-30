@@ -75,7 +75,9 @@ final class FormView {
 		if ( ! empty( $options['title'] ) ) {
 			$html .= '<h2 class="swf-title">' . esc_html( $form['title'] ) . '</h2>';
 		}
-		$html .= '<form class="swf-form" method="post" action="' . esc_url( add_query_arg( 'swf_form', $form_id ) ) . '" enctype="multipart/form-data" novalidate data-swf-form="' . $form_id . '">';
+		$armour_class = ! $preview && \SWForms\WordPress\Spam\WpArmour::available() ? ' wpa_form' : '';
+
+		$html .= '<form class="swf-form' . $armour_class . '" method="post" action="' . esc_url( add_query_arg( 'swf_form', $form_id ) ) . '" enctype="multipart/form-data" novalidate data-swf-form="' . $form_id . '">';
 		$html .= self::summary( $form_id, $result );
 		$html .= '<div class="swf-fields">' . $renderer->render_ids( $tree->rootIds(), $context ) . '</div>';
 		$html .= '<input type="hidden" name="swf_form_id" value="' . $form_id . '">';
@@ -85,7 +87,13 @@ final class FormView {
 			$html .= '<div class="swf-hp" aria-hidden="true"><label for="swf-' . $form_id . '-hp">' . esc_html__( 'Leave this field empty', 'sw-forms' ) . '</label>'
 				. '<input type="text" id="swf-' . $form_id . '-hp" name="' . esc_attr( SpamGuard::HONEYPOT_FIELD ) . '" value="" tabindex="-1" autocomplete="off"></div>';
 		}
-		$html .= '<div class="swf-actions"><button type="submit" class="swf-button swf-submit">' . esc_html( (string) ( $settings['submitLabel'] ?? __( 'Submit', 'sw-forms' ) ) ) . '</button></div>';
+		$html         .= '<div class="swf-actions"><button type="submit" class="swf-button swf-submit">' . esc_html( (string) ( $settings['submitLabel'] ?? __( 'Submit', 'sw-forms' ) ) ) . '</button></div>';
+		$provider_name = (string) ( $settings['spam']['provider'] ?? '' );
+		if ( ! $preview && '' !== $provider_name ) {
+			$provider          = \SWForms\WordPress\Spam\ProviderRegistry::instance()->get( $provider_name );
+			$config['captcha'] = $provider?->public_config() ?? array( 'provider' => $provider_name );
+			$html             .= '<div class="swf-captcha" role="group" aria-label="' . esc_attr__( 'Spam protection', 'sw-forms' ) . '"></div><input type="hidden" name="swf_captcha" value=""><noscript>' . esc_html__( 'JavaScript is required to complete the CAPTCHA.', 'sw-forms' ) . '</noscript>';
+		}
 		$html .= '<script type="application/json" class="swf-config">' . wp_json_encode( $config, JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_SLASHES ) . '</script>';
 		$html .= '</form></div>';
 		return $html;

@@ -13,6 +13,8 @@ final class Scope
 {
     /** @var array<string, bool> Memoised visibility of the nodes of this scope. */
     public array $memo = [];
+    /** @var array<string, bool> */
+    public array $enabledMemo = [];
 
     /**
      * @param string|null          $repeater Repeater id, null for the form level.

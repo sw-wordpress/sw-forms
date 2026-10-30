@@ -32,6 +32,7 @@ final class Submission {
 		public readonly array $data,
 		public readonly int $entry_id,
 		private readonly EntryRepository $entries,
+		public readonly string $source_url = '',
 	) {}
 
 	public function form_id(): int {

@@ -154,7 +154,7 @@ final class DocumentNormalizer {
 			);
 		}
 		return array(
-			'action' => 'hide' === ( $logic['action'] ?? '' ) ? 'hide' : 'show',
+			'action' => in_array( $logic['action'] ?? '', array( 'show', 'hide', 'require', 'disable' ), true ) ? $logic['action'] : 'show',
 			'match'  => 'any' === ( $logic['match'] ?? '' ) ? 'any' : 'all',
 			'rules'  => $rules,
 		);

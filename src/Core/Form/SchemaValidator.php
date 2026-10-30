@@ -171,10 +171,13 @@ final class SchemaValidator
                 $this->error($id, 'invalid_logic');
                 continue;
             }
-            if (!in_array($logic['action'] ?? null, ['show', 'hide'], true) || !in_array($logic['match'] ?? null, ['all', 'any'], true)) {
+            if (!in_array($logic['action'] ?? null, ['show', 'hide', 'require', 'disable'], true) || !in_array($logic['match'] ?? null, ['all', 'any'], true)) {
                 $this->error($id, 'invalid_logic');
             }
             $rules = $logic['rules'] ?? null;
+            if (($logic['action'] ?? '') === 'require' && !$tree->isLeafData($id)) {
+                $this->error($id, 'invalid_logic');
+            }
             if (!is_array($rules) || !array_is_list($rules) || count($rules) > self::MAX_RULES) {
                 $this->error($id, 'invalid_logic');
                 continue;

@@ -36,3 +36,15 @@ describe('visibility fixtures', () => {
     }
   }
 });
+
+describe('conditional effects (shared PHP/TS fixture)', () => {
+  const data = load('effects.json');
+  for (const c of data.cases) {
+    it(c.name, () => {
+      const state = new Evaluator(new Tree(data.fields, BUILT_IN_CATALOG)).states(c.values);
+      for (const key of ['visible', 'enabled', 'required'] as const) {
+        for (const [path, expected] of Object.entries(c[key])) expect(state[key].get(path), `${key}:${path}`).toBe(expected);
+      }
+    });
+  }
+});

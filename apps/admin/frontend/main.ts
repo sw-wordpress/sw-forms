@@ -3,6 +3,7 @@
  * Without this script forms still work (server side postback).
  */
 import './form.css';
+import { CaptchaControl } from './captcha';
 import { TimePickers } from './timePicker';
 import { ImagePreviews } from './imagePreviews';
 import { MediaInputs } from './mediaInputs';
@@ -16,6 +17,7 @@ import { Tree } from '../shared/tree';
 import type { ElementNode, FieldValue, TypeCatalog, Values } from '../shared/types';
 
 interface Config {
+  captcha?: { provider: string; siteKey?: string };
   formId: number;
   rest: string;
   ajax: string;
@@ -80,6 +82,7 @@ function cssEscape(value: string): string {
 
 class SwForm {
   private readonly config: Config;
+  private readonly captcha: CaptchaControl;
   private readonly timePickers: TimePickers;
   private readonly imagePreviews: ImagePreviews;
   private readonly mediaInputs: MediaInputs;
@@ -97,6 +100,7 @@ class SwForm {
     this.tree = new Tree(this.config.fields, catalogFrom(this.config.fields));
     this.evaluator = new Evaluator(this.tree);
     this.nonce = this.config.nonce;
+    this.captcha = new CaptchaControl(form, this.config.captcha);
 
     this.imagePreviews = new ImagePreviews(form);
     this.mediaInputs = new MediaInputs(form);
@@ -104,6 +108,7 @@ class SwForm {
     this.updateRangeOutputs(form);
     form.addEventListener('reset', () => {
       setTimeout(() => {
+        this.captcha.reset();
         this.selects.reset();
         this.updateRangeOutputs(form);
         this.imagePreviews.clear();
@@ -245,33 +250,52 @@ class SwForm {
 
   /** Evaluates the logic and shows/hides elements; hidden controls are disabled (not submitted). */
   private apply(): void {
-    const visibility = this.evaluator.evaluate(this.collect(this.tree.rootIds, this.form, 'swf'));
-    this.applyTo(this.tree.rootIds, this.form, '', visibility);
+    const states = this.evaluator.states(this.collect(this.tree.rootIds, this.form, 'swf'));
+    const visibility = states.visible;
+    this.applyTo(this.tree.rootIds, this.form, '', visibility, states.enabled, states.required);
     this.imagePreviews.sync();
     this.timePickers.sync();
     this.mediaInputs.sync();
     this.selects.sync();
   }
 
-  private applyTo(ids: string[], scope: ParentNode, prefix: string, visibility: Map<string, boolean>): void {
+  private applyTo(ids: string[], scope: ParentNode, prefix: string, visibility: Map<string, boolean>, enabled: Map<string, boolean>, required: Map<string, boolean>): void {
     for (const id of ids) {
       const el = this.element(scope, id);
       const visible = visibility.get(prefix + id) ?? true;
-      if (el && (!visible || el.hidden)) {
-        // Hidden: always (re)disable, a visible parent may just have enabled everything inside.
+      const active = visible && (enabled.get(prefix + id) ?? true);
+      if (el) {
         el.hidden = !visible;
-        el.querySelectorAll<HTMLInputElement>('input, select, textarea, button').forEach((control) => {
-          control.disabled = !visible;
+        el.setAttribute('aria-disabled', active ? 'false' : 'true');
+        el.querySelectorAll<HTMLInputElement>('input, select, textarea, button, fieldset').forEach((control) => {
+          if (!active) {
+            if (!control.disabled) control.dataset.swfLogicDisabled = '1';
+            control.disabled = true;
+          } else if (control.dataset.swfLogicDisabled) {
+            control.disabled = false;
+            delete control.dataset.swfLogicDisabled;
+          }
         });
+        if (this.tree.isLeafData(id)) {
+          const needed = required.get(prefix + id) ?? false;
+          el.querySelectorAll('input, select, textarea').forEach((control) => control.setAttribute('aria-required', needed ? 'true' : 'false'));
+          const label = el.querySelector('.swf-label');
+          let marker = label?.querySelector<HTMLElement>('.swf-required');
+          if (needed && label && !marker) {
+            marker = document.createElement('span'); marker.className = 'swf-required'; marker.setAttribute('aria-hidden', 'true'); marker.textContent = '*'; label.append(marker);
+          }
+          if (marker) marker.hidden = !needed;
+          label?.querySelectorAll<HTMLElement>('.swf-sr').forEach((sr) => { sr.hidden = !needed; });
+        }
       }
       if (!visible) continue;
       if (this.tree.isRepeater(id)) {
         this.rows(el).forEach((row, index) =>
-          this.applyTo(this.tree.childIds(id), row, `${prefix}${id}[${index}].`, visibility),
+          this.applyTo(this.tree.childIds(id), row, `${prefix}${id}[${index}].`, visibility, enabled, required),
         );
         if (el) this.updateRowButtons(el);
       } else {
-        this.applyTo(this.tree.childIds(id), scope, prefix, visibility);
+        this.applyTo(this.tree.childIds(id), scope, prefix, visibility, enabled, required);
       }
     }
   }
@@ -409,6 +433,7 @@ class SwForm {
     } catch {
       this.showErrors(this.config.i18n.networkError, {});
     } finally {
+      if (retry === null) this.captcha.reset();
       this.busy = false;
       this.form.removeAttribute('aria-busy');
       if (button) {
@@ -426,6 +451,7 @@ class SwForm {
   }
 
   private success(result: SubmitResponse): void {
+    if (!this.config.preview) this.captcha.destroy();
     if (!this.config.preview || result.redirect) this.timePickers.destroy();
     this.mediaInputs.clear();
     if (result.redirect) {

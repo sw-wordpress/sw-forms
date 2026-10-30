@@ -35,6 +35,7 @@ final class Renderer {
 			if ( null === $type || array() === $element ) {
 				continue;
 			}
+			$element['required'] = ! empty( $element['required'] ) || $context->required( $id );
 			/**
 			 * Filters the HTML of a single element.
 			 *
@@ -44,7 +45,18 @@ final class Renderer {
 			 * @param array<string, mixed> $element Element definition.
 			 * @param RenderContext        $context Render context.
 			 */
-			$html .= (string) apply_filters( 'swf_element_markup', $type->render( $element, $context ), $element, $context );
+			$markup = (string) apply_filters( 'swf_element_markup', $type->render( $element, $context ), $element, $context );
+			if ( $context->disabled( $id ) ) {
+				$processor = new \WP_HTML_Tag_Processor( $markup );
+				while ( $processor->next_tag() ) {
+					if ( in_array( $processor->get_tag(), array( 'INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'FIELDSET' ), true ) && null === $processor->get_attribute( 'disabled' ) ) {
+						$processor->set_attribute( 'disabled', true );
+						$processor->set_attribute( 'data-swf-logic-disabled', '1' );
+					}
+				}
+				$markup = $processor->get_updated_html();
+			}
+			$html .= $markup;
 		}
 		return $html;
 	}
@@ -87,6 +99,7 @@ final class Renderer {
 				'container' => $type->container(),
 				'kind'      => $type->value_kind( $element ),
 				'logic'     => $element['logic'] ?? null,
+				'required'  => ! empty( $element['required'] ),
 			);
 			if ( isset( $element['children'] ) && is_array( $element['children'] ) ) {
 				$node['children'] = $this->public_tree( $element['children'] );

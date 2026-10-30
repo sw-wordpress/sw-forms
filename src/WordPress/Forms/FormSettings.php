@@ -44,6 +44,7 @@ final class FormSettings {
 			'storeEntries'  => (bool) ( $input['storeEntries'] ?? true ),
 			'retentionDays' => min( 3650, absint( $input['retentionDays'] ?? 0 ) ),
 			'spam'          => array(
+				'provider'   => is_string( $spam['provider'] ?? null ) ? sanitize_key( $spam['provider'] ) : '',
 				'honeypot'   => (bool) ( $spam['honeypot'] ?? true ),
 				'minSeconds' => min( 60, absint( $spam['minSeconds'] ?? 2 ) ),
 				'rateLimit'  => min( 1000, absint( $spam['rateLimit'] ?? 10 ) ),

@@ -1,0 +1,75 @@
+/** M3: dynamic field effects, searchable select, entry editing/notes, CSV and cursor insertion. */
+import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
+import { readdirSync, readFileSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { chromium } from 'playwright-core';
+const here = dirname(fileURLToPath(import.meta.url));
+const php = (file, ...args) => JSON.parse(execFileSync('php', [join(here, file), ...args], { encoding: 'utf8' }));
+const fixture = php('m3-fixture.php', 'setup');
+const auth = php('admin-auth.php');
+const base = join(homedir(), '.cache/ms-playwright');
+const chrome = readdirSync(base).filter((d) => /^chromium-\d+$/.test(d)).sort().pop();
+const browser = await chromium.launch({ executablePath: join(base, chrome, 'chrome-linux/chrome'), args: ['--no-sandbox'] });
+try {
+  const visitor = await browser.newContext();
+  const page = await visitor.newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto(fixture.url);
+  await page.locator('input[name="swf[name]"]').fill('Original name');
+  await page.locator('input[name="swf[email]"]').fill('m3@example.org');
+  await page.getByLabel('Change state', { exact: true }).check();
+  await page.waitForFunction(() => document.querySelector('input[name="swf[locked]"]').disabled);
+  assert.equal(await page.locator('input[name="swf[details]"]').getAttribute('aria-required'), 'true');
+  const combo = page.locator('[data-swf-id="choice"] .ts-control input');
+  await combo.fill('Beta'); await combo.press('ArrowDown'); await combo.press('Enter');
+  await page.waitForFunction(() => document.querySelector('select[name="swf[choice]"]').value === 'b');
+  await page.locator('.swf-submit').click();
+  await page.locator('[data-swf-id="details"] .swf-error-message:not([hidden])').waitFor();
+  await page.locator('input[name="swf[details]"]').fill('Required value');
+  await page.locator('.swf-submit').click();
+  await page.locator('.swf-confirmation').waitFor();
+  const stored = php('m3-fixture.php', 'entry', String(fixture.id));
+  assert.equal(stored.data.details, 'Required value'); assert.equal('locked' in stored.data, false); assert.equal(stored.data.choice, 'b');
+
+  const context = await browser.newContext({ viewport: { width: 1600, height: 1000 } });
+  await context.addCookies(auth.cookies.map((c) => ({ ...c, domain: 'localhost', path: '/' })));
+  const admin = await context.newPage();
+  admin.on('pageerror', (e) => errors.push(e.message));
+  await admin.goto(`${auth.admin}#/forms/${fixture.id}/entries/${stored.id}`);
+  const sheet = admin.locator('.swf-sheet');
+  await sheet.getByRole('button', { name: 'Werte bearbeiten', exact: true }).click();
+  const editor = sheet.locator('.swf-entry-editor');
+  await editor.getByLabel('Name', { exact: true }).fill('=2+2');
+  await editor.getByRole('button', { name: 'Speichern', exact: true }).click();
+  await editor.waitFor({ state: 'detached' });
+  assert.equal(php('m3-fixture.php', 'entry', String(fixture.id)).data.name, '=2+2');
+  await sheet.getByLabel('Interne Notiz', { exact: true }).fill('M3 internal note');
+  await sheet.getByRole('button', { name: 'Notiz hinzufügen', exact: true }).click();
+  await sheet.locator('.swf-entry-log').getByText('M3 internal note', { exact: false }).waitFor();
+  await admin.keyboard.press('Escape');
+  await admin.locator('.swf-entries__search input').fill('=2+2');
+  const download = admin.waitForEvent('download');
+  await admin.getByRole('link', { name: 'CSV exportieren', exact: true }).click();
+  const file = await download; await file.saveAs('/tmp/swf-m3-export.csv');
+  const csv = readFileSync('/tmp/swf-m3-export.csv', 'utf8');
+  assert.ok(csv.includes("'=2+2")); assert.ok(csv.includes('data.email')); assert.ok(!csv.includes('Original name'));
+
+  await admin.goto(`${auth.admin}#/forms/${fixture.id}/settings`);
+  const message = admin.locator('.swf-with-tags textarea');
+  await message.fill('Before After');
+  await message.evaluate((input) => { input.focus(); input.setSelectionRange(7, 7); });
+  await message.locator('xpath=ancestor::div[contains(@class, "swf-with-tags")]').getByRole('button').last().click();
+  await admin.locator('.q-menu .q-item').filter({ hasText: '{field:name}' }).click();
+  assert.equal(await message.inputValue(), 'Before {field:name}After');
+  assert.equal(await message.evaluate((input) => input.selectionStart), 19);
+  assert.equal(php('m3-fixture.php', 'erase', 'm3@example.org', String(stored.id)).gone, true);
+  assert.deepEqual(errors, []);
+  console.log('PASS: Conditional required/disabled fields, combobox, entry editing, notes, protected CSV, caret insertion and privacy erasure.');
+} finally {
+  await browser.close();
+  php('m3-fixture.php', 'cleanup', String(fixture.id), String(fixture.page));
+}

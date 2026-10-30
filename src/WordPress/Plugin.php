@@ -49,6 +49,8 @@ final class Plugin {
 		( new Preview() )->register();
 		( new TokenEndpoint() )->register();
 		( new Maintenance() )->register();
+		( new \SWForms\WordPress\Support\Privacy() )->register();
+		( new \SWForms\WordPress\Webhooks\DeliveryService() )->register();
 		( new Wpml() )->register();
 
 		if ( is_admin() ) {
@@ -79,7 +81,7 @@ final class Plugin {
 	}
 
 	public function register_rest(): void {
-		foreach ( array( new FormsController(), new EntriesController(), new SubmitController(), new SettingsController() ) as $controller ) {
+		foreach ( array( new FormsController(), new EntriesController(), new SubmitController(), new SettingsController(), new \SWForms\WordPress\Rest\WebhooksController(), new \SWForms\WordPress\Rest\ExportController(), new \SWForms\WordPress\Rest\EntryEditingController() ) as $controller ) {
 			$controller->register_routes();
 		}
 	}

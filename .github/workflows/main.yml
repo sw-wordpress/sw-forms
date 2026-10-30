@@ -55,7 +55,9 @@ jobs:
             --optimize-autoloader
 
       - name: Smoke-test source checkout
-        run: php tests/bootstrap.php
+        run: |
+          php tests/bootstrap.php
+          php tests/uninstall-bootstrap.php
 
       - name: Isolate dependencies with Mozart
         run: |
@@ -127,6 +129,7 @@ jobs:
 
           # Prove that the plugin boots without the original vendor directory.
           php tests/bootstrap.php "$STAGING"
+          php tests/uninstall-bootstrap.php "$STAGING"
 
           # Keep the installed plugin slug stable, even if the repository is renamed.
           (

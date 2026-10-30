@@ -53,7 +53,7 @@ final class UploadStorage {
 		require_once ABSPATH . 'wp-admin/includes/file.php';
 		$walk = function ( array $ids, array $scope, array $input, string $prefix ) use ( &$walk, $tree, $registry, $visibility ): array {
 			foreach ( $ids as $id ) {
-				if ( ! $visibility->isVisible( $id, $prefix ) ) {
+				if ( ! $visibility->isActive( $id, $prefix ) ) {
 					continue;
 				}
 				if ( $tree->isRepeater( $id ) ) {

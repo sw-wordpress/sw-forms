@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SW Forms\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-29 23:30+0100\n"
+"POT-Creation-Date: 2026-10-30 10:59+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -52,6 +52,24 @@ msgstr ""
 
 #: src/WordPress/Admin/AdminPage.php:48
 msgid "SW Forms requires JavaScript."
+msgstr ""
+
+#: src/WordPress/Entries/EntryEditor.php:77
+#: src/WordPress/Submission/SubmissionService.php:96
+msgid "Please correct the marked fields."
+msgstr ""
+
+#: src/WordPress/Entries/EntryEditor.php:95
+msgid ""
+"The entry changed or could not be saved. Reload it before editing again."
+msgstr ""
+
+#: src/WordPress/Entries/EntryEditor.php:97
+msgid "Entry values updated."
+msgstr ""
+
+#: src/WordPress/Entries/EntryEditor.php:118
+msgid "Keep the existing repeater rows when editing an entry."
 msgstr ""
 
 #: src/WordPress/Fields/AbstractFieldType.php:167
@@ -439,7 +457,7 @@ msgstr ""
 msgid "Number"
 msgstr ""
 
-#: src/WordPress/Fields/InputField.php:75
+#: src/WordPress/Fields/InputField.php:75 src/WordPress/Support/Privacy.php:97
 msgid "Date"
 msgstr ""
 
@@ -903,14 +921,18 @@ msgstr ""
 msgid "Video recording"
 msgstr ""
 
-#: src/WordPress/Forms/FormService.php:78
-#: src/WordPress/Forms/FormService.php:108
+#: src/WordPress/Forms/FormService.php:65
+msgid "Configure the selected CAPTCHA provider in SW Forms settings first."
+msgstr ""
+
+#: src/WordPress/Forms/FormService.php:86
+#: src/WordPress/Forms/FormService.php:116
 msgid "Untitled form"
 msgstr ""
 
 #. translators: %s: title of the copied form
-#: src/WordPress/Forms/FormService.php:145
-#: src/WordPress/Forms/FormService.php:147
+#: src/WordPress/Forms/FormService.php:153
+#: src/WordPress/Forms/FormService.php:155
 #, php-format
 msgid "%s (copy)"
 msgstr ""
@@ -924,15 +946,15 @@ msgstr ""
 msgid "Thank you! Your message has been sent."
 msgstr ""
 
-#: src/WordPress/Forms/FormSettings.php:63
+#: src/WordPress/Forms/FormSettings.php:64
 msgid "Admin notification"
 msgstr ""
 
-#: src/WordPress/Forms/FormSettings.php:66
+#: src/WordPress/Forms/FormSettings.php:67
 msgid "New entry: {form:title}"
 msgstr ""
 
-#: src/WordPress/Forms/FormSettings.php:80
+#: src/WordPress/Forms/FormSettings.php:81
 msgid "Notification"
 msgstr ""
 
@@ -964,74 +986,109 @@ msgstr ""
 msgid "Leave this field empty"
 msgstr ""
 
+#: src/WordPress/Frontend/FormView.php:93
+msgid "Spam protection"
+msgstr ""
+
+#: src/WordPress/Frontend/FormView.php:93
+msgid "JavaScript is required to complete the CAPTCHA."
+msgstr ""
+
 #: src/WordPress/Frontend/Preview.php:38
 #: src/WordPress/Rest/SubmitController.php:43
 msgid "You are not allowed to preview this form."
 msgstr ""
 
 #: src/WordPress/Rest/EntriesController.php:122
+#: src/WordPress/Rest/ExportController.php:52
 #: src/WordPress/Rest/FormsController.php:296
+#: src/WordPress/Rest/WebhooksController.php:56
 msgid "Form not found."
 msgstr ""
 
 #: src/WordPress/Rest/EntriesController.php:168
-#: src/WordPress/Rest/EntriesController.php:188
-#: src/WordPress/Rest/EntriesController.php:207
+#: src/WordPress/Rest/EntriesController.php:189
+#: src/WordPress/Rest/EntriesController.php:208
+#: src/WordPress/Rest/EntryEditingController.php:47
+#: src/WordPress/Rest/EntryEditingController.php:61
+#: src/WordPress/Rest/WebhooksController.php:92
 msgid "Entry not found."
+msgstr ""
+
+#: src/WordPress/Rest/EntryEditingController.php:65
+msgid "Enter a note of at most 2000 characters."
 msgstr ""
 
 #: src/WordPress/Rest/FormsController.php:160
 msgid "The form could not be saved. Please fix the marked problems."
 msgstr ""
 
-#: src/WordPress/Submission/SubmissionService.php:45
+#: src/WordPress/Rest/WebhooksController.php:67
+msgid "Webhook not found."
+msgstr ""
+
+#: src/WordPress/Rest/WebhooksController.php:72
+msgid "Save a valid webhook configuration before sending a test."
+msgstr ""
+
+#: src/WordPress/Rest/WebhooksController.php:81
+#: src/WordPress/Webhooks/DeliveryService.php:78
+msgid ""
+"Webhook could not be prepared. Check its signing secret and configuration."
+msgstr ""
+
+#: src/WordPress/Rest/WebhooksController.php:95
+msgid "This delivery is already queued or running."
+msgstr ""
+
+#: src/WordPress/Submission/SubmissionService.php:46
 msgid ""
 "The submission exceeds the server upload limit. Please choose fewer or "
 "smaller files."
 msgstr ""
 
-#: src/WordPress/Submission/SubmissionService.php:50
+#: src/WordPress/Submission/SubmissionService.php:51
 msgid "This form does not exist."
 msgstr ""
 
-#: src/WordPress/Submission/SubmissionService.php:54
+#: src/WordPress/Submission/SubmissionService.php:55
 msgid "This form is currently not available."
 msgstr ""
 
-#: src/WordPress/Submission/SubmissionService.php:95
-msgid "Please correct the marked fields."
-msgstr ""
-
-#: src/WordPress/Submission/SubmissionService.php:103
+#: src/WordPress/Submission/SubmissionService.php:104
 msgid "Preview: all entries are valid. Nothing was stored or sent."
 msgstr ""
 
-#: src/WordPress/Submission/SubmissionService.php:111
+#: src/WordPress/Submission/SubmissionService.php:112
+msgid "Please complete the CAPTCHA and try again."
+msgstr ""
+
+#: src/WordPress/Submission/SubmissionService.php:119
 msgid "Files could not be saved. Please try again."
 msgstr ""
 
-#: src/WordPress/Submission/SubmissionService.php:149
-#: src/WordPress/Submission/SubmissionService.php:154
+#: src/WordPress/Submission/SubmissionService.php:160
+#: src/WordPress/Submission/SubmissionService.php:165
 msgid "Your entry could not be saved. Please try again later."
 msgstr ""
 
-#: src/WordPress/Submission/SubmissionService.php:226
+#: src/WordPress/Submission/SubmissionService.php:239
 msgid "The page was open for a long time. Please submit the form again."
 msgstr ""
 
-#: src/WordPress/Submission/SubmissionService.php:227
+#: src/WordPress/Submission/SubmissionService.php:240
 msgid "That was very fast. Please wait a moment and submit again."
 msgstr ""
 
-#: src/WordPress/Submission/SubmissionService.php:228
+#: src/WordPress/Submission/SubmissionService.php:241
 msgid "This form has already been submitted."
 msgstr ""
 
-#: src/WordPress/Submission/SubmissionService.php:229
+#: src/WordPress/Submission/SubmissionService.php:242
 msgid "Too many submissions. Please try again in a few minutes."
 msgstr ""
 
-#: src/WordPress/Submission/SubmissionService.php:230
+#: src/WordPress/Submission/SubmissionService.php:243
 msgid "The form could not be verified. Please reload the page and try again."
 msgstr ""
 
@@ -1311,6 +1368,60 @@ msgstr ""
 
 #: src/WordPress/Support/Messages.php:98
 msgid "The form contains an error."
+msgstr ""
+
+#: src/WordPress/Support/Privacy.php:84
+msgid "Form entries"
+msgstr ""
+
+#: src/WordPress/Support/Privacy.php:85
+msgid "Entries submitted through SW Forms."
+msgstr ""
+
+#: src/WordPress/Support/Privacy.php:89
+msgid "Entry"
+msgstr ""
+
+#: src/WordPress/Support/Privacy.php:93
+msgid "Form"
+msgstr ""
+
+#: src/WordPress/Support/Privacy.php:101
+msgid "Values"
+msgstr ""
+
+#: src/WordPress/Support/Privacy.php:105
+msgid "Notes"
+msgstr ""
+
+#: src/WordPress/Webhooks/DeliveryService.php:38
+msgid "Every five minutes (SW Forms)"
+msgstr ""
+
+#: src/WordPress/Webhooks/DeliveryService.php:74
+msgid "Webhook queued for delivery."
+msgstr ""
+
+#. translators: 1: delivery id, 2: attempt number, 3: HTTP status, 4: milliseconds, 5: response excerpt
+#: src/WordPress/Webhooks/DeliveryService.php:132
+#, php-format
+msgid "Delivery #%1$d, attempt %2$d, HTTP %3$d, %4$d ms: %5$s"
+msgstr ""
+
+#: src/WordPress/Webhooks/DeliveryService.php:187
+msgid "SW Forms: webhook delivery failed"
+msgstr ""
+
+#. translators: 1: form id, 2: delivery id
+#: src/WordPress/Webhooks/DeliveryService.php:190
+#, php-format
+msgid ""
+"Webhook delivery failed for form #%1$d (delivery #%2$d). Open SW Forms to "
+"review its configuration and entry log."
+msgstr ""
+
+#: src/WordPress/Webhooks/Transport.php:61
+msgid "Webhook destination blocked or request failed."
 msgstr ""
 
 #: src/WordPress/Webhooks/WebhookValidator.php:63

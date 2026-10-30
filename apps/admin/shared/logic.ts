@@ -15,6 +15,7 @@ export const OPERATORS = ['is', 'isnot', 'contains', 'gt', 'lt', 'empty', 'notem
 
 class Scope {
   readonly memo = new Map<string, boolean>();
+  readonly enabledMemo = new Map<string, boolean>();
   constructor(
     readonly repeater: string | null,
     readonly values: Values,
@@ -26,10 +27,19 @@ class Scope {
 export class Evaluator {
   constructor(private readonly tree: Tree) {}
 
+  private enabledPaths = new Map<string, boolean>();
+  private requiredPaths = new Map<string, boolean>();
+
+  states(values: Values): { visible: Map<string, boolean>; enabled: Map<string, boolean>; required: Map<string, boolean> } {
+    this.enabledPaths = new Map();
+    this.requiredPaths = new Map();
+    const visible = new Map<string, boolean>();
+    this.collect(this.tree.rootIds, new Scope(null, values, null, ''), visible);
+    return { visible, enabled: this.enabledPaths, required: this.requiredPaths };
+  }
+
   evaluate(values: Values): Map<string, boolean> {
-    const out = new Map<string, boolean>();
-    this.collect(this.tree.rootIds, new Scope(null, values, null, ''), out);
-    return out;
+    return this.states(values).visible;
   }
 
   /** Logic not attached to a node (e.g. a notification condition), evaluated at form level. */
@@ -40,6 +50,9 @@ export class Evaluator {
   private collect(ids: string[], scope: Scope, out: Map<string, boolean>): void {
     for (const id of ids) {
       out.set(scope.prefix + id, this.visible(id, scope));
+      this.enabledPaths.set(scope.prefix + id, this.enabled(id, scope));
+      const node = this.tree.node(id);
+      this.requiredPaths.set(scope.prefix + id, !!node?.required || (node?.logic?.action === 'require' && this.logicAllows(node.logic, scope)));
       if (this.tree.isRepeater(id)) {
         const rows = scope.values[id];
         (Array.isArray(rows) ? rows : []).forEach((row, index) => {
@@ -74,8 +87,25 @@ export class Evaluator {
       const parentScope = this.resolve(this.tree.scopeOf(parent), scope);
       result = parentScope !== null && this.visible(parent, parentScope);
     }
-    if (result) result = this.logicAllows(this.tree.node(id)?.logic, scope);
+    const logic = this.tree.node(id)?.logic;
+    if (result && logic?.action !== 'require' && logic?.action !== 'disable') result = this.logicAllows(logic, scope);
     scope.memo.set(id, result);
+    return result;
+  }
+
+  private enabled(id: string, scope: Scope): boolean {
+    const memo = scope.enabledMemo.get(id);
+    if (memo !== undefined) return memo;
+    scope.enabledMemo.set(id, false);
+    const parent = this.tree.parentOf(id);
+    let result = true;
+    if (parent !== null) {
+      const parentScope = this.resolve(this.tree.scopeOf(parent), scope);
+      result = parentScope !== null && this.enabled(parent, parentScope);
+    }
+    const logic = this.tree.node(id)?.logic;
+    if (result && logic?.action === 'disable') result = !this.logicAllows(logic, scope);
+    scope.enabledMemo.set(id, result);
     return result;
   }
 
@@ -102,7 +132,7 @@ export class Evaluator {
     let value: unknown = '';
     if (field !== '' && this.tree.isLeafData(field)) {
       const fieldScope = this.resolve(this.tree.scopeOf(field), scope);
-      if (fieldScope !== null && this.visible(field, fieldScope)) {
+      if (fieldScope !== null && this.visible(field, fieldScope) && this.enabled(field, fieldScope)) {
         value = fieldScope.values[field] ?? '';
       }
     }

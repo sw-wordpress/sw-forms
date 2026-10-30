@@ -59,6 +59,13 @@ async function save(): Promise<void> {
         <q-toggle v-model="form.load_css" :label="t('settings.loadCss')" />
         <p class="swf-muted swf-small">{{ t('settings.loadCssHint') }}</p>
       </SwfCard>
+      <SwfCard v-if="form.captcha" :title="t('m3.captcha')" :subtitle="t('m3.captchaHelp')">
+        <div v-for="provider in (['turnstile', 'hcaptcha'] as const)" :key="provider" class="swf-stack">
+          <strong>{{ provider === 'turnstile' ? 'Cloudflare Turnstile' : 'hCaptcha' }}</strong>
+          <q-input v-model="form.captcha[provider].siteKey" outlined dense :label="t('m3.siteKey')" />
+          <q-input v-model="form.captcha[provider].secret" outlined dense type="password" autocomplete="new-password" :label="t('m3.secretKey')" :hint="t('m3.secretKeep')" />
+        </div>
+      </SwfCard>
       <SwfCard :title="t('settings.uninstall')" icon="r_delete_sweep">
         <q-toggle v-model="form.delete_data_on_uninstall" :label="t('settings.deleteData')" />
         <p class="swf-muted swf-small">{{ t('settings.deleteDataHint') }}</p>

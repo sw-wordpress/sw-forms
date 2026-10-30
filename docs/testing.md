@@ -59,6 +59,13 @@ their assertions use English source messages. This does not change the site's st
 Webhook tests cover encrypted secrets, draft rotation/discard, REST redaction, independent
 duplicate secrets, field-id mapping, payload filters and signatures of exact JSON/form bodies.
 The browser configuration round-trip runs with `node apps/admin/scripts/e2e/webhooks.mjs`.
+`WebhookDeliveryTest` covers real queue execution, immutable retry snapshots, bounded backoff,
+terminal failure notification/badges, temporary data erasure, lease recovery, queue persistence
+failure, preview/conditions and resend authorization. `WebhookHttpTest` uses a real loopback
+HTTP receiver to verify exact signed bytes and request-scoped exception cleanup. The browser
+flow `node apps/admin/scripts/e2e/webhook-delivery.mjs` exercises the test button, signed echo
+receiver, final failure badge, entry status and resend/polling. Its isolated loopback REST
+router requires a random per-run header; no test filters are installed on the normal site.
 `node apps/admin/scripts/e2e/editor-layout.mjs` verifies the editor's viewport frame at
 desktop widths, independent palette/canvas scrolling, every editor tab, narrow-screen
 panel access and releasing the document scroll lock when returning to the forms list.
@@ -143,3 +150,25 @@ file cleanup are verified over real multipart HTTP. Run upload browser suites se
 some assertions deliberately count all generated files in the disposable WordPress directory.
 The new PHP media fields and frontend media modules have 95% coverage guards (concrete
 audio/video PHP types require 100%). These do not waive SonarQube's separate quality gate.
+
+
+## Milestone 3
+
+`tests/WordPress/MilestoneThreeTest.php` covers filtered CSV and permissions, original-version
+entry edits, revision conflicts, notes, multi-page privacy export/erasure, merge tags, forged
+disabled values and both CAPTCHA verification APIs. External verification requests are mocked;
+real site/secret credentials and provider availability require deployment testing.
+
+Core CSV tests check formula injection and nested shapes. `logic/effects.json` is shared by
+PHP and TypeScript for required/disabled cascades and independent repeater rows. Vitest covers
+CAPTCHA token expiry/reset/removal and entry editor value shapes. Run
+`node apps/admin/scripts/e2e/m3.mjs` against local WordPress for dynamic effects, searchable
+select keyboard interaction, entry edits/notes, real CSV download, caret insertion and erasure.
+
+WP Armour: `tests/Unit/WpArmourTest.php` prüft die optionale Anbindung ohne WordPress.
+Bei aktivem WP Armour prüft `WpArmourIntegrationTest` im WordPress-Testlauf zusätzlich
+REST, POST-Metadaten, Vorschau, vertrauenswürdige Aufrufe und (mit Extended) den
+Wortfilter. Den Test sowohl mit Basis allein als auch mit Extended ausführen.
+Der Frontend-Browsertest prüft bei aktivem WP Armour auch die Ablehnung ohne JavaScript.
+`SWF_WPA_VANILLA=1 node apps/admin/scripts/e2e/frontend.mjs` ersetzt nur im Testbrowser
+die WP-Armour-Skripte durch deren Vanilla-Varianten; die Website-Einstellungen bleiben gleich.

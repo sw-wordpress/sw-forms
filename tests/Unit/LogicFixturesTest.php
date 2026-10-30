@@ -75,4 +75,17 @@ final class LogicFixturesTest extends TestCase
         self::assertIsArray($data);
         return $data;
     }
+
+    public function testConditionalEffectsUseSharedFixtures(): void
+    {
+        $data = self::load('effects.json');
+        foreach ($data['cases'] as $case) {
+            $state = (new Evaluator(Tree::build($data['fields'], StaticTypeCatalog::builtIn())))->evaluate($case['values']);
+            foreach (['visible' => 'isVisible', 'enabled' => 'isEnabled', 'required' => 'isRequired'] as $key => $method) {
+                foreach ($case[$key] as $path => $expected) {
+                    self::assertSame($expected, $state->$method($path), $case['name'] . ': ' . $key . ':' . $path);
+                }
+            }
+        }
+    }
 }

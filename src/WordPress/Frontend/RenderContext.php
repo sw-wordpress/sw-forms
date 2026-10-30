@@ -65,6 +65,14 @@ final class RenderContext {
 		return $this->row_index;
 	}
 
+	public function disabled( string $id ): bool {
+		return null !== $this->visibility && ! $this->visibility->isEnabled( $id, $this->path_prefix );
+	}
+
+	public function required( string $id ): bool {
+		return null !== $this->visibility && $this->visibility->isRequired( $id, $this->path_prefix );
+	}
+
 	/**
 	 * Renders child elements in this scope.
 	 *

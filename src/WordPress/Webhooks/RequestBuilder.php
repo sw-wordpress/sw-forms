@@ -19,10 +19,11 @@ final class RequestBuilder {
 	 * @param array<string, mixed> $webhook Stored webhook configuration.
 	 * @return array<string, mixed>
 	 */
-	public function payload( Submission $submission, array $webhook, string $event_id ): array {
-		$entry   = $submission->entry_id > 0 ? ( new \SWForms\WordPress\Entries\EntryRepository() )->find( $submission->entry_id ) : null;
-		$data    = ( new Payload( $submission->tree ) )->map( $submission->data, $webhook['mapping'] );
-		$payload = Payload::envelope( $event_id, $submission->form_id(), $submission->form['title'], $submission->version, $submission->entry_id, $entry['createdAt'] ?? gmdate( 'c' ), $data );
+	public function payload( Submission $submission, array $webhook, string $event_id, string $event = 'entry.created' ): array {
+		$entry            = $submission->entry_id > 0 ? ( new \SWForms\WordPress\Entries\EntryRepository() )->find( $submission->entry_id ) : null;
+		$data             = ( new Payload( $submission->tree ) )->map( $submission->data, $webhook['mapping'] );
+		$payload          = Payload::envelope( $event_id, $submission->form_id(), $submission->form['title'], $submission->version, $submission->entry_id, $entry['createdAt'] ?? gmdate( 'c' ), $data );
+		$payload['event'] = $event;
 		/**
 		 * Filters the final webhook envelope before serialization and signing.
 		 *

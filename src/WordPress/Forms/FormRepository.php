@@ -60,7 +60,8 @@ final class FormRepository {
 	 */
 	public function all(): array {
 		global $wpdb;
-		$rows = $wpdb->get_results(
+		$failures = ( new \SWForms\WordPress\Webhooks\DeliveryRepository() )->failure_counts();
+		$rows     = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT f.id, f.title, f.status, f.current_version, f.created_at, f.updated_at, (f.draft IS NOT NULL) AS has_draft,
 					SUM(e.status IN ('unread','read')) AS entries, SUM(e.status = 'unread') AS unread
@@ -71,18 +72,19 @@ final class FormRepository {
 			),
 			ARRAY_A
 		);
-		$out  = array();
+		$out      = array();
 		foreach ( is_array( $rows ) ? $rows : array() as $row ) {
 			$out[] = array(
-				'id'             => (int) $row['id'],
-				'title'          => (string) $row['title'],
-				'status'         => (string) $row['status'],
-				'currentVersion' => (int) $row['current_version'],
-				'hasDraft'       => (bool) $row['has_draft'],
-				'entries'        => (int) $row['entries'],
-				'unread'         => (int) $row['unread'],
-				'createdAt'      => mysql_to_rfc3339( (string) $row['created_at'] ),
-				'updatedAt'      => mysql_to_rfc3339( (string) $row['updated_at'] ),
+				'id'              => (int) $row['id'],
+				'title'           => (string) $row['title'],
+				'status'          => (string) $row['status'],
+				'currentVersion'  => (int) $row['current_version'],
+				'hasDraft'        => (bool) $row['has_draft'],
+				'entries'         => (int) $row['entries'],
+				'unread'          => (int) $row['unread'],
+				'webhookFailures' => $failures[ (int) $row['id'] ] ?? 0,
+				'createdAt'       => mysql_to_rfc3339( (string) $row['created_at'] ),
+				'updatedAt'       => mysql_to_rfc3339( (string) $row['updated_at'] ),
 			);
 		}
 		return $out;
@@ -222,6 +224,7 @@ final class FormRepository {
 			}
 			$count = count( $ids );
 		} while ( 500 === $count );
+		( new \SWForms\WordPress\Webhooks\DeliveryRepository() )->delete_for_form( $id );
 		foreach ( array( 'entry_values', 'entry_log', 'entries', 'form_versions' ) as $table ) {
 			$wpdb->query( $wpdb->prepare( 'DELETE FROM %i WHERE form_id = %d', Schema::table( $table ), $id ) );
 		}

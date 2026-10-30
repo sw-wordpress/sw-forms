@@ -39,7 +39,7 @@ final class DataBuilder
     {
         $out = [];
         foreach ($ids as $id) {
-            if (!$visibility->isVisible($id, $prefix)) {
+            if (!$visibility->isActive($id, $prefix)) {
                 continue;
             }
             if (!$this->tree->isData($id)) {
@@ -87,7 +87,7 @@ final class DataBuilder
     private function flattenInto(array $ids, array $values, Visibility $visibility, string $prefix, array &$out): void
     {
         foreach ($ids as $id) {
-            if (!$visibility->isVisible($id, $prefix)) {
+            if (!$visibility->isActive($id, $prefix)) {
                 continue;
             }
             if ($this->tree->isRepeater($id)) {
