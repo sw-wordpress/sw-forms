@@ -28,7 +28,7 @@ All hooks use the prefix `swf_`. Unless stated otherwise exceptions of callbacks
 | `swf_validation_errors` | `array<string,string> $errors, array $values, int $form_id` | Add `path => message` (path `id` or `repeater[0].id`) to reject a submission. | 0.1.0 |
 | `swf_submission_data` | `array $data, array $values, int $form_id` | Change the data (keyed by field key) before it is stored and sent. | 0.1.0 |
 | `swf_webhook_payload` | `array $payload, array $webhook, Submission $submission` | Prepared webhook envelope after mapping, before serialization/signing. Webhook settings exclude the signing secret. Used once before freezing a queued request, and for synthetic test requests. | 0.2.0 |
-| `swf_email_args` | `array{to, subject, message, headers} $args, array $notification, Submission $submission` | Change a notification e-mail. | 0.1.0 |
+| `swf_email_args` | `array{to, subject, message, headers, attachments?} $args, array $notification, Submission $submission` | Change a notification e-mail. Optional `attachments: list<string>` (local paths) was added in 0.5.0; omission remains supported. | 0.1.0 |
 | `swf_merge_tag` | `?string $value, string $tag, string $argument, Submission $submission` | Resolve custom merge tags (`null` = unknown, tag stays). | 0.1.0 |
 | `swf_element_markup` | `string $html, array $element, RenderContext $context` | Change the HTML of one element. | 0.1.0 |
 | `swf_captcha_allowed_hostnames` | `list<string> $hosts, string $provider` | Hostnames accepted by CAPTCHA verification; defaults to the lowercase home URL hostname. | 0.3.0 |

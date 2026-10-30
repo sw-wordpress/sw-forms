@@ -59,27 +59,37 @@ final class EmailNotifications implements ActionInterface {
 				$headers[] = 'From: ' . ( '' !== $from_name ? '"' . $from_name . '" ' : '' ) . '<' . $settings['from_email'] . '>';
 			}
 
+			$attachments = array();
+			if ( ! empty( $notification['attachFiles'] ) && $submission->entry_id > 0 ) {
+				$entry       = ( new \SWForms\WordPress\Entries\EntryRepository() )->find( $submission->entry_id );
+				$attachments = \SWForms\WordPress\Uploads\UploadStorage::attachments( $entry['meta']['uploads'] ?? array() );
+				if ( array_sum( array_map( 'filesize', $attachments ) ) > 20 * MB_IN_BYTES ) {
+					$submission->log( $this->type(), $id, 'failed', __( 'Attachments exceed the total email limit of 20 MB.', 'sw-forms' ) );
+					continue;
+				}
+			}
 			/**
 			 * Filters the arguments of a notification e-mail.
 			 *
 			 * @since 0.1.0
 			 *
-			 * @param array{to: list<string>, subject: string, message: string, headers: list<string>} $args
+			 * @param array{to: list<string>, subject: string, message: string, headers: list<string>, attachments: list<string>} $args (attachments added in 0.5.0).
 			 * @param array<string, mixed> $notification Notification settings.
 			 * @param Submission           $submission   Current submission.
 			 */
 			$args = apply_filters(
 				'swf_email_args',
 				array(
-					'to'      => $recipients,
-					'subject' => $subject,
-					'message' => $body,
-					'headers' => $headers,
+					'to'          => $recipients,
+					'subject'     => $subject,
+					'message'     => $body,
+					'headers'     => $headers,
+					'attachments' => $attachments,
 				),
 				$notification,
 				$submission
 			);
-			$sent = wp_mail( $args['to'], $args['subject'], $args['message'], $args['headers'] );
+			$sent = wp_mail( $args['to'], $args['subject'], $args['message'], $args['headers'], $args['attachments'] ?? array() );
 			$submission->log(
 				$this->type(),
 				$id,

@@ -41,6 +41,7 @@ export interface Notification {
   message: string;
   replyTo: string;
   fromName: string;
+  attachFiles?: boolean;
   logic: Logic | null;
 }
 

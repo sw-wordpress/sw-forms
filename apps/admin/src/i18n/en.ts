@@ -1,5 +1,6 @@
 /** English source messages. de.ts must mirror this structure (enforced by the type and a test). */
 const en = {
+  m5: {"library": "Templates / import", "importNotice": "Creates a new inactive form. Review recipients, webhooks and privacy settings before activation.", "importLimit": "Choose a JSON file up to 1 MB.", "export": "Export JSON", "history": "Published versions", "historyNotice": "Save your changes before restoring. Restore loads a draft; the published form stays unchanged until you save.", "view": "View", "restore": "Restore as draft", "restored": "Version loaded as a draft. Review field keys before publishing.", "confirmRestore": "Load this version as a draft? The current draft will be replaced. Published field keys may differ.", "previousVersions": "Newer versions", "nextVersions": "Older versions", "versionDocument": "Version document", "attachFiles": "Attach uploaded files (maximum 20 MB total)", "pageBreak": "Page break", "import": "Import JSON"},
   settingsSchema: { key: 'Key', value: 'Value', addRow: 'Add row', removeRow: 'Remove row {n}' },
   app: {
     skipToContent: 'Skip to content',

@@ -56,7 +56,45 @@ final class FormService {
 			return $errors;
 		}
 		// Conditions of notifications are evaluated at form level: only fields outside repeaters.
-		$tree          = Tree::build( $document['fields'], $this->registry );
+		$tree     = Tree::build( $document['fields'], $this->registry );
+		$root_ids = $tree->rootIds();
+		foreach ( $tree->ids() as $id ) {
+			$type = $tree->type( $id );
+			if ( 'page-break' === $type ) {
+				$position = array_search( $id, $root_ids, true );
+				if ( false === $position || 0 === $position || count( $root_ids ) - 1 === $position || 'page-break' === $tree->type( $root_ids[ $position - 1 ] ) ) {
+					$errors[] = array(
+						'path'    => $id,
+						'code'    => 'page_break',
+						'message' => __( 'Page breaks must separate non-empty steps at the top level.', 'sw-forms' ),
+					);
+				}
+			}
+			if ( 'calculation' === $type ) {
+				$settings = $tree->node( $id )['settings'];
+				$valid    = null === $tree->scopeOf( $id ) && ! empty( $settings['sources'] );
+				foreach ( $settings['sources'] as $source ) {
+					$node  = $tree->node( $source['field'] );
+					$valid = $valid && $tree->isLeafData( $source['field'] ) && null === $tree->scopeOf( $source['field'] ) && ( in_array( $node['type'] ?? '', array( 'range', 'rating', 'scale' ), true ) || ( 'input' === ( $node['type'] ?? '' ) && 'number' === ( $node['settings']['inputType'] ?? '' ) ) );
+				}
+				if ( ! $valid ) {
+					$errors[] = array(
+						'path'    => $id,
+						'code'    => 'calculation',
+						'message' => __( 'Calculations need numeric source fields outside repeaters; calculated sources are not allowed.', 'sw-forms' ),
+					);
+				}
+			}
+			foreach ( $tree->node( $id )['logic']['rules'] ?? array() as $rule ) {
+				if ( 'calculation' === $tree->type( $rule['field'] ) ) {
+					$errors[] = array(
+						'path'    => $id,
+						'code'    => 'calculation_logic',
+						'message' => __( 'Field conditions cannot depend on calculated values.', 'sw-forms' ),
+					);
+				}
+			}
+		}
 		$provider_name = (string) ( $document['settings']['spam']['provider'] ?? '' );
 		if ( '' !== $provider_name && ! \SWForms\WordPress\Spam\ProviderRegistry::instance()->get( $provider_name )?->configured() ) {
 			$errors[] = array(

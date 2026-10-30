@@ -36,7 +36,7 @@ function row(id: string, index: number, value: Record<string, unknown>): void { 
           <q-input v-for="(part, index) in ['from', 'to']" :key="part" :model-value="String((values[field.id] as string[] ?? [])[index] ?? '')" outlined dense :label="`${field.label} · ${t(`m3.${part}`)}`" @update:model-value="set(field.id, [0, 1].map((i) => i === index ? String($event ?? '') : String((values[field.id] as string[] ?? [])[i] ?? '')))" />
         </template>
         <q-input v-else-if="field.type === 'tags'" :model-value="(values[field.id] as string[] ?? []).join(', ')" outlined dense :label="field.label || field.key" @update:model-value="set(field.id, String($event ?? '').split(',').map((v) => v.trim()).filter(Boolean))" />
-        <q-input v-else :model-value="String(values[field.id] ?? '')" :type="field.type === 'textarea' ? 'textarea' : 'text'" outlined dense :label="field.label || field.key" @update:model-value="set(field.id, String($event ?? ''))" />
+        <q-input v-else :readonly="field.type === 'calculation'" :model-value="String(values[field.id] ?? '')" :type="field.type === 'textarea' ? 'textarea' : 'text'" outlined dense :label="field.label || field.key" @update:model-value="set(field.id, String($event ?? ''))" />
       </div>
     </template>
   </div>

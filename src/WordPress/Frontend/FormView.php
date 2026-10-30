@@ -54,6 +54,7 @@ final class FormView {
 		$values     = null !== $result && array() !== $result->values ? $result->values : $renderer->defaults();
 		$errors     = null !== $result ? $result->errors : array();
 		$visibility = ( new Evaluator( $tree ) )->evaluate( $values );
+		$values     = \SWForms\WordPress\Forms\Calculations::apply( $tree, $values, $visibility );
 		$context    = new RenderContext( $renderer, $form_id, $values, $errors, $visibility );
 
 		$config = array(
@@ -66,6 +67,7 @@ final class FormView {
 			'i18n'    => array(
 				'sending'      => __( 'Sending…', 'sw-forms' ),
 				'networkError' => __( 'The form could not be sent. Please check your connection and try again.', 'sw-forms' ),
+				'progress'     => __( 'Step {current} of {total}', 'sw-forms' ),
 				'summary'      => __( 'Please correct the following fields:', 'sw-forms' ),
 			),
 		);
@@ -77,9 +79,20 @@ final class FormView {
 		}
 		$armour_class = ! $preview && \SWForms\WordPress\Spam\WpArmour::available() ? ' wpa_form' : '';
 
-		$html .= '<form class="swf-form' . $armour_class . '" method="post" action="' . esc_url( add_query_arg( 'swf_form', $form_id ) ) . '" enctype="multipart/form-data" novalidate data-swf-form="' . $form_id . '">';
-		$html .= self::summary( $form_id, $result );
-		$html .= '<div class="swf-fields">' . $renderer->render_ids( $tree->rootIds(), $context ) . '</div>';
+		$html  .= '<form class="swf-form' . $armour_class . '" method="post" action="' . esc_url( add_query_arg( 'swf_form', $form_id ) ) . '" enctype="multipart/form-data" novalidate data-swf-form="' . $form_id . '">';
+		$html  .= self::summary( $form_id, $result );
+		$groups = \SWForms\WordPress\Forms\Steps::groups( $tree );
+		$html  .= '<div class="swf-fields">';
+		if ( count( $groups ) > 1 ) {
+			$html .= '<p class="swf-step-progress" role="status" aria-live="polite" hidden></p>';
+			foreach ( $groups as $index => $group ) {
+				$html .= '<section class="swf-step" data-swf-step="' . $index . '"><h3 tabindex="-1">' . esc_html( $group['label'] ) . '</h3>' . $renderer->render_ids( $group['ids'], $context ) . '</section>';
+			}
+			$html .= '<div class="swf-step-nav" hidden><button type="button" class="swf-button swf-step-back">' . esc_html__( 'Back', 'sw-forms' ) . '</button><button type="button" class="swf-button swf-step-next">' . esc_html__( 'Next', 'sw-forms' ) . '</button></div>';
+		} else {
+			$html .= $renderer->render_ids( $tree->rootIds(), $context );
+		}
+		$html .= '</div>';
 		$html .= '<input type="hidden" name="swf_form_id" value="' . $form_id . '">';
 		$html .= '<input type="hidden" name="swf_token" value="' . esc_attr( ( new SpamGuard() )->issue_token( $form_id ) ) . '">';
 		if ( ! empty( $settings['spam']['honeypot'] ) ) {

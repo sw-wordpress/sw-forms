@@ -602,3 +602,32 @@ an allowed hostname and, for Turnstile, action `swforms`.
 
 The searchable select already uses the Tom Select combobox with keyboard navigation; it
 retains its native select for submission and the no-JavaScript fallback.
+
+## Expansion fields and steps (0.5.0)
+
+* `html` is informational, produces no entry value and supports `settings.content` with
+  the existing safe inline HTML allowlist (`a`, `strong`, `em`, `br`); paragraphs are
+  generated from line breaks. Scripts, event handlers and form controls are not allowed.
+* `page-break` separates non-empty root-level steps. Its label titles the following step.
+  Breaks cannot be nested or placed first/last/consecutively. With JavaScript, Back/Next
+  navigation and live progress are enabled; Next validates the current step on the server
+  without consuming the token, storing uploads/entries or running actions. Final submission
+  validates the entire document again. Earlier step controls retain their values. Without
+  JavaScript, all sections remain visible and the normal full postback applies (subject to
+  separately configured CAPTCHA/WP Armour JavaScript requirements).
+* `calculation` produces a read-only string, recomputed on submission and entry editing.
+  Settings: `operation: sum|product|difference|quotient`, ordered
+  `sources: [{field: element_id}]` (1–20) and `decimals` (0–8, default 2).
+  Sources must be numeric inputs (`inputType: number`), ranges, ratings or scales outside
+  repeaters. Empty/inactive sources contribute zero. Calculations cannot source other
+  calculations or drive field visibility/required/disabled conditions; this prevents cycles.
+  Division by zero, non-finite results and magnitudes above 10^12 are invalid. Formatting
+  uses a dot and fixed decimal places with half-up rounding. PHP and TypeScript share
+  arithmetic fixtures. No formulas or JavaScript/PHP expressions are executed.
+
+Notifications may set `attachFiles: true` (default false). Only the stored entry's generated
+upload manifest resolves to local attachments; arbitrary paths and URLs are rejected.
+Attachments total at most 20 MB; exceeding that limit logs a failed notification without
+sending it. Entry storage is required for uploads. Upload URLs retain the existing public,
+unguessable URL contract: the separate directory/index guard prevents listing but is not
+an authenticated private-file service. Do not treat an upload URL as an access-control policy.

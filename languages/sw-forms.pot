@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SW Forms\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-30 23:55+0100\n"
+"POT-Creation-Date: 2026-10-31 00:26+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -26,17 +26,22 @@ msgstr ""
 msgid "No valid recipient address."
 msgstr ""
 
+#: src/WordPress/Actions/EmailNotifications.php:67
+msgid "Attachments exceed the total email limit of 20 MB."
+msgstr ""
+
 #. translators: %s: comma separated e-mail addresses
-#: src/WordPress/Actions/EmailNotifications.php:89
+#: src/WordPress/Actions/EmailNotifications.php:99
 #, php-format
 msgid "Sent to %s."
 msgstr ""
 
-#: src/WordPress/Actions/EmailNotifications.php:90
+#: src/WordPress/Actions/EmailNotifications.php:100
 msgid "wp_mail() reported an error. Check the mail configuration of the site."
 msgstr ""
 
 #: src/WordPress/Admin/AdminPage.php:30 src/WordPress/Admin/AdminPage.php:31
+#: src/WordPress/Editor/Embeds.php:80
 msgid "SW Forms"
 msgstr ""
 
@@ -54,21 +59,38 @@ msgstr ""
 msgid "SW Forms requires JavaScript."
 msgstr ""
 
-#: src/WordPress/Entries/EntryEditor.php:77
-#: src/WordPress/Submission/SubmissionService.php:96
+#: src/WordPress/Editor/Embeds.php:27 src/WordPress/Editor/Embeds.php:86
+#: src/WordPress/Support/Privacy.php:93
+msgid "Form"
+msgstr ""
+
+#: src/WordPress/Editor/Embeds.php:28 src/WordPress/Editor/Embeds.php:74
+msgid "Select a form"
+msgstr ""
+
+#: src/WordPress/Editor/Embeds.php:29
+msgid "Show form title"
+msgstr ""
+
+#: src/WordPress/Editor/Embeds.php:82 src/WordPress/Fields/HtmlField.php:32
+msgid "Content"
+msgstr ""
+
+#: src/WordPress/Entries/EntryEditor.php:84
+#: src/WordPress/Submission/SubmissionService.php:105
 msgid "Please correct the marked fields."
 msgstr ""
 
-#: src/WordPress/Entries/EntryEditor.php:95
+#: src/WordPress/Entries/EntryEditor.php:102
 msgid ""
 "The entry changed or could not be saved. Reload it before editing again."
 msgstr ""
 
-#: src/WordPress/Entries/EntryEditor.php:97
+#: src/WordPress/Entries/EntryEditor.php:104
 msgid "Entry values updated."
 msgstr ""
 
-#: src/WordPress/Entries/EntryEditor.php:118
+#: src/WordPress/Entries/EntryEditor.php:125
 msgid "Keep the existing repeater rows when editing an entry."
 msgstr ""
 
@@ -121,6 +143,42 @@ msgstr ""
 
 #: src/WordPress/Fields/BirthdateField.php:59
 msgid "Maximum age"
+msgstr ""
+
+#: src/WordPress/Fields/CalculationField.php:18
+msgid "Calculation"
+msgstr ""
+
+#: src/WordPress/Fields/CalculationField.php:30
+msgid "Operation"
+msgstr ""
+
+#: src/WordPress/Fields/CalculationField.php:35
+msgid "Sum"
+msgstr ""
+
+#: src/WordPress/Fields/CalculationField.php:39
+msgid "Product"
+msgstr ""
+
+#: src/WordPress/Fields/CalculationField.php:43
+msgid "Difference"
+msgstr ""
+
+#: src/WordPress/Fields/CalculationField.php:47
+msgid "Quotient"
+msgstr ""
+
+#: src/WordPress/Fields/CalculationField.php:54
+msgid "Source fields (in order)"
+msgstr ""
+
+#: src/WordPress/Fields/CalculationField.php:61
+msgid "Field"
+msgstr ""
+
+#: src/WordPress/Fields/CalculationField.php:70
+msgid "Decimal places"
 msgstr ""
 
 #: src/WordPress/Fields/CheckboxField.php:23
@@ -339,6 +397,10 @@ msgstr ""
 msgid "Remove %1$s %2$s"
 msgstr ""
 
+#: src/WordPress/Fields/HtmlField.php:18
+msgid "HTML / text"
+msgstr ""
+
 #: src/WordPress/Fields/ImageField.php:22
 msgid "Image upload"
 msgstr ""
@@ -441,7 +503,7 @@ msgstr ""
 msgid "Text"
 msgstr ""
 
-#: src/WordPress/Fields/InputField.php:59
+#: src/WordPress/Fields/InputField.php:59 src/WordPress/Forms/Templates.php:26
 msgid "Email"
 msgstr ""
 
@@ -712,7 +774,7 @@ msgstr ""
 msgid "Strongly agree"
 msgstr ""
 
-#: src/WordPress/Fields/NameField.php:17
+#: src/WordPress/Fields/NameField.php:17 src/WordPress/Forms/Templates.php:19
 msgid "Name"
 msgstr ""
 
@@ -730,6 +792,10 @@ msgstr ""
 
 #: src/WordPress/Fields/NameField.php:27
 msgid "Title"
+msgstr ""
+
+#: src/WordPress/Fields/PageBreakField.php:18
+msgid "Page break"
 msgstr ""
 
 #: src/WordPress/Fields/RadioField.php:25
@@ -757,7 +823,7 @@ msgstr ""
 msgid "Number range"
 msgstr ""
 
-#: src/WordPress/Fields/RatingField.php:18
+#: src/WordPress/Fields/RatingField.php:18 src/WordPress/Forms/Templates.php:81
 msgid "Rating"
 msgstr ""
 
@@ -921,24 +987,38 @@ msgstr ""
 msgid "Video recording"
 msgstr ""
 
-#: src/WordPress/Forms/FormService.php:65
+#: src/WordPress/Forms/FormService.php:69
+msgid "Page breaks must separate non-empty steps at the top level."
+msgstr ""
+
+#: src/WordPress/Forms/FormService.php:84
+msgid ""
+"Calculations need numeric source fields outside repeaters; calculated "
+"sources are not allowed."
+msgstr ""
+
+#: src/WordPress/Forms/FormService.php:93
+msgid "Field conditions cannot depend on calculated values."
+msgstr ""
+
+#: src/WordPress/Forms/FormService.php:103
 msgid "Configure the selected CAPTCHA provider in SW Forms settings first."
 msgstr ""
 
-#: src/WordPress/Forms/FormService.php:86
-#: src/WordPress/Forms/FormService.php:116
+#: src/WordPress/Forms/FormService.php:124
+#: src/WordPress/Forms/FormService.php:154
 msgid "Untitled form"
 msgstr ""
 
 #. translators: %s: title of the copied form
-#: src/WordPress/Forms/FormService.php:153
-#: src/WordPress/Forms/FormService.php:155
+#: src/WordPress/Forms/FormService.php:191
+#: src/WordPress/Forms/FormService.php:193
 #, php-format
 msgid "%s (copy)"
 msgstr ""
 
 #: src/WordPress/Forms/FormSettings.php:36
-#: src/WordPress/Frontend/FormView.php:90
+#: src/WordPress/Frontend/FormView.php:103
 msgid "Submit"
 msgstr ""
 
@@ -958,6 +1038,34 @@ msgstr ""
 msgid "Notification"
 msgstr ""
 
+#: src/WordPress/Forms/Steps.php:19
+msgid "Start"
+msgstr ""
+
+#: src/WordPress/Forms/Templates.php:33
+msgid "Contact"
+msgstr ""
+
+#: src/WordPress/Forms/Templates.php:42
+msgid "Message"
+msgstr ""
+
+#: src/WordPress/Forms/Templates.php:51
+msgid "Registration"
+msgstr ""
+
+#: src/WordPress/Forms/Templates.php:60
+msgid "Places"
+msgstr ""
+
+#: src/WordPress/Forms/Templates.php:74
+msgid "Survey"
+msgstr ""
+
+#: src/WordPress/Forms/Templates.php:88
+msgid "Feedback"
+msgstr ""
+
 #: src/WordPress/Frontend/FormView.php:32
 msgid "SW Forms: this form does not exist."
 msgstr ""
@@ -970,27 +1078,39 @@ msgstr ""
 msgid "SW Forms: this form is inactive."
 msgstr ""
 
-#: src/WordPress/Frontend/FormView.php:67
+#: src/WordPress/Frontend/FormView.php:68
 msgid "Sending…"
 msgstr ""
 
-#: src/WordPress/Frontend/FormView.php:68
+#: src/WordPress/Frontend/FormView.php:69
 msgid "The form could not be sent. Please check your connection and try again."
 msgstr ""
 
-#: src/WordPress/Frontend/FormView.php:69
+#: src/WordPress/Frontend/FormView.php:70
+msgid "Step {current} of {total}"
+msgstr ""
+
+#: src/WordPress/Frontend/FormView.php:71
 msgid "Please correct the following fields:"
 msgstr ""
 
-#: src/WordPress/Frontend/FormView.php:87
+#: src/WordPress/Frontend/FormView.php:91
+msgid "Back"
+msgstr ""
+
+#: src/WordPress/Frontend/FormView.php:91
+msgid "Next"
+msgstr ""
+
+#: src/WordPress/Frontend/FormView.php:100
 msgid "Leave this field empty"
 msgstr ""
 
-#: src/WordPress/Frontend/FormView.php:95
+#: src/WordPress/Frontend/FormView.php:108
 msgid "Spam protection"
 msgstr ""
 
-#: src/WordPress/Frontend/FormView.php:95
+#: src/WordPress/Frontend/FormView.php:108
 msgid "JavaScript is required to complete the CAPTCHA."
 msgstr ""
 
@@ -1001,6 +1121,7 @@ msgstr ""
 
 #: src/WordPress/Rest/EntriesController.php:122
 #: src/WordPress/Rest/ExportController.php:52
+#: src/WordPress/Rest/FormToolsController.php:123
 #: src/WordPress/Rest/FormsController.php:296
 #: src/WordPress/Rest/WebhooksController.php:56
 msgid "Form not found."
@@ -1019,6 +1140,13 @@ msgstr ""
 msgid "Enter a note of at most 2000 characters."
 msgstr ""
 
+#: src/WordPress/Rest/FormToolsController.php:74
+#: src/WordPress/Rest/FormToolsController.php:78
+msgid "Choose a valid SW Forms JSON export (up to 1 MB)."
+msgstr ""
+
+#: src/WordPress/Rest/FormToolsController.php:84
+#: src/WordPress/Rest/FormToolsController.php:116
 #: src/WordPress/Rest/FormsController.php:160
 msgid "The form could not be saved. Please fix the marked problems."
 msgstr ""
@@ -1055,177 +1183,185 @@ msgstr ""
 msgid "This form is currently not available."
 msgstr ""
 
-#: src/WordPress/Submission/SubmissionService.php:104
+#: src/WordPress/Submission/SubmissionService.php:97
+msgid "This form step does not exist."
+msgstr ""
+
+#: src/WordPress/Submission/SubmissionService.php:116
 msgid "Preview: all entries are valid. Nothing was stored or sent."
 msgstr ""
 
-#: src/WordPress/Submission/SubmissionService.php:112
+#: src/WordPress/Submission/SubmissionService.php:124
 msgid "Please complete the CAPTCHA and try again."
 msgstr ""
 
-#: src/WordPress/Submission/SubmissionService.php:119
+#: src/WordPress/Submission/SubmissionService.php:131
 msgid "Files could not be saved. Please try again."
 msgstr ""
 
-#: src/WordPress/Submission/SubmissionService.php:160
-#: src/WordPress/Submission/SubmissionService.php:165
+#: src/WordPress/Submission/SubmissionService.php:172
+#: src/WordPress/Submission/SubmissionService.php:177
 msgid "Your entry could not be saved. Please try again later."
 msgstr ""
 
-#: src/WordPress/Submission/SubmissionService.php:239
+#: src/WordPress/Submission/SubmissionService.php:251
 msgid "The page was open for a long time. Please submit the form again."
 msgstr ""
 
-#: src/WordPress/Submission/SubmissionService.php:240
+#: src/WordPress/Submission/SubmissionService.php:252
 msgid "That was very fast. Please wait a moment and submit again."
 msgstr ""
 
-#: src/WordPress/Submission/SubmissionService.php:241
+#: src/WordPress/Submission/SubmissionService.php:253
 msgid "This form has already been submitted."
 msgstr ""
 
-#: src/WordPress/Submission/SubmissionService.php:242
+#: src/WordPress/Submission/SubmissionService.php:254
 msgid "Too many submissions. Please try again in a few minutes."
 msgstr ""
 
-#: src/WordPress/Submission/SubmissionService.php:243
+#: src/WordPress/Submission/SubmissionService.php:255
 msgid "The form could not be verified. Please reload the page and try again."
 msgstr ""
 
 #: src/WordPress/Support/Messages.php:19
+msgid "The calculation has no valid result. Please check the source values."
+msgstr ""
+
+#: src/WordPress/Support/Messages.php:20
 msgid ""
 "Please choose a valid recording with the required audio or video stream."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:20
+#: src/WordPress/Support/Messages.php:21
 msgid "The file could not be uploaded. Please select it again."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:21
+#: src/WordPress/Support/Messages.php:22
 msgid "Please upload a valid JPEG, PNG, GIF or WebP image."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:22
+#: src/WordPress/Support/Messages.php:23
 msgid "This file type is not allowed or does not match its extension."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:23
+#: src/WordPress/Support/Messages.php:24
 msgid "The file is empty or exceeds the upload size limit."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:24
+#: src/WordPress/Support/Messages.php:25
 msgid "File uploads require entry storage to be enabled for this form."
 msgstr ""
 
 #. translators: %d: maximum number of files
-#: src/WordPress/Support/Messages.php:26
+#: src/WordPress/Support/Messages.php:27
 #, php-format
 msgid "Please upload at most %d file(s)."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:27
+#: src/WordPress/Support/Messages.php:28
 msgid "Please answer every question in this matrix."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:28
+#: src/WordPress/Support/Messages.php:29
 msgid "This field is required."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:29
+#: src/WordPress/Support/Messages.php:30
 msgid "The email addresses do not match."
 msgstr ""
 
 #. translators: %d: minimum number of characters
-#: src/WordPress/Support/Messages.php:31
+#: src/WordPress/Support/Messages.php:32
 #, php-format
 msgid ""
 "Use at least %d characters including uppercase, lowercase, a number and a "
 "symbol."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:31
+#: src/WordPress/Support/Messages.php:32
 #, php-format
 msgid "Use at least %d characters."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:32
+#: src/WordPress/Support/Messages.php:33
 msgid "Please enter a birthdate on or before today."
 msgstr ""
 
 #. translators: %d: minimum age
-#: src/WordPress/Support/Messages.php:34
+#: src/WordPress/Support/Messages.php:35
 #, php-format
 msgid "You must be at least %d years old."
 msgstr ""
 
 #. translators: %d: maximum age
-#: src/WordPress/Support/Messages.php:36
+#: src/WordPress/Support/Messages.php:37
 #, php-format
 msgid "Age must be at most %d years."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:37
+#: src/WordPress/Support/Messages.php:38
 msgid "Please fill in both endpoints."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:38
+#: src/WordPress/Support/Messages.php:39
 msgid "The end must not be before the start."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:38
+#: src/WordPress/Support/Messages.php:39
 msgid "The end must be after the start."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:39
+#: src/WordPress/Support/Messages.php:40
 msgid "Please enter a valid email address."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:40
+#: src/WordPress/Support/Messages.php:41
 msgid "Please enter a valid web address starting with http:// or https://."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:41
+#: src/WordPress/Support/Messages.php:42
 msgid "Please enter a valid phone number."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:42
+#: src/WordPress/Support/Messages.php:43
 msgid "Please enter a valid date."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:43
+#: src/WordPress/Support/Messages.php:44
 msgid "Please choose a color in #RRGGBB format."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:44
+#: src/WordPress/Support/Messages.php:45
 msgid "Please enter a valid time."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:45
+#: src/WordPress/Support/Messages.php:46
 msgid "Please enter a whole number."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:46
+#: src/WordPress/Support/Messages.php:47
 msgid "Please use the configured interval."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:47
+#: src/WordPress/Support/Messages.php:48
 msgid "Please enter a number."
 msgstr ""
 
 #. translators: %s: minimum value
-#: src/WordPress/Support/Messages.php:49
+#: src/WordPress/Support/Messages.php:50
 #, php-format
 msgid "Please enter a value of at least %s."
 msgstr ""
 
 #. translators: %s: maximum value
-#: src/WordPress/Support/Messages.php:51
+#: src/WordPress/Support/Messages.php:52
 #, php-format
 msgid "Please enter a value of at most %s."
 msgstr ""
 
 #. translators: %d: minimum number of characters
-#: src/WordPress/Support/Messages.php:53
+#: src/WordPress/Support/Messages.php:54
 #, php-format
 msgid "Please enter at least %d character."
 msgid_plural "Please enter at least %d characters."
@@ -1233,23 +1369,23 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: maximum number of characters
-#: src/WordPress/Support/Messages.php:55
+#: src/WordPress/Support/Messages.php:56
 #, php-format
 msgid "Please enter at most %d character."
 msgid_plural "Please enter at most %d characters."
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/WordPress/Support/Messages.php:56
+#: src/WordPress/Support/Messages.php:57
 msgid "Please match the requested format."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:57
+#: src/WordPress/Support/Messages.php:58
 msgid "Please choose one of the offered options."
 msgstr ""
 
 #. translators: %d: minimum number of selections
-#: src/WordPress/Support/Messages.php:59
+#: src/WordPress/Support/Messages.php:60
 #, php-format
 msgid "Please select at least %d option."
 msgid_plural "Please select at least %d options."
@@ -1257,7 +1393,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: maximum number of selections
-#: src/WordPress/Support/Messages.php:61
+#: src/WordPress/Support/Messages.php:62
 #, php-format
 msgid "Please select at most %d option."
 msgid_plural "Please select at most %d options."
@@ -1265,41 +1401,41 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: minimum number of rows
-#: src/WordPress/Support/Messages.php:63
+#: src/WordPress/Support/Messages.php:64
 #, php-format
 msgid "Please add at least %d entry."
 msgid_plural "Please add at least %d entries."
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/WordPress/Support/Messages.php:64
+#: src/WordPress/Support/Messages.php:65
 msgid "This value is invalid."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:74
+#: src/WordPress/Support/Messages.php:75
 msgid "The form document is invalid."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:75
+#: src/WordPress/Support/Messages.php:76
 msgid "An element is invalid."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:76
+#: src/WordPress/Support/Messages.php:77
 msgid "An element has an invalid id."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:77
+#: src/WordPress/Support/Messages.php:78
 msgid "Two elements share the same id."
 msgstr ""
 
 #. translators: %s: element type
-#: src/WordPress/Support/Messages.php:79
+#: src/WordPress/Support/Messages.php:80
 #, php-format
 msgid "The element type \"%s\" is not available. Is an add-on missing?"
 msgstr ""
 
 #. translators: %s: field key
-#: src/WordPress/Support/Messages.php:81
+#: src/WordPress/Support/Messages.php:82
 #, php-format
 msgid ""
 "The field name \"%s\" is invalid. Use letters, digits and underscores; start "
@@ -1307,66 +1443,66 @@ msgid ""
 msgstr ""
 
 #. translators: %s: field key
-#: src/WordPress/Support/Messages.php:83
+#: src/WordPress/Support/Messages.php:84
 #, php-format
 msgid "The field name \"%s\" is used twice at the same level."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:84
+#: src/WordPress/Support/Messages.php:85
 msgid "The label is invalid."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:85
+#: src/WordPress/Support/Messages.php:86
 msgid "The contents of this container are invalid."
 msgstr ""
 
 #. translators: %d: maximum number of columns
-#: src/WordPress/Support/Messages.php:87
+#: src/WordPress/Support/Messages.php:88
 #, php-format
 msgid "A column layout needs between 1 and %d columns."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:88
+#: src/WordPress/Support/Messages.php:89
 msgid "Column widths must be between 1 and 12."
 msgstr ""
 
 #. translators: %d: maximum nesting depth
-#: src/WordPress/Support/Messages.php:90
+#: src/WordPress/Support/Messages.php:91
 #, php-format
 msgid "Elements may be nested at most %d levels deep."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:91
+#: src/WordPress/Support/Messages.php:92
 msgid "The conditional logic is invalid."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:92
+#: src/WordPress/Support/Messages.php:93
 msgid "A condition is invalid."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:93
+#: src/WordPress/Support/Messages.php:94
 msgid "A condition uses an unknown comparison."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:94
+#: src/WordPress/Support/Messages.php:95
 msgid "A condition refers to a field that does not exist or has no value."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:95
+#: src/WordPress/Support/Messages.php:96
 msgid "A condition cannot refer to the element itself."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:96
+#: src/WordPress/Support/Messages.php:97
 msgid ""
 "A condition refers to a field inside a repeatable group. Only fields of the "
 "same row or outside the group can be used."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:97
+#: src/WordPress/Support/Messages.php:98
 msgid "Conditions depend on each other in a circle."
 msgstr ""
 
-#: src/WordPress/Support/Messages.php:98
+#: src/WordPress/Support/Messages.php:99
 msgid "The form contains an error."
 msgstr ""
 
@@ -1380,10 +1516,6 @@ msgstr ""
 
 #: src/WordPress/Support/Privacy.php:89
 msgid "Entry"
-msgstr ""
-
-#: src/WordPress/Support/Privacy.php:93
-msgid "Form"
 msgstr ""
 
 #: src/WordPress/Support/Privacy.php:101

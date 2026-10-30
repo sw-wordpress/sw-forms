@@ -78,6 +78,7 @@ final class SubmissionService {
 		}
 
 		$visibility = ( new Evaluator( $tree ) )->evaluate( $values );
+		$values     = \SWForms\WordPress\Forms\Calculations::apply( $tree, $values, $visibility );
 		$errors     = ( new SubmissionValidator( $tree, $this->registry ) )->validate( $values, $visibility, $raw, $preview || ! empty( $settings['storeEntries'] ) );
 		/**
 		 * Filters the field errors. Add an entry `path => message` to reject a submission.
@@ -89,6 +90,14 @@ final class SubmissionService {
 		 * @param int                   $form_id Form id.
 		 */
 		$errors = (array) apply_filters( 'swf_validation_errors', $errors, $values, $form_id );
+		$step   = $request['step'] ?? null;
+		if ( null !== $step ) {
+			$groups = \SWForms\WordPress\Forms\Steps::groups( $tree );
+			if ( ! is_int( $step ) || ! isset( $groups[ $step ] ) ) {
+				return SubmissionResult::error( 'step', __( 'This form step does not exist.', 'sw-forms' ) );
+			}
+			$errors = \SWForms\WordPress\Forms\Steps::errors( $tree, $errors, $groups[ $step ]['ids'] );
+		}
 		if ( array() !== $errors ) {
 			return new SubmissionResult(
 				SubmissionResult::INVALID,
@@ -99,6 +108,9 @@ final class SubmissionService {
 				0,
 				$values
 			);
+		}
+		if ( null !== $step ) {
+			return new SubmissionResult( SubmissionResult::SUCCESS, 'step' );
 		}
 		if ( $preview ) {
 			return new SubmissionResult( SubmissionResult::SUCCESS, 'preview', esc_html__( 'Preview: all entries are valid. Nothing was stored or sent.', 'sw-forms' ) );

@@ -44,6 +44,28 @@ afterEach(() => {
 });
 
 describe('actual frontend form runtime', () => {
+  it('validates pages remotely without submitting early, preserves earlier values and reveals final cross-page errors', async () => {
+    const fields = [field('quantity'), field('name'), field('total', 'calculation', 'text', { settings: { operation: 'product', decimals: 2, sources: [{ field: 'quantity' }, { field: 'price' }] } }), field('price')];
+    const html = '<p class="swf-step-progress" hidden></p><section class="swf-step" data-swf-step="0"><h3 tabindex="-1">First</h3>' + wrap('quantity', '<input name="swf[quantity]" value="2">') + wrap('price', '<input name="swf[price]" value="3">') + '</section><section class="swf-step" data-swf-step="1"><h3 tabindex="-1">Second</h3>' + wrap('name', '<input name="swf[name]">') + wrap('total', '<input readonly name="swf[total]">') + '</section><div class="swf-step-nav" hidden><button type="button" class="swf-step-back">Back</button><button type="button" class="swf-step-next">Next</button></div>';
+    await mountForm(true, { fields, html });
+    const pages = [...document.querySelectorAll<HTMLElement>('.swf-step')];
+    expect(pages[1]!.hidden).toBe(true);
+    expect(document.querySelector<HTMLInputElement>('[name="swf[total]"]')!.value).toBe('6.00');
+    vi.mocked(fetch).mockResolvedValueOnce(response({ status: 'success', code: 'step' }));
+    document.querySelector<HTMLButtonElement>('.swf-step-next')!.click();
+    await flushPromises();
+    expect(new FormData(document.querySelector('form')!).get('swf[quantity]')).toBe('2');
+    expect((vi.mocked(fetch).mock.calls[0]![1]!.body as FormData).get('swf_step')).toBe('0');
+    expect(pages[0]!.hidden).toBe(true);
+    expect(pages[1]!.hidden).toBe(false);
+    expect(document.querySelector('.swf-confirmation')).toBeNull();
+    vi.mocked(fetch).mockResolvedValueOnce(response({ status: 'invalid', errors: { quantity: 'Changed invalid source' } }));
+    submit(); await flushPromises();
+    expect(pages[0]!.hidden).toBe(false);
+    expect(document.querySelector('.swf-summary')?.textContent).toContain('Changed invalid source');
+    expect((vi.mocked(fetch).mock.calls[1]![1]!.body as FormData).has('swf_step')).toBe(false);
+  });
+
   it('reads matrix values for conditions and submits stable keys in independent repeater rows', async () => {
     const controls = (prefix: string) => ['service', 'quality'].map((row) => [1, 5].map((value) => `<input type="radio" data-swf-matrix-row="${row}" name="${prefix}[${row}]" value="${value}">`).join('')).join('');
     const rows = field('rows', 'group', 'none', { container: 'children', settings: { repeatable: true }, children: [field('nested', 'matrix', 'matrix'), field('why', 'input', 'text', { logic: condition('nested', 'is', '5') })] });

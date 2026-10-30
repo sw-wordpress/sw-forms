@@ -41,6 +41,15 @@ const defaults = computed(() => {
       </div>
     </template>
 
+    <template v-else-if="element.type === 'page-break'">
+      <hr><p>{{ element.label || t('m5.pageBreak') }}</p><hr>
+    </template>
+    <template v-else-if="element.type === 'html'">
+      <p style="white-space: pre-line">{{ String(settings.content ?? '').replace(/<[^>]*>/g, '') }}</p>
+    </template>
+    <template v-else-if="element.type === 'calculation'">
+      <label>{{ element.label }}<input readonly value="0.00"></label>
+    </template>
     <template v-else-if="element.type === 'checkbox' && mode === 'single'">
       <label class="swf-preview__choice">
         <span class="swf-preview__box" :class="{ 'swf-preview__box--on': settings.checked === true, 'swf-preview__switch': settings.switch === true }" />

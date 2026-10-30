@@ -3,6 +3,7 @@
  * Without this script forms still work (server side postback).
  */
 import './form.css';
+import { calculate } from '../shared/arithmetic';
 import { CaptchaControl } from './captcha';
 import { TimePickers } from './timePicker';
 import { ImagePreviews } from './imagePreviews';
@@ -24,7 +25,7 @@ interface Config {
   preview: boolean;
   nonce: string;
   fields: ElementNode[];
-  i18n: { sending: string; networkError: string; summary: string };
+  i18n: { progress?: string; sending: string; networkError: string; summary: string };
 }
 
 interface SubmitResponse {
@@ -93,6 +94,7 @@ class SwForm {
   private rowCounter = 1000;
   private scheduled = false;
   private busy = false;
+  private currentStep = 0;
 
   constructor(private readonly form: HTMLFormElement) {
     const raw = form.querySelector('script.swf-config')?.textContent ?? '{}';
@@ -114,6 +116,7 @@ class SwForm {
         this.imagePreviews.clear();
         this.mediaInputs.clear();
         this.apply();
+        this.showStep(0, false);
       }, 0);
     });
     form.addEventListener('dragover', (event) => {
@@ -132,11 +135,14 @@ class SwForm {
     form.addEventListener('click', (e) => this.onClick(e));
     form.addEventListener('submit', (e) => {
       e.preventDefault();
-      void this.submit(true);
+      const steps = this.form.querySelectorAll('.swf-step');
+      void this.submit(true, steps.length > 1 && this.currentStep < steps.length - 1 ? this.currentStep : null);
     });
     this.form.querySelectorAll<HTMLElement>('.swf-repeater').forEach((r) => this.updateRowButtons(r));
     this.timePickers = new TimePickers(form);
     this.apply();
+    this.showStep(0, false);
+    this.revealError(this.form.querySelector<HTMLElement>('.swf-field--error'));
     this.watchForToken();
   }
 
@@ -250,7 +256,17 @@ class SwForm {
 
   /** Evaluates the logic and shows/hides elements; hidden controls are disabled (not submitted). */
   private apply(): void {
-    const states = this.evaluator.states(this.collect(this.tree.rootIds, this.form, 'swf'));
+    const values = this.collect(this.tree.rootIds, this.form, 'swf');
+    const states = this.evaluator.states(values);
+    for (const id of this.tree.ids()) {
+      const node = this.tree.node(id);
+      if (node?.type !== 'calculation') continue;
+      const sources = Array.isArray(node.settings?.sources) ? node.settings.sources as { field: string }[] : [];
+      const numbers = sources.map((source) => states.visible.get(source.field) === false || states.enabled.get(source.field) === false ? 0 : Number(String(values[source.field] ?? '').trim().replace(',', '.')));
+      const result = calculate(String(node.settings?.operation ?? 'sum'), numbers, Number(node.settings?.decimals ?? 2)) ?? '';
+      const input = this.element(this.form, id)?.querySelector<HTMLInputElement>('input');
+      if (input) input.value = result;
+    }
     const visibility = states.visible;
     this.applyTo(this.tree.rootIds, this.form, '', visibility, states.enabled, states.required);
     this.imagePreviews.sync();
@@ -305,6 +321,8 @@ class SwForm {
   private onClick(event: Event): void {
     const button = (event.target as HTMLElement | null)?.closest('button');
     if (!button) return;
+    if (button.classList.contains('swf-step-next')) { void this.submit(true, this.currentStep); return; }
+    if (button.classList.contains('swf-step-back')) { if (this.busy) return; this.showStep(this.currentStep - 1); return; }
     const repeater = button.closest<HTMLElement>('.swf-repeater');
     if (!repeater) return;
     if (button.classList.contains('swf-row-add')) {
@@ -390,7 +408,29 @@ class SwForm {
 
   // ---------- submit ----------
 
-  private async submit(allowRetry: boolean): Promise<void> {
+  private showStep(index: number, focus = true): void {
+    const steps = [...this.form.querySelectorAll<HTMLElement>('.swf-step')];
+    if (steps.length < 2) return;
+    this.currentStep = Math.max(0, Math.min(steps.length - 1, index));
+    steps.forEach((step, i) => { step.hidden = i !== this.currentStep; });
+    const nav = this.form.querySelector<HTMLElement>('.swf-step-nav');
+    if (nav) nav.hidden = false;
+    const back = this.form.querySelector<HTMLElement>('.swf-step-back');
+    const next = this.form.querySelector<HTMLElement>('.swf-step-next');
+    if (back) back.hidden = this.currentStep === 0;
+    if (next) next.hidden = this.currentStep === steps.length - 1;
+    for (const el of this.form.querySelectorAll<HTMLElement>('.swf-actions, .swf-captcha')) el.hidden = this.currentStep !== steps.length - 1;
+    const progress = this.form.querySelector<HTMLElement>('.swf-step-progress');
+    if (progress) { progress.hidden = false; progress.textContent = (this.config.i18n.progress ?? '{current}/{total}').replace('{current}', String(this.currentStep + 1)).replace('{total}', String(steps.length)); }
+    if (focus) steps[this.currentStep]?.querySelector<HTMLElement>('h3')?.focus();
+  }
+
+  private revealError(wrapper: HTMLElement | null): void {
+    const step = wrapper?.closest<HTMLElement>('.swf-step');
+    if (step) this.showStep(Number(step.dataset.swfStep), false);
+  }
+
+  private async submit(allowRetry: boolean, validateStep: number | null = null): Promise<void> {
     if (this.busy) return;
     const pending = this.form.querySelector<HTMLInputElement>('input[data-swf-media-busy]:not(:disabled)');
     if (pending) { this.showErrors(pending.dataset.swfBusyMessage ?? this.config.i18n.networkError, {}); return; }
@@ -406,6 +446,7 @@ class SwForm {
     let retry: 'token' | 'wait' | null = null;
     try {
       const body = new FormData(this.form);
+      if (validateStep !== null) body.set('swf_step', String(validateStep));
       body.set('swf_source', window.location.href);
       if (this.config.preview) body.set('swf_preview', '1');
       const headers: Record<string, string> = { Accept: 'application/json' };
@@ -418,6 +459,11 @@ class SwForm {
       });
       const result = (await response.json()) as SubmitResponse;
       if (result.status === 'success') {
+        if (validateStep !== null && result.code === 'step') {
+          this.showErrors('', {});
+          this.showStep(validateStep + 1);
+          return;
+        }
         this.success(result);
         return;
       }
@@ -443,10 +489,10 @@ class SwForm {
     }
     if (retry === 'token') {
       await this.refreshToken();
-      await this.submit(false);
+      await this.submit(false, validateStep);
     } else if (retry === 'wait') {
       await new Promise((resolve) => setTimeout(resolve, 2500));
-      await this.submit(false);
+      await this.submit(false, validateStep);
     }
   }
 
@@ -525,8 +571,10 @@ class SwForm {
     list?.replaceChildren();
     summary?.classList.remove('swf-summary--ok');
 
+    let firstError = true;
     for (const [path, message] of Object.entries(errors)) {
       const wrapper = this.byPath(path);
+      if (firstError) { this.revealError(wrapper); firstError = false; }
       const slot = wrapper?.querySelector<HTMLElement>(':scope > .swf-error-message');
       if (wrapper && slot) {
         wrapper.classList.add('swf-field--error');
@@ -544,6 +592,7 @@ class SwForm {
         link.href = slot?.id ? `#${slot.id}` : '#';
         link.addEventListener('click', (e) => {
           e.preventDefault();
+          this.revealError(wrapper);
           this.selects.focus(wrapper?.querySelector<HTMLElement>('input:not([type="hidden"]):not([hidden]), select, textarea'));
         });
         item.appendChild(link);

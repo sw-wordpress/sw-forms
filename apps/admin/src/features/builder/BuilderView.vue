@@ -10,6 +10,7 @@ import { useAppStore } from '@/stores/app';
 import { useBuilderStore } from '@/stores/builder';
 import EntriesView from '@/features/entries/EntriesView.vue';
 import BuilderCanvas from './BuilderCanvas.vue';
+import FormHistory from './FormHistory.vue';
 import FormSettingsPanel from './FormSettingsPanel.vue';
 import InspectorPanel from './InspectorPanel.vue';
 import NotificationsPanel from './NotificationsPanel.vue';
@@ -241,7 +242,7 @@ onBeforeRouteLeave(async (to) => {
         <BuilderCanvas />
         <InspectorPanel />
       </div>
-      <div v-else-if="tab === 'settings'" class="swf-builder__page"><FormSettingsPanel /></div>
+      <div v-else-if="tab === 'settings'" class="swf-builder__page"><FormSettingsPanel /><FormHistory /></div>
       <div v-else-if="tab === 'notifications'" class="swf-builder__page"><NotificationsPanel /></div>
       <div v-else-if="tab === 'webhooks'" class="swf-builder__page"><WebhooksPanel /></div>
       <div v-else class="swf-builder__page">

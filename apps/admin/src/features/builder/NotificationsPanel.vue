@@ -119,6 +119,7 @@ function remove(id: string): void {
           </div>
           <q-input :model-value="n.fromName" outlined dense :label="t('notifications.fromName')" :hint="t('notifications.fromHint')" @update:model-value="update(n.id, { fromName: String($event ?? '') }, 'fromName')" />
         </div>
+        <q-toggle :model-value="n.attachFiles === true" :label="t('m5.attachFiles')" @update:model-value="update(n.id, { attachFiles: !!$event })" />
         <div class="swf-notification__logic">
           <LogicEditor :logic="n.logic" :owner-id="null" subject="notification" @update="update(n.id, { logic: $event })" />
         </div>

@@ -44,6 +44,7 @@ const fields = computed<FieldChoice[]>(() => {
     .filter(
       (id) =>
         tree.isLeafData(id) &&
+        (!props.ownerId || tree.node(id)?.type !== 'calculation') &&
         id !== props.ownerId &&
         !(props.ownerId && tree.isDescendant(id, props.ownerId)) &&
         tree.scopeEncloses(tree.scopeOf(id), ownerScope),

@@ -63,6 +63,9 @@ export function staticCatalog(
 }
 
 export const BUILT_IN_CATALOG = staticCatalog({
+  html: { data: false, container: '' },
+  'page-break': { data: false, container: '' },
+  calculation: { data: true, container: '' },
   input: { data: true, container: '' },
   'birthdate': { data: true, container: '' },
   'date-interval': { data: true, container: '' },

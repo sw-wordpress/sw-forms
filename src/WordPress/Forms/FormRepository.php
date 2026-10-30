@@ -202,6 +202,20 @@ final class FormRepository {
 		return null === $form || 0 === $form['current_version'] ? null : $this->version( $form_id, $form['current_version'] );
 	}
 
+	/** @return list<array{version: int, createdAt: string, createdBy: int}> */
+	public function versions( int $form_id, int $page = 1 ): array {
+		global $wpdb;
+		$rows = $wpdb->get_results( $wpdb->prepare( 'SELECT version, created_at, created_by FROM %i WHERE form_id = %d ORDER BY version DESC LIMIT 50 OFFSET %d', Schema::table( 'form_versions' ), $form_id, ( max( 1, $page ) - 1 ) * 50 ), ARRAY_A );
+		return array_map(
+			static fn ( array $row ): array => array(
+				'version'   => (int) $row['version'],
+				'createdAt' => mysql_to_rfc3339( $row['created_at'] ),
+				'createdBy' => (int) $row['created_by'],
+			),
+			is_array( $rows ) ? $rows : array()
+		);
+	}
+
 	private function version_json( int $form_id, int $version ): ?string {
 		global $wpdb;
 		$json = $wpdb->get_var(

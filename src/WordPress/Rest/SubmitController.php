@@ -44,13 +44,16 @@ final class SubmitController extends BaseController {
 		}
 		$meta            = Postback::request_meta( $params );
 		$meta['preview'] = $preview;
-		$meta['files']   = $request->get_file_params();
-		$result          = SubmissionService::create_default()->submit(
+		if ( array_key_exists( 'swf_step', $params ) ) {
+			$meta['step'] = is_scalar( $params['swf_step'] ) && preg_match( '/^[0-9]{1,3}$/D', (string) $params['swf_step'] ) ? (int) $params['swf_step'] : -1;
+		}
+		$meta['files'] = $request->get_file_params();
+		$result        = SubmissionService::create_default()->submit(
 			(int) $request['id'],
 			is_array( $params['swf'] ?? null ) ? $params['swf'] : array(),
 			$meta
 		);
-		$response        = new \WP_REST_Response( $result->to_array(), $result->http_status() );
+		$response      = new \WP_REST_Response( $result->to_array(), $result->http_status() );
 		$response->header( 'Cache-Control', 'no-store' );
 		return $response;
 	}

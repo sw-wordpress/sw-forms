@@ -2,6 +2,7 @@ import type en from './en';
 
 /** Deutsche Texte. Neutral formuliert (ohne Du/Sie), passt zu de_DE und de_DE_formal. */
 const de: typeof en = {
+  m5: {"library": "Vorlagen / Import", "importNotice": "Erstellt ein neues inaktives Formular. Vor der Aktivierung Empfänger, Webhooks und Datenschutzeinstellungen prüfen.", "importLimit": "Eine JSON-Datei bis 1 MB auswählen.", "export": "JSON exportieren", "history": "Veröffentlichte Versionen", "historyNotice": "Änderungen vor dem Wiederherstellen speichern. Die Version wird als Entwurf geladen; erst Speichern ändert das veröffentlichte Formular.", "view": "Ansehen", "restore": "Als Entwurf laden", "restored": "Version als Entwurf geladen. Feldschlüssel vor dem Veröffentlichen prüfen.", "confirmRestore": "Diese Version als Entwurf laden? Der aktuelle Entwurf wird ersetzt. Veröffentlichte Feldschlüssel können abweichen.", "previousVersions": "Neuere Versionen", "nextVersions": "Ältere Versionen", "versionDocument": "Versionsdokument", "attachFiles": "Hochgeladene Dateien anhängen (insgesamt maximal 20 MB)", "pageBreak": "Seitenumbruch", "import": "JSON importieren"},
   settingsSchema: { key: 'Schlüssel', value: 'Wert', addRow: 'Zeile hinzufügen', removeRow: 'Zeile {n} entfernen' },
   app: {
     skipToContent: 'Zum Inhalt springen',

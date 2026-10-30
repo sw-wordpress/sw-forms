@@ -86,3 +86,29 @@ email-typed fields case-insensitively using each entry's original schema, includ
 and repeated fields and temporary entries. Export includes stored values and internal notes.
 Erasure permanently removes matching entries, search indexes, logs, uploads and queued webhook
 snapshots. It cannot retract messages or webhooks already delivered to external recipients.
+
+### Form tools and editor embedding (0.5.0)
+
+All form-tool routes require `swf_manage_forms`, except embedding choices as noted.
+
+| Method | Route | Contract |
+| --- | --- | --- |
+| GET | `/form-templates` | `{items: [{id, title, document}]}` for contact, registration and survey starters. No notifications are enabled by the starters. |
+| GET | `/forms/{id}/export` | Private uncached JSON envelope `{format: "swforms", formatVersion: 1, title, document}`. Exports the editable draft or current publication; no entries or site secrets. |
+| POST | `/forms/import` | Accepts that envelope (up to 1 MB, schema version 1). Validates before creation; returns `{id}` (201) for a new **inactive** form. Never overwrites an existing form. Missing add-on types return validation errors (422). |
+| GET | `/forms/{id}/versions?page=1` | `{items: [{version, createdAt, createdBy}]}`, newest first, 50 per page. Unknown form: 404. |
+| GET | `/forms/{id}/versions/{version}` | `{document}` with signing secrets redacted. Unknown version/form: 404. |
+| POST | `/forms/{id}/versions/{version}/restore` | Validate and load a draft; returns `{restored: true}`. Does not publish or alter existing entry version references. Preserves current signing secrets for matching webhook IDs, rather than reviving historical credentials. |
+| GET | `/forms/embed-options` | Requires `edit_posts` or `swf_manage_forms`; only active, published `{id, title}` pairs. No document/entry data. |
+
+Portable files remove recognized credential keys, password-field defaults and webhook
+signing secrets/headers/destination URLs (the URL itself may be a credential). Webhooks
+are disabled and receive fresh signing secrets when imported. Review delivery settings,
+recipients and privacy configuration before activation. Free text and arbitrary add-on
+settings can contain sensitive data under unknown names: review files before sharing them.
+
+`POST /forms/{id}/submit` additionally accepts `swf_step` (zero-based integer). This is
+validation-only and returns `success` with code `step`, or the current step's path errors.
+Normal token, honeypot and rate checks still apply. Invalid step indices return code `step`
+as an error. Omit `swf_step` for the final submission; all fields are revalidated regardless
+of previously successful step requests. No client-side "step passed" flag is trusted.

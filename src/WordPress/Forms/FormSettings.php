@@ -77,16 +77,17 @@ final class FormSettings {
 	private static function notification( array $input ): array {
 		$id = is_string( $input['id'] ?? null ) && 1 === preg_match( '/^[A-Za-z0-9_-]{1,64}$/', $input['id'] ) ? $input['id'] : wp_generate_uuid4();
 		return array(
-			'id'       => $id,
-			'name'     => self::text( $input['name'] ?? null, __( 'Notification', 'sw-forms' ) ),
-			'enabled'  => (bool) ( $input['enabled'] ?? true ),
+			'id'          => $id,
+			'name'        => self::text( $input['name'] ?? null, __( 'Notification', 'sw-forms' ) ),
+			'enabled'     => (bool) ( $input['enabled'] ?? true ),
 			// Recipients may contain merge tags ({field:email}); addresses are validated when sending.
-			'to'       => self::text( $input['to'] ?? null, '' ),
-			'subject'  => self::text( $input['subject'] ?? null, '' ),
-			'message'  => wp_kses_post( (string) ( is_scalar( $input['message'] ?? null ) ? $input['message'] : '' ) ),
-			'replyTo'  => self::text( $input['replyTo'] ?? null, '' ),
-			'fromName' => self::text( $input['fromName'] ?? null, '' ),
-			'logic'    => DocumentNormalizer::logic( $input['logic'] ?? null ),
+			'to'          => self::text( $input['to'] ?? null, '' ),
+			'subject'     => self::text( $input['subject'] ?? null, '' ),
+			'message'     => wp_kses_post( (string) ( is_scalar( $input['message'] ?? null ) ? $input['message'] : '' ) ),
+			'replyTo'     => self::text( $input['replyTo'] ?? null, '' ),
+			'attachFiles' => ! empty( $input['attachFiles'] ),
+			'fromName'    => self::text( $input['fromName'] ?? null, '' ),
+			'logic'       => DocumentNormalizer::logic( $input['logic'] ?? null ),
 		);
 	}
 

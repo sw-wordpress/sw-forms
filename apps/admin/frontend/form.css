@@ -36,6 +36,7 @@
 
 .swf-form,
 .swf-fields,
+.swf-step,
 .swf-group__body,
 .swf-row__fields,
 .swf-col {
@@ -281,7 +282,8 @@
 }
 
 /* ---------- buttons and confirmation ---------- */
-.swf-actions {
+.swf-actions,
+.swf-step-nav {
   display: flex;
   gap: 0.75rem;
 }

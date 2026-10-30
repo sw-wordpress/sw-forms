@@ -224,3 +224,16 @@ Spam receives a quiet confirmation without storage or actions. `wpa_handle_spamm
 receives `sw_forms`, form values and protection fields, excluding SW Forms tokens and
 unrelated request metadata. Extended may log values/IPs and block IPs according to its
 settings. Clear page caches after activation/deactivation.
+
+## Embedding and document tools (0.5.0)
+
+Gutenberg registers the dynamic block `swforms/form` with attributes `formId` (integer)
+and `title` (boolean). It stores only these attributes and renders the current published
+PHP form, including for ServerSideRender; drafts are not exposed. Its editor preview is
+inert. WPBakery/Visual Composer support is optional: `vc_before_init` maps the existing
+`sw_form` shortcode with an `id` dropdown. No editor plugin files are modified. The separate
+Visual Composer Website Builder product is not targeted by this WPBakery integration.
+
+Document import/export, templates and history contracts are in [rest-api.md](rest-api.md#form-tools-and-editor-embedding-050).
+A restored draft still uses the existing published-key warnings; explicitly review keys
+before publishing it. Historical entry data and its original field definitions are retained.

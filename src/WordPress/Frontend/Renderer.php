@@ -101,6 +101,9 @@ final class Renderer {
 				'logic'     => $element['logic'] ?? null,
 				'required'  => ! empty( $element['required'] ),
 			);
+			if ( 'calculation' === $node['type'] ) {
+				$node['settings'] = $element['settings'];
+			}
 			if ( isset( $element['children'] ) && is_array( $element['children'] ) ) {
 				$node['children'] = $this->public_tree( $element['children'] );
 				if ( ! empty( $element['settings']['repeatable'] ) ) {

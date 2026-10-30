@@ -43,6 +43,7 @@ final class Plugin {
 		add_action( 'plugins_loaded', array( $this, 'maybe_migrate' ), 5 );
 		add_action( 'rest_api_init', array( $this, 'register_rest' ) );
 
+		( new \SWForms\WordPress\Editor\Embeds() )->register();
 		( new Shortcode() )->register();
 		( new Assets() )->register();
 		( new Postback() )->register();
@@ -81,7 +82,7 @@ final class Plugin {
 	}
 
 	public function register_rest(): void {
-		foreach ( array( new FormsController(), new EntriesController(), new SubmitController(), new SettingsController(), new \SWForms\WordPress\Rest\WebhooksController(), new \SWForms\WordPress\Rest\ExportController(), new \SWForms\WordPress\Rest\EntryEditingController() ) as $controller ) {
+		foreach ( array( new FormsController(), new \SWForms\WordPress\Rest\FormToolsController(), new EntriesController(), new SubmitController(), new SettingsController(), new \SWForms\WordPress\Rest\WebhooksController(), new \SWForms\WordPress\Rest\ExportController(), new \SWForms\WordPress\Rest\EntryEditingController() ) as $controller ) {
 			$controller->register_routes();
 		}
 	}

@@ -28,6 +28,9 @@ final class FieldRegistry implements TypeCatalog {
 			self::$instance = new self();
 			foreach ( array(
 				new InputField(),
+				new HtmlField(),
+				new PageBreakField(),
+				new CalculationField(),
 				new BirthdateField(),
 				new DateIntervalField(),
 				new TimeIntervalField(),

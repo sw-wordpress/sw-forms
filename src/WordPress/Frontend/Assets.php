@@ -42,7 +42,7 @@ final class Assets {
 	/** Loads the stylesheet in the head when the current post contains the shortcode (avoids a flash of unstyled form). */
 	public function enqueue_early(): void {
 		$post = get_post();
-		if ( is_singular() && $post instanceof \WP_Post && has_shortcode( $post->post_content, Shortcode::TAG ) ) {
+		if ( is_singular() && $post instanceof \WP_Post && ( has_shortcode( $post->post_content, Shortcode::TAG ) || has_block( 'swforms/form', $post ) ) ) {
 			self::enqueue();
 		}
 	}

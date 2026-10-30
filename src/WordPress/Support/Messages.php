@@ -16,6 +16,7 @@ final class Messages {
 	 */
 	public static function validation( string $code, array $params = array() ): string {
 		$message = match ( $code ) {
+			'calculation_result' => __( 'The calculation has no valid result. Please check the source values.', 'sw-forms' ),
 			'media_stream' => __( 'Please choose a valid recording with the required audio or video stream.', 'sw-forms' ),
 			'file_upload' => __( 'The file could not be uploaded. Please select it again.', 'sw-forms' ),
 			'image' => __( 'Please upload a valid JPEG, PNG, GIF or WebP image.', 'sw-forms' ),

@@ -41,6 +41,23 @@ final class UploadStorage {
 		}
 	}
 
+	/** Resolve only server-owned generated basenames for local mail attachments.
+	 *
+	 * @since 0.5.0
+	 * @param list<string> $names Upload manifest from a stored entry.
+	 * @return list<string>
+	 */
+	public static function attachments( array $names ): array {
+		$dir = wp_upload_dir()['basedir'] . '/swforms';
+		$out = array();
+		foreach ( $names as $name ) {
+			if ( is_string( $name ) && preg_match( '/^swf-[a-f0-9]{32}\.(pdf|txt|csv|jpe?g|png|gif|webp|zip|webm|ogg|m4a|mp3|wav|mp4)$/D', $name ) && is_file( $dir . '/' . $name ) && ! is_link( $dir . '/' . $name ) ) {
+				$out[] = $dir . '/' . $name;
+			}
+		}
+		return $out;
+	}
+
 	/**
 	 * Returns values with file name lists replaced by stored descriptors, leaving condition values intact.
 	 *

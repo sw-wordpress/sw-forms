@@ -70,7 +70,14 @@ final class EntryEditor {
 		$shape_errors                       = array();
 		list( $values, $stored, $prepared ) = $this->collect( $tree, $tree->rootIds(), $raw, $entry['data'], '', $shape_errors );
 		$visibility                         = ( new Evaluator( $tree ) )->evaluate( $values );
-		$errors                             = $shape_errors + ( new SubmissionValidator( $tree, $registry ) )->validate( $values, $visibility, $prepared );
+		$calculated                         = \SWForms\WordPress\Forms\Calculations::apply( $tree, $values, $visibility );
+		foreach ( $tree->ids() as $field_id ) {
+			if ( 'calculation' === $tree->type( $field_id ) ) {
+				$stored[ $field_id ] = $calculated[ $field_id ] ?? '';
+			}
+		}
+		$values = $calculated;
+		$errors = $shape_errors + ( new SubmissionValidator( $tree, $registry ) )->validate( $values, $visibility, $prepared );
 		if ( array() !== $errors ) {
 			return new \WP_Error(
 				'swf_invalid_entry',

@@ -192,3 +192,19 @@ state must live in hashed chunks rather than the entry module.
 `SWF_E2E_OFFLINE=1 node apps/admin/scripts/e2e/admin.mjs` keeps the admin test local by
 answering unrelated external theme fonts/avatars with empty responses. App assets and REST
 requests still use the real WordPress; this avoids flaky third-party network failures.
+
+## Milestone 5
+
+`MilestoneFiveTest` covers secret-free portability, inactive imports, permissions, immutable
+history/draft restoration, step validation without persistence or token consumption,
+forged calculation values, safe HTML, dynamic block output and owned mail attachments.
+`VisualComposerTest` isolates the optional `vc_map` contract when WPBakery is absent.
+Arithmetic fixtures in `tests/fixtures/calculations.json` run in PHP and TypeScript.
+The frontend runtime test covers remote step progression, retained values and errors that
+reveal an earlier page.
+
+Run `WP_ROOT=/path/to/test-wordpress node apps/admin/scripts/e2e/m5.mjs` after building.
+It exercises real step requests/calculations, history, templates, JSON file import/export
+and Gutenberg ServerSideRender. It creates/deletes its own forms/pages and needs an admin
+and a working block editor in a disposable WordPress. Existing upload tests still cover
+MIME/provenance/size/rollback; attachment tests use the server-owned manifest.

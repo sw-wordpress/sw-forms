@@ -44,16 +44,16 @@ Konzept: `/home/swarnat/.claude/plans/ich-m-chte-ein-plugin-parallel-glacier.md`
 - [x] PHPUnit-Integrationssuite mit WP-Testumgebung (statt nur `tests/wp-smoke.php`)
 - [x] erweiterte Dokumentation in Englisch aller Filter/Actions, inkl. @since Informationen (Parameter, Zweck)
 
-## Milestone 5 – Ausbau (0.5.0+)
+## ✅ Milestone 5 – Ausbau (implementiert, 0.5.0)
 
-- [ ] Gutenberg-Block (Formularauswahl, Live-Vorschau per ServerSideRender)
-- [ ] Import/Export von Formularen (JSON, ohne Secrets)
-- [ ] Mehrschritt-Formulare (Seitenumbruch-Element, Fortschritt, Validierung pro Schritt)
-- [ ] Datei-Upload (geschütztes Verzeichnis, Typ-/Größenprüfung, Anhang in Mails)
-- [ ] Weitere Felder: Datepicker, Rating, Signatur, HTML/Text-Block, Berechnung
-- [ ] Vorlagenbibliothek (Kontakt, Anmeldung, Umfrage)
-- [ ] Versionsverlauf im Builder (alte Version ansehen / wiederherstellen)
-- [ ] Visual Composer Block (Formularauswahl)
+- [x] Gutenberg-Block (Formularauswahl, Live-Vorschau per ServerSideRender)
+- [x] Visual Composer Block (Formularauswahl)
+- [x] Import/Export von Formularen (JSON, ohne Secrets)
+- [x] Mehrschritt-Formulare (Seitenumbruch-Element, Fortschritt, Validierung pro Schritt)
+- [x] Datei-Upload (vorhandene Ablage mit zufälligen URLs und Typ-/Größenprüfung; neu: optionale Mail-Anhänge bis 20 MB; keine authentifizierte Privatablage)
+- [x] Weitere Felder: native Datumsauswahl, Rating und Signatur bereits vorhanden; neu: sicherer HTML/Text-Block und Berechnung
+- [x] Vorlagenbibliothek (Kontakt, Anmeldung, Umfrage)
+- [x] Versionsverlauf im Builder (alte Version ansehen / wiederherstellen)
 
 ## Bekannte Punkte / technische Schulden
 
