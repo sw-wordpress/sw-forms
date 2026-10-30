@@ -172,3 +172,23 @@ Wortfilter. Den Test sowohl mit Basis allein als auch mit Extended ausführen.
 Der Frontend-Browsertest prüft bei aktivem WP Armour auch die Ablehnung ohne JavaScript.
 `SWF_WPA_VANILLA=1 node apps/admin/scripts/e2e/frontend.mjs` ersetzt nur im Testbrowser
 die WP-Armour-Skripte durch deren Vanilla-Varianten; die Website-Einstellungen bleiben gleich.
+
+## Extension API (0.4.0)
+
+`ExtensionApiTest` runs the [example add-on](../examples/sw-forms-example/) through real
+WordPress: schema normalization, rendering, required/custom validation, repeater paths,
+visibility, storage, logged actions, merge-tag escaping and legacy-filter precedence.
+Vitest covers queued/late JavaScript registration and structured settings controls;
+`HookDocumentationTest` checks hook documentation completeness.
+
+For the production-build browser test, activate the example add-on in a **disposable**
+WordPress and run `WP_ROOT=/path/to/test-wordpress node apps/admin/scripts/e2e/extension-api.mjs`.
+It checks custom inspector/canvas loading via script handle, undo/redo, field selection,
+key-value/repeater persistence, invalid/valid submission, confirmation and the action log.
+The test creates/deletes its own form/page and makes no external service calls. Keep this
+production-build check: WordPress versions the entry script with a query string, so shared
+state must live in hashed chunks rather than the entry module.
+
+`SWF_E2E_OFFLINE=1 node apps/admin/scripts/e2e/admin.mjs` keeps the admin test local by
+answering unrelated external theme fonts/avatars with empty responses. App assets and REST
+requests still use the real WordPress; this avoids flaky third-party network failures.

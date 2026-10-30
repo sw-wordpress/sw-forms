@@ -5,6 +5,7 @@ import type { ElementNode } from '@shared/types';
 import { useBuilderStore } from '@/stores/builder';
 import CanvasList from './CanvasList.vue';
 import ColumnsCanvas from './ColumnsCanvas.vue';
+import { fieldUI } from '@/extensions/builder';
 import ElementPreview from './ElementPreview.vue';
 
 const props = defineProps<{ element: ElementNode; index: number; listId: string; count: number }>();
@@ -90,6 +91,9 @@ function onKey(e: KeyboardEvent): void {
       </span>
     </div>
     <ColumnsCanvas v-else-if="isColumns" :element="element" />
+    <div v-else-if="fieldUI(element.type)?.canvas" inert>
+      <component :is="fieldUI(element.type)?.canvas" :element="element" :settings="element.settings ?? {}" />
+    </div>
     <ElementPreview v-else :element="element" :known="!!definition" />
   </div>
 </template>

@@ -43,6 +43,9 @@ export default defineConfig({
     rollupOptions: {
       input: { app: resolve(__dirname, 'src/main.ts') },
       output: {
+        // Keep side effects in the tiny entry only: WordPress versions app.js with a
+        // query string, while lazy chunks import shared modules without that query.
+        manualChunks: (id) => id.endsWith('/src/bootstrap.ts') ? 'bootstrap' : undefined,
         entryFileNames: 'app.js',
         chunkFileNames: 'chunks/[name]-[hash].js',
         assetFileNames: (info) => {

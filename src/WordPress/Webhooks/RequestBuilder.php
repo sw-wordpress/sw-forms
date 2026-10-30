@@ -34,6 +34,14 @@ final class RequestBuilder {
 		 */
 		$safe = $webhook;
 		unset( $safe['secret'], $safe['secretEncrypted'] );
+		/**
+		 * Filters the prepared envelope before serialization/signing.
+		 *
+		 * @since 0.2.0
+		 * @param array<string, mixed> $payload Envelope.
+		 * @param array<string, mixed> $webhook Settings without signing secret.
+		 * @param Submission $submission Current submission.
+		 */
 		return (array) apply_filters( 'swf_webhook_payload', $payload, $safe, $submission );
 	}
 

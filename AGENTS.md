@@ -22,3 +22,9 @@ Write Tests for new implementations!
 4. User facing text: PHP → `bin/i18n.sh update`, translate `languages/sw-forms-de_DE.po`,
    `bin/i18n.sh compile && bin/i18n.sh check`; SPA → `apps/admin/src/i18n/{en,de}.ts` (parity test).
    In vue-i18n messages write merge tags as `{'{'}field:name{'}'}` and `|` as `{'|'}`.
+
+## Dokumentation
+
+Bei Änderungen an der öffentlichen Plugin-API muss die zugehörige englische Dokumentation im selben Arbeitsschritt aktualisiert werden: `docs/hooks.md` (Hooks, Parameter, Zweck, Einführungsversion), `docs/extending.md` (Interfaces, Registries, Builder-API, Beispiele und Deprecation-Policy) sowie bei Bedarf `docs/rest-api.md` und `docs/schema.md`. PHP-`@since`- und gegebenenfalls `@deprecated`-Angaben mitpflegen; bestehende Einführungsversionen nicht überschreiben. Die dort festgelegten Kompatibilitäts- und Deprecation-Regeln einhalten. Betroffene Beispiele und API-Tests anpassen, damit Code und dokumentierter Vertrag übereinstimmen.
+
+Verfasse Dokumentation möglichst knapp und ohne Wiederholungen, um Tokens zu sparen. Beschränke sie auf nötige Entscheidungen, Sicherheitsdetails und Testhinweise; verlinke vorhandene Dokumentation statt Inhalte zu duplizieren.

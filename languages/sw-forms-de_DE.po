@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SW Forms 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-30 10:59+0100\n"
+"POT-Creation-Date: 2026-10-30 17:56+0100\n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -57,7 +57,9 @@ msgstr "Bitte die markierten Felder korrigieren."
 #: src/WordPress/Entries/EntryEditor.php:95
 msgid ""
 "The entry changed or could not be saved. Reload it before editing again."
-msgstr "Der Eintrag wurde geändert oder konnte nicht gespeichert werden. Bitte vor dem erneuten Bearbeiten neu laden."
+msgstr ""
+"Der Eintrag wurde geändert oder konnte nicht gespeichert werden. Bitte vor "
+"dem erneuten Bearbeiten neu laden."
 
 #: src/WordPress/Entries/EntryEditor.php:97
 msgid "Entry values updated."
@@ -65,9 +67,11 @@ msgstr "Eintragswerte aktualisiert."
 
 #: src/WordPress/Entries/EntryEditor.php:118
 msgid "Keep the existing repeater rows when editing an entry."
-msgstr "Beim Bearbeiten eines Eintrags müssen die vorhandenen Wiederholungszeilen erhalten bleiben."
+msgstr ""
+"Beim Bearbeiten eines Eintrags müssen die vorhandenen Wiederholungszeilen "
+"erhalten bleiben."
 
-#: src/WordPress/Fields/AbstractFieldType.php:167
+#: src/WordPress/Fields/AbstractFieldType.php:170
 #: src/WordPress/Fields/CheckboxField.php:246
 msgid "(required)"
 msgstr "(Pflichtfeld)"
@@ -971,7 +975,9 @@ msgstr "Videoaufnahme"
 
 #: src/WordPress/Forms/FormService.php:65
 msgid "Configure the selected CAPTCHA provider in SW Forms settings first."
-msgstr "Bitte zuerst den gewählten CAPTCHA-Anbieter in den Einstellungen von SW Forms konfigurieren."
+msgstr ""
+"Bitte zuerst den gewählten CAPTCHA-Anbieter in den Einstellungen von SW "
+"Forms konfigurieren."
 
 #: src/WordPress/Forms/FormService.php:86
 #: src/WordPress/Forms/FormService.php:116
@@ -986,7 +992,7 @@ msgid "%s (copy)"
 msgstr "%s (Kopie)"
 
 #: src/WordPress/Forms/FormSettings.php:36
-#: src/WordPress/Frontend/FormView.php:88
+#: src/WordPress/Frontend/FormView.php:90
 msgid "Submit"
 msgstr "Absenden"
 
@@ -1032,15 +1038,15 @@ msgstr ""
 msgid "Please correct the following fields:"
 msgstr "Bitte folgende Felder korrigieren:"
 
-#: src/WordPress/Frontend/FormView.php:85
+#: src/WordPress/Frontend/FormView.php:87
 msgid "Leave this field empty"
 msgstr "Dieses Feld leer lassen"
 
-#: src/WordPress/Frontend/FormView.php:93
+#: src/WordPress/Frontend/FormView.php:95
 msgid "Spam protection"
 msgstr "Spamschutz"
 
-#: src/WordPress/Frontend/FormView.php:93
+#: src/WordPress/Frontend/FormView.php:95
 msgid "JavaScript is required to complete the CAPTCHA."
 msgstr "Für das CAPTCHA ist JavaScript erforderlich."
 
@@ -1481,12 +1487,12 @@ msgstr "Webhook zur Zustellung vorgemerkt."
 msgid "Delivery #%1$d, attempt %2$d, HTTP %3$d, %4$d ms: %5$s"
 msgstr "Zustellung #%1$d, Versuch %2$d, HTTP %3$d, %4$d ms: %5$s"
 
-#: src/WordPress/Webhooks/DeliveryService.php:187
+#: src/WordPress/Webhooks/DeliveryService.php:201
 msgid "SW Forms: webhook delivery failed"
 msgstr "SW Forms: Webhook-Zustellung fehlgeschlagen"
 
 #. translators: 1: form id, 2: delivery id
-#: src/WordPress/Webhooks/DeliveryService.php:190
+#: src/WordPress/Webhooks/DeliveryService.php:204
 #, php-format
 msgid ""
 "Webhook delivery failed for form #%1$d (delivery #%2$d). Open SW Forms to "

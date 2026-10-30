@@ -2,6 +2,9 @@
 /**
  * CAPTCHA provider support.
  *
+ * Public extension API; stable from 0.4.0.
+ *
+ * @since 0.3.0
  * @package SWForms
  */
 

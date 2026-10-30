@@ -2,6 +2,9 @@
 /**
  * A validated submission as handed to actions (`ActionInterface::run()`) and hooks.
  *
+ * Public extension API; stable from 0.4.0.
+ *
+ * @since 0.1.0
  * @package SWForms
  */
 

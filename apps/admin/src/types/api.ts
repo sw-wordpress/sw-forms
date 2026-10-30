@@ -14,6 +14,9 @@ export interface SettingDefinition {
   max?: number;
   integer?: boolean;
   images?: boolean;
+  fields?: SettingDefinition[];
+  maxItems?: number;
+  fieldTypes?: string[];
 }
 
 export interface FieldTypeDefinition {

@@ -2,6 +2,9 @@
 /**
  * CAPTCHA provider support.
  *
+ * Public extension API; stable from 0.4.0.
+ *
+ * @since 0.3.0
  * @package SWForms
  */
 
@@ -17,6 +20,12 @@ final class ProviderRegistry {
 			self::$instance = new self();
 			self::$instance->register( new CaptchaProvider( 'turnstile' ) );
 			self::$instance->register( new CaptchaProvider( 'hcaptcha' ) );
+			/**
+			 * Registers optional spam providers once on first registry use.
+			 *
+			 * @since 0.3.0
+			 * @param ProviderRegistry $registry Provider registry.
+			 */
 			do_action( 'swf_register_spam_providers', self::$instance );
 		}
 		return self::$instance;

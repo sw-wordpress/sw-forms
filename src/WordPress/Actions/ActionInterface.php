@@ -6,6 +6,9 @@
  * Failure policy: actions must not throw; exceptions are caught, logged on the entry and do not
  * affect the visitor's confirmation.
  *
+ * Public extension API; stable from 0.4.0.
+ *
+ * @since 0.1.0
  * @package SWForms
  */
 

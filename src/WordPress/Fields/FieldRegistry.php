@@ -2,6 +2,9 @@
 /**
  * Registry of element types. Add-ons register their types on the `swf_register_field_types` action.
  *
+ * Public extension API; stable from 0.4.0.
+ *
+ * @since 0.1.0
  * @package SWForms
  */
 

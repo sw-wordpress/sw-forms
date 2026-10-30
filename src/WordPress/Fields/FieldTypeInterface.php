@@ -2,6 +2,9 @@
 /**
  * Contract of an element type (built-in or registered by an add-on via `swf_register_field_types`).
  *
+ * Public extension API; stable from 0.4.0.
+ *
+ * @since 0.1.0
  * @package SWForms
  */
 
@@ -103,7 +106,7 @@ interface FieldTypeInterface {
 	public function format_text( mixed $value, array $element ): string;
 
 	/**
-	 * How the frontend script reads the value: `text`, `bool`, `list`, `radio` or `none`.
+	 * How the frontend script reads the value: `text`, `bool`, `list`, `radio`, `matrix` or `none`.
 	 */
 	public function value_kind( array $element ): string;
 }

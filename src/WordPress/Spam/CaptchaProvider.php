@@ -47,7 +47,14 @@ final class CaptchaProvider implements ProviderInterface {
 			);
 			if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
 				return false; }
-			$data  = json_decode( wp_remote_retrieve_body( $response ), true );
+			$data = json_decode( wp_remote_retrieve_body( $response ), true );
+			/**
+			 * Filters CAPTCHA hostnames accepted during server verification.
+			 *
+			 * @since 0.3.0
+			 * @param list<string> $hosts Allowed hostnames; defaults to home URL hostname.
+			 * @param string $provider Provider slug.
+			 */
 			$hosts = (array) apply_filters( 'swf_captcha_allowed_hostnames', array( strtolower( (string) wp_parse_url( home_url(), PHP_URL_HOST ) ) ), $this->name );
 			return is_array( $data ) && true === ( $data['success'] ?? false ) && in_array( strtolower( (string) ( $data['hostname'] ?? '' ) ), $hosts, true )
 				&& ( 'turnstile' !== $this->name || 'swforms' === ( $data['action'] ?? '' ) );

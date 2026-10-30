@@ -149,9 +149,23 @@ final class DeliveryService implements ActionInterface {
 			}
 			try {
 				if ( $result['success'] ) {
+					/**
+					 * Fires after successful delivery.
+					 *
+					 * @since 0.2.0
+					 * @param int $delivery_id Delivery identifier.
+					 * @param array<string, mixed> $delivery Redacted status metadata, no payload/secrets.
+					 */
 					do_action( 'swf_webhook_sent', $id, $summary );
 				} else {
 					$this->notify_failure( (int) $row['form_id'], $id );
+					/**
+					 * Fires after final unsuccessful delivery.
+					 *
+					 * @since 0.2.0
+					 * @param int $delivery_id Delivery identifier.
+					 * @param array<string, mixed> $delivery Redacted status metadata, no payload/secrets.
+					 */
 					do_action( 'swf_webhook_failed', $id, $summary );
 				}
 			} finally {

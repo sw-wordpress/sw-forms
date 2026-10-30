@@ -2,6 +2,7 @@ import type en from './en';
 
 /** Deutsche Texte. Neutral formuliert (ohne Du/Sie), passt zu de_DE und de_DE_formal. */
 const de: typeof en = {
+  settingsSchema: { key: 'Schlüssel', value: 'Wert', addRow: 'Zeile hinzufügen', removeRow: 'Zeile {n} entfernen' },
   app: {
     skipToContent: 'Zum Inhalt springen',
     mainNavigation: 'Hauptnavigation',

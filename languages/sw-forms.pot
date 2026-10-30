@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SW Forms\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-30 10:59+0100\n"
+"POT-Creation-Date: 2026-10-30 23:55+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -72,7 +72,7 @@ msgstr ""
 msgid "Keep the existing repeater rows when editing an entry."
 msgstr ""
 
-#: src/WordPress/Fields/AbstractFieldType.php:167
+#: src/WordPress/Fields/AbstractFieldType.php:170
 #: src/WordPress/Fields/CheckboxField.php:246
 msgid "(required)"
 msgstr ""
@@ -938,7 +938,7 @@ msgid "%s (copy)"
 msgstr ""
 
 #: src/WordPress/Forms/FormSettings.php:36
-#: src/WordPress/Frontend/FormView.php:88
+#: src/WordPress/Frontend/FormView.php:90
 msgid "Submit"
 msgstr ""
 
@@ -982,15 +982,15 @@ msgstr ""
 msgid "Please correct the following fields:"
 msgstr ""
 
-#: src/WordPress/Frontend/FormView.php:85
+#: src/WordPress/Frontend/FormView.php:87
 msgid "Leave this field empty"
 msgstr ""
 
-#: src/WordPress/Frontend/FormView.php:93
+#: src/WordPress/Frontend/FormView.php:95
 msgid "Spam protection"
 msgstr ""
 
-#: src/WordPress/Frontend/FormView.php:93
+#: src/WordPress/Frontend/FormView.php:95
 msgid "JavaScript is required to complete the CAPTCHA."
 msgstr ""
 
@@ -1408,12 +1408,12 @@ msgstr ""
 msgid "Delivery #%1$d, attempt %2$d, HTTP %3$d, %4$d ms: %5$s"
 msgstr ""
 
-#: src/WordPress/Webhooks/DeliveryService.php:187
+#: src/WordPress/Webhooks/DeliveryService.php:201
 msgid "SW Forms: webhook delivery failed"
 msgstr ""
 
 #. translators: 1: form id, 2: delivery id
-#: src/WordPress/Webhooks/DeliveryService.php:190
+#: src/WordPress/Webhooks/DeliveryService.php:204
 #, php-format
 msgid ""
 "Webhook delivery failed for form #%1$d (delivery #%2$d). Open SW Forms to "

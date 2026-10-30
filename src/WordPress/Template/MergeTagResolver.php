@@ -81,6 +81,7 @@ final class MergeTagResolver {
 			'user'        => \SWForms\WordPress\Support\DynamicDefaults::resolve( '{user:' . $arg . '}' ),
 			default       => null,
 		};
+		$value = MergeTagRegistry::instance()->resolve( $tag, $arg, $this->submission ) ?? $value;
 		/**
 		 * Resolves custom merge tags (or overrides built-in ones).
 		 *

@@ -82,8 +82,11 @@ final class SubmissionValidator {
 			if ( array() === $problems && $type instanceof FileField ) {
 				$problems = $store_files ? $type->validate_uploads( $raw, $element ) : array( array( 'code' => 'file_storage' ) );
 			}
+			if ( array() === $problems ) {
+				$problems = \SWForms\WordPress\Validation\ValidatorRegistry::instance()->validate( $value, $element );
+			}
 			if ( array() !== $problems ) {
-				$errors[ $prefix . $id ] = Messages::validation( $problems[0]['code'], $problems[0]['params'] ?? array() );
+				$errors[ $prefix . $id ] = isset( $problems[0]['message'] ) ? (string) $problems[0]['message'] : Messages::validation( $problems[0]['code'], $problems[0]['params'] ?? array() );
 			}
 		}
 	}

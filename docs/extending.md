@@ -1,77 +1,112 @@
 # Extending SW Forms
 
-## A custom element type
+## Stable API and deprecation policy (0.4.0)
 
-Register custom field types on `swf_register_field_types` during plugin bootstrap,
-before the registry is first used. Each type implements `FieldTypeInterface`; call
-`$registry->register( new My_Type() )` to add it. Registering an existing slug replaces
-that type; invalid slugs are ignored. Slugs must match `[a-z][a-z0-9-]{0,39}`.
+The contracts below are public and stable from 0.4.0. Their original introduction
+versions are recorded in PHP `@since` annotations and [hooks.md](hooks.md).
 
-The same registry drives schema validation, the builder's `/field-types` response,
-rendering, submission validation and entry formatting.
+- Fields: `FieldTypeInterface`, `AbstractFieldType`, `FieldRegistry`, `RenderContext`.
+- Actions: `ActionInterface`, `Submission` (public properties, `form_id()`, `log()`).
+- Validation: `ValidatorInterface`, `ValidatorRegistry` (0.4.0).
+- Merge tags: `MergeTagInterface`, `MergeTagRegistry` (0.4.0).
+- Spam: `ProviderInterface`, `ProviderRegistry` (0.3.0).
+- Optional builder UI: `BuilderFieldTypeInterface` and JavaScript API version 1 (0.4.0).
+- The PHP functions and hooks listed in [hooks.md](hooks.md).
 
-```php
-add_action( 'swf_register_field_types', function ( \SWForms\WordPress\Fields\FieldRegistry $registry ) {
-	$registry->register( new My_Rating_Field() );
-} );
+Other implementation classes are internal. Minor releases may add optional capabilities
+through companion interfaces, optional parameters or new hooks; they will not add required
+methods to an existing interface or change argument order/types. Breaking changes require
+a major version. Deprecated APIs retain behavior for at least two minor releases and six
+months, whichever is longer. Announce the replacement, `@deprecated` version and migration
+example in this document before removal; use WordPress deprecation helpers where applicable.
+There are no deprecated public APIs in 0.4.0. Existing filters remain supported.
 
-final class My_Rating_Field extends \SWForms\WordPress\Fields\ChoiceField {
-	public function type(): string { return 'rating'; }
-	public function label(): string { return __( 'Rating', 'my-addon' ); }
-	public function icon(): string { return 'r_star'; }          // Material icon (rounded)
-	public function category(): string { return 'choice'; }
+## Registration and execution
 
-	public function settings_schema(): array {
-		return array(
-			array( 'name' => 'max', 'type' => 'number', 'integer' => true, 'min' => 2, 'max' => 10,
-				'tab' => 'general', 'label' => __( 'Stars', 'my-addon' ), 'default' => 5 ),
-		);
-	}
+Install registration callbacks during plugin bootstrap (or `plugins_loaded`), before first
+registry use. Each singleton registration action runs once per request. A duplicate slug
+replaces its implementation; invalid names are ignored (field types also report
+`_doing_it_wrong`). Field slugs: `[a-z][a-z0-9-]{0,39}`; validator/provider slugs additionally
+allow underscores; merge tag names use `[a-z][a-z0-9_]{0,39}`.
 
-	public function collect( array $raw, array $element ): mixed {
-		return (string) absint( $raw[ $element['id'] ] ?? 0 );
-	}
+`swf_register_field_types` receives `FieldRegistry`. The same definitions drive schema
+validation, `/field-types`, rendering, collection and entry formatting. Extend
+`AbstractFieldType` for accessible wrappers, settings normalization and defaults.
+`value_kind()` describes how public JavaScript reads the value for conditions. The PHP
+renderer remains authoritative; add-on types need no builder JavaScript to work.
 
-	public function validate( mixed $value, array $element ): array {
-		return (int) $value > (int) $this->setting( $element, 'max', 5 ) ? array( array( 'code' => 'max', 'params' => array( 'max' => (string) $this->setting( $element, 'max', 5 ) ) ) ) : array();
-	}
+`swf_register_validators` receives `ValidatorRegistry`; register a `ValidatorInterface`.
+`supports($element)` selects fields; `validate($value, $element)` returns a list of
+`{code, params?, message?}` errors. Messages are plain translated text. Validation runs in
+registration order after built-in checks, only for active, non-empty leaf fields (including
+repeater rows); the first error wins. Required checks remain central. Unknown codes use the
+generic error message unless `message` is supplied. Exceptions propagate; validators must
+return errors for invalid user input. `swf_validation_errors` still runs afterwards.
 
-	public function render( array $element, \SWForms\WordPress\Frontend\RenderContext $context ): string {
-		$html = '';
-		for ( $i = 1; $i <= (int) $this->setting( $element, 'max', 5 ); $i++ ) {
-			$html .= $this->choice( /* ... */ );
-		}
-		return $this->wrap( $element, $context, $html, true );
-	}
-}
+`swf_register_merge_tags` receives `MergeTagRegistry`; register a `MergeTagInterface`.
+`name()` identifies `{name:argument}`; `resolve($argument, $submission)` returns plain text
+or `null`. A non-null result overrides a built-in text tag (`all_fields` remains
+renderer-owned HTML); the existing `swf_merge_tag` filter
+runs last. Unknown tags remain unchanged. HTML/URL contexts escape returned values.
+
+`swf_register_actions` remains a filter receiving the action list and `Submission`.
+Append an `ActionInterface`; `run()` executes only after successful validation and storage.
+Use `$submission->log($type, $action_id, $status, $message)` for entry logs. Exceptions are
+caught and logged as failures without changing the visitor's confirmation. Actions must
+implement their own retry/idempotency policy if they contact external systems.
+
+## Settings schema
+
+`settings_schema()` returns a list with `name`, `type`, `label`, `default` and optional
+`tab` (`general`, `validation`, `appearance`), `help`, `showIf` (`{setting, equals: [...]}`).
+Supported types: `text`, `textarea`, `html`, `code`, `number`, `toggle`, `select` (`choices`),
+`options`, `list`, plus these 0.4.0 types:
+
+| Type | Stored shape | Additional schema |
+| --- | --- | --- |
+| `field-picker` | Element ID string, empty string when cleared | Optional `fieldTypes: ['input']` limits the picker. Labels/keys may change; IDs must not. |
+| `key-value` | `[{key: string, value: string}]` | Optional `maxItems` (0–100, default 100). Order and duplicate keys are retained. |
+| `repeater` | List of objects normalized against child definitions | `fields: [setting, ...]`, optional `maxItems`; at most four structured levels. |
+
+Unknown settings and unknown repeater properties are dropped. Text is sanitized, configured
+numeric bounds apply recursively, malformed rows are ignored. Defaults are trusted schema
+values; declare them in the correct shape. `field-picker` validates ID syntax, not existence
+or scope; the consuming add-on must validate references. `fieldTypes` is a builder filter.
+`showIf` only controls visibility; it does not erase stored values.
+
+## Custom Vue inspector and canvas
+
+Implement the optional `BuilderFieldTypeInterface::builder_script(): string` alongside the
+field contract. Register that WordPress script on `init` with dependency
+`sw-forms-builder-api`. SW Forms enqueues it only on its admin page. No extra Vue bundle is
+needed: register through `window.swFormsBuilder.register(api => { ... })`, before or after
+the SPA loads. `api.apiVersion` is `1`; `api.vue` is the host Vue runtime.
+
+```js
+window.swFormsBuilder.register(function (api) {
+  api.registerFieldType('my-field', { inspector: MyInspector, canvas: MyCanvas });
+});
 ```
 
-* `AbstractFieldType` (and `ChoiceField` for option lists) provides settings normalisation, the accessible wrapper (`label`/`fieldset`,
-  description, error slot, `aria-*`) and sensible defaults.
-* The builder renders the inspector from `settings_schema()` – no JavaScript needed. Setting
-  types: `text`, `textarea`, `html`, `code`, `number`, `toggle`, `select` (`choices`), `options`,
-  `list`; optional `tab` (`general`, `validation`, `appearance`), `help`, `showIf`
-  (`{setting, equals: [...]}`), `min`, `max`, `integer`.
-* The canvas shows a placeholder for add-on types; the preview shows the real output.
-* `value_kind()` tells the frontend script how to read the value for conditions
-  (`text`, `bool`, `list`, `radio`, `none`).
+Components are Vue component objects, defined with the supplied runtime. Inspector props:
+`element`, `modelValue` (settings); emit `update:modelValue` with a settings patch to use
+normal undo/autosave. Canvas props: `element`, `settings`; it is inert and approximate.
+Do not mutate props. Standard schema controls remain available alongside the custom
+inspector. Missing components fall back to the default inspector/canvas. Registrations
+replace by field slug; invalid slugs are ignored. Failed registration callbacks are logged
+and do not prevent other add-ons from registering. Component runtime errors remain the
+add-on's responsibility.
 
-## A custom action
+## Runnable example
 
-```php
-add_filter( 'swf_register_actions', function ( array $actions ) {
-	$actions[] = new class() implements \SWForms\WordPress\Actions\ActionInterface {
-		public function type(): string { return 'crm'; }
-		public function run( \SWForms\WordPress\Submission\Submission $submission ): void {
-			$response = wp_remote_post( 'https://crm.example/api', array( 'body' => wp_json_encode( $submission->data ) ) );
-			$submission->log( $this->type(), '', is_wp_error( $response ) ? 'failed' : 'success', '' );
-		}
-	};
-	return $actions;
-} );
-```
-
-The entry log shows the logged result. Exceptions are caught and logged as `failed`.
+[examples/sw-forms-example](../examples/sw-forms-example/) contains a complete field,
+validator, merge tag, custom inspector/canvas and logged action. Install that directory as
+its own plugin beside SW Forms and activate it. Add **Reference**, use key `reference`, and
+set confirmation to `{example_reference:reference}`. `REF-123` succeeds; other non-empty
+values fail. The action records a local log and makes no network request. Remove the example
+only after deleting its test forms; forms referencing missing types cannot be edited safely.
+The PHPUnit [ExtensionApiTest](../tests/WordPress/ExtensionApiTest.php) loads the same example
+without installing another plugin.
 
 ## Input validation
 
@@ -178,17 +213,14 @@ settings/selection and browser widget integration, posting its response as `swf_
 The core widget loader recognizes the two built-in providers only. The public submission
 pipeline invokes the selected registered provider before file storage or submission actions.
 
-### WP Armour (Basis und Extended)
+### WP Armour (free and Extended)
 
-Wenn WP Armour aktiv ist, schützt SW Forms öffentliche Formulare automatisch zusätzlich
-über dessen `wpa_form`-Klasse und `wpa_check_is_spam()`. Die Basisversion genügt;
-Extended ergänzt über dieselbe Schnittstelle unter anderem den Wortfilter.
-Besucher benötigen dafür JavaScript. Vorschauen und vertrauenswürdige `swf_submit()`-
-Aufrufe sind ausgenommen. Der bestehende SW-Forms-Spamschutz bleibt aktiv.
+Active WP Armour automatically protects public forms using `wpa_form` and
+`wpa_check_is_spam()`. The free version is sufficient; Extended adds its configured word
+filter. JavaScript is required. Preview and trusted `swf_submit()` calls are exempt;
+SW Forms' existing protections remain active.
 
-Erkannte Versuche werden ohne Speicherung, E-Mail oder Webhook bestätigt und über
-`wpa_handle_spammers` als `sw_forms` gemeldet. Extended kann dadurch gemäß seinen
-Einstellungen Formularinhalte/IPs protokollieren und IPs sperren. Übergeben werden
-Formularwerte und WP-Armour-Schutzfelder, keine SW-Forms-Tokens oder sonstigen
-Request-Metadaten. Nach Aktivierung oder Deaktivierung sollte der Seitencache geleert
-werden, damit Markup und aktiver Schutz zusammenpassen.
+Spam receives a quiet confirmation without storage or actions. `wpa_handle_spammers`
+receives `sw_forms`, form values and protection fields, excluding SW Forms tokens and
+unrelated request metadata. Extended may log values/IPs and block IPs according to its
+settings. Clear page caches after activation/deactivation.

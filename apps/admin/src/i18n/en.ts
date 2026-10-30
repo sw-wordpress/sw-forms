@@ -1,5 +1,6 @@
 /** English source messages. de.ts must mirror this structure (enforced by the type and a test). */
 const en = {
+  settingsSchema: { key: 'Key', value: 'Value', addRow: 'Add row', removeRow: 'Remove row {n}' },
   app: {
     skipToContent: 'Skip to content',
     mainNavigation: 'Main navigation',

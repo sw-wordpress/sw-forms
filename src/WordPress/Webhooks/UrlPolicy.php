@@ -36,6 +36,13 @@ final class UrlPolicy {
 		if ( ! is_array( $parts ) || ! in_array( strtolower( $parts['scheme'] ?? '' ), array( 'http', 'https' ), true ) || empty( $parts['host'] ) || isset( $parts['user'] ) || isset( $parts['pass'] ) || isset( $parts['fragment'] ) || preg_match( '/[\x00-\x20\x7f\\\\]/', $url ) ) {
 			throw new \RuntimeException( 'Invalid webhook destination.' );
 		}
+		/**
+		 * Allows a trusted exact private destination; syntax restrictions still apply.
+		 *
+		 * @since 0.2.0
+		 * @param bool $allow Default false.
+		 * @param string $url Destination URL.
+		 */
 		$allow = (bool) apply_filters( 'swf_webhook_allow_private_url', false, $url );
 		if ( $allow ) {
 			return true;

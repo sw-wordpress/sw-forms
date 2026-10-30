@@ -2,7 +2,8 @@
 /**
  * Normalises element settings against a settings schema (docs/extending.md "Settings schema").
  *
- * Supported setting types: text, textarea, html, code, number, toggle, select, options, list.
+ * Supported setting types: text, textarea, html, code, number, toggle, select, options, list,
+ * field-picker, key-value and repeater (since 0.4.0).
  * Unknown settings are dropped.
  *
  * @package SWForms
@@ -14,7 +15,7 @@ namespace SWForms\WordPress\Fields;
 
 final class SettingsNormalizer {
 
-	public const TYPES        = array( 'text', 'textarea', 'html', 'code', 'number', 'toggle', 'select', 'options', 'list' );
+	public const TYPES        = array( 'text', 'textarea', 'html', 'code', 'number', 'toggle', 'select', 'options', 'list', 'field-picker', 'key-value', 'repeater' );
 	private const MAX_OPTIONS = 500;
 
 	/**
@@ -23,12 +24,21 @@ final class SettingsNormalizer {
 	 * @return array<string, mixed>
 	 */
 	public static function normalize( array $schema, array $settings ): array {
+		return self::normalize_schema( $schema, $settings, 0 );
+	}
+
+	/**
+	 * @param list<array<string, mixed>> $schema
+	 * @param array<string, mixed>       $settings
+	 * @return array<string, mixed>
+	 */
+	private static function normalize_schema( array $schema, array $settings, int $depth ): array {
 		$out = array();
 		foreach ( $schema as $definition ) {
 			$name         = (string) $definition['name'];
 			$default      = $definition['default'] ?? null;
 			$out[ $name ] = array_key_exists( $name, $settings )
-				? self::value( $definition, $settings[ $name ], $default )
+				? self::value( $definition, $settings[ $name ], $default, $depth )
 				: $default;
 		}
 		return $out;
@@ -37,8 +47,32 @@ final class SettingsNormalizer {
 	/**
 	 * @param array<string, mixed> $definition
 	 */
-	private static function value( array $definition, mixed $value, mixed $fallback ): mixed {
+	private static function value( array $definition, mixed $value, mixed $fallback, int $depth ): mixed {
 		switch ( $definition['type'] ?? 'text' ) {
+			case 'field-picker':
+				return is_string( $value ) && preg_match( \SWForms\Core\Form\SchemaValidator::ID_PATTERN, $value ) ? $value : '';
+			case 'key-value':
+				$out = array();
+				foreach ( array_slice( is_array( $value ) ? $value : array(), 0, self::item_limit( $definition ) ) as $row ) {
+					if ( is_array( $row ) && is_scalar( $row['key'] ?? null ) && is_scalar( $row['value'] ?? null ) ) {
+						$out[] = array(
+							'key'   => mb_substr( sanitize_text_field( (string) $row['key'] ), 0, 1000 ),
+							'value' => mb_substr( sanitize_text_field( (string) $row['value'] ), 0, 1000 ),
+						);
+					}
+				}
+				return $out;
+			case 'repeater':
+				if ( $depth >= 4 ) {
+					return array();
+				}
+				$out = array();
+				foreach ( array_slice( is_array( $value ) ? $value : array(), 0, self::item_limit( $definition ) ) as $row ) {
+					if ( is_array( $row ) ) {
+						$out[] = self::normalize_schema( is_array( $definition['fields'] ?? null ) ? $definition['fields'] : array(), $row, $depth + 1 );
+					}
+				}
+				return $out;
 			case 'toggle':
 				return (bool) $value;
 			case 'number':
@@ -66,6 +100,11 @@ final class SettingsNormalizer {
 			default:
 				return is_scalar( $value ) ? mb_substr( sanitize_text_field( (string) $value ), 0, 1000 ) : $fallback;
 		}
+	}
+
+	/** @param array<string, mixed> $definition */
+	private static function item_limit( array $definition ): int {
+		return max( 0, min( 100, (int) ( $definition['maxItems'] ?? 100 ) ) );
 	}
 
 	/**

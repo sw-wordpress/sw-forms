@@ -2,6 +2,9 @@
 /**
  * Base class with schema driven settings normalisation and accessible wrapper markup.
  *
+ * Public extension API; stable from 0.4.0.
+ *
+ * @since 0.1.0
  * @package SWForms
  */
 

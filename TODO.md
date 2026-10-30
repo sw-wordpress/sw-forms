@@ -35,13 +35,14 @@ Konzept: `/home/swarnat/.claude/plans/ich-m-chte-ein-plugin-parallel-glacier.md`
 - [x] Datenschutz: WP-Privacy-Exporter/-Eraser für Einträge (per E-Mail-Feld)
 - [x] Einträge bearbeiten (Admin), Notizen am Eintrag
 
-## Milestone 4 – Plugin-API festschreiben (0.4.0)
+## ✅ Milestone 4 – Plugin-API festschreiben (implementiert, 0.4.0)
 
-- [ ] Interfaces & Hooks als stabil markieren, `@since` pflegen, Deprecation-Policy in `docs/extending.md`
-- [ ] Registries vervollständigen: `swf_register_validators`, `swf_register_merge_tags` (statt nur Filter)
-- [ ] Settings-Schema: Typen `field-picker`, `key-value`, `repeater`; eigene Vue-Komponente per JS-Handle für Add-on-Inspector/Canvas
-- [ ] Beispiel-Add-on (eigener Feldtyp + eigene Aktion) als Testfall der API
-- [ ] PHPUnit-Integrationssuite mit WP-Testumgebung (statt nur `tests/wp-smoke.php`)
+- [x] Interfaces & Hooks als stabil markieren, `@since` pflegen, Deprecation-Policy in `docs/extending.md`
+- [x] Registries vervollständigen: `swf_register_validators`, `swf_register_merge_tags` (statt nur Filter)
+- [x] Settings-Schema: Typen `field-picker`, `key-value`, `repeater`; eigene Vue-Komponente per JS-Handle für Add-on-Inspector/Canvas
+- [x] Beispiel-Add-on (eigener Feldtyp + eigene Aktion) als Testfall der API
+- [x] PHPUnit-Integrationssuite mit WP-Testumgebung (statt nur `tests/wp-smoke.php`)
+- [x] erweiterte Dokumentation in Englisch aller Filter/Actions, inkl. @since Informationen (Parameter, Zweck)
 
 ## Milestone 5 – Ausbau (0.5.0+)
 
@@ -52,6 +53,7 @@ Konzept: `/home/swarnat/.claude/plans/ich-m-chte-ein-plugin-parallel-glacier.md`
 - [ ] Weitere Felder: Datepicker, Rating, Signatur, HTML/Text-Block, Berechnung
 - [ ] Vorlagenbibliothek (Kontakt, Anmeldung, Umfrage)
 - [ ] Versionsverlauf im Builder (alte Version ansehen / wiederherstellen)
+- [ ] Visual Composer Block (Formularauswahl)
 
 ## Bekannte Punkte / technische Schulden
 

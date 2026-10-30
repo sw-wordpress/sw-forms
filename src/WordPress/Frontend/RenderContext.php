@@ -5,6 +5,9 @@
  * One context exists per scope (form level or one repeater row). Template rows (for the
  * frontend script) use the index placeholder `__INDEX__`.
  *
+ * Public extension API; stable from 0.4.0.
+ *
+ * @since 0.1.0
  * @package SWForms
  */
 

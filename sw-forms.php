@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       SW Forms
  * Description:       Drag and drop form builder with conditional logic, entries, notifications and an extension API.
- * Version:           0.1.0
+ * Version:           0.4.0
  * Requires at least: 6.4
  * Requires PHP:      8.2
  * Author:            Stefan Warnat
@@ -16,7 +16,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'SWF_VERSION', '0.1.0' );
+define( 'SWF_VERSION', '0.4.0' );
 define( 'SWF_FILE', __FILE__ );
 define( 'SWF_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SWF_URL', plugin_dir_url( __FILE__ ) );
