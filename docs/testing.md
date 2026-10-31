@@ -99,7 +99,10 @@ renewal, JSON, WordPress errors, malformed responses, cancellation and network f
 
 CI fails on missing/unexecuted coverage or missing test-execution artifacts. It enforces:
 
-- Full PHP line coverage of at least 80%.
+- Full PHP line coverage of more than 80 % (`tests/coverage/check.php`; exactly 80 % fails).
+- Full frontend line coverage of more than 80 % (`apps/admin/tools/coverage-gate.mjs`, run by
+  `npm run test:coverage`). Vitest thresholds are inclusive minimums on rounded percentages,
+  so both gates compare integer line counts instead.
 - Upload field/transport/storage classes at least 95%, submission service at least 85%.
 - Frontend form runtime at least 85%, filename parsing and entry-file presentation 100%,
   image-preview lifecycle at least 95%, and REST client at least 95% line coverage.
@@ -108,7 +111,8 @@ SonarQube's configured quality gate remains independent; these checks do not wai
 The artifacts imported by its separate job are `coverage/clover.xml`, `coverage/junit.xml`,
 `apps/admin/coverage/lcov.info` and `apps/admin/coverage/test-execution.xml`. Coverage-merger
 and test-report conversion have regression tests for overlapping hits, portable paths,
-foreign paths, empty reports, escaped text and retained failures/skips.
+foreign paths, empty reports, escaped text and retained failures/skips; both overall gates
+are tested at the boundary (80.00 % fails, 80.01 % passes).
 
 Measured locally with PHP 8.2/PCOV and Vitest V8 during this change:
 

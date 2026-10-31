@@ -322,6 +322,11 @@ class SwForm {
     const button = (event.target as HTMLElement | null)?.closest('button');
     if (!button) return;
     if (button.classList.contains('swf-step-next')) { void this.submit(true, this.currentStep); return; }
+    if (button.classList.contains('swf-steps__button')) {
+      const target = Number(button.closest<HTMLElement>('[data-swf-step-indicator]')?.dataset.swfStepIndicator);
+      if (!this.busy && target < this.currentStep) this.showStep(target);
+      return;
+    }
     if (button.classList.contains('swf-step-back')) { if (this.busy) return; this.showStep(this.currentStep - 1); return; }
     const repeater = button.closest<HTMLElement>('.swf-repeater');
     if (!repeater) return;
@@ -420,9 +425,27 @@ class SwForm {
     if (back) back.hidden = this.currentStep === 0;
     if (next) next.hidden = this.currentStep === steps.length - 1;
     for (const el of this.form.querySelectorAll<HTMLElement>('.swf-actions, .swf-captcha')) el.hidden = this.currentStep !== steps.length - 1;
+    const label = steps[this.currentStep]?.querySelector('h3')?.textContent ?? '';
     const progress = this.form.querySelector<HTMLElement>('.swf-step-progress');
-    if (progress) { progress.hidden = false; progress.textContent = (this.config.i18n.progress ?? '{current}/{total}').replace('{current}', String(this.currentStep + 1)).replace('{total}', String(steps.length)); }
+    if (progress) { progress.hidden = false; progress.textContent = (this.config.i18n.progress ?? '{current}/{total}').replace('{current}', String(this.currentStep + 1)).replace('{total}', String(steps.length)).replace('{label}', label); }
+    this.updateIndicator();
     if (focus) steps[this.currentStep]?.querySelector<HTMLElement>('h3')?.focus();
+  }
+
+  /** Marks done/current steps; done steps are buttons that go back without validation. */
+  private updateIndicator(): void {
+    const list = this.form.querySelector<HTMLElement>('.swf-steps');
+    if (!list) return;
+    list.hidden = false;
+    for (const item of list.querySelectorAll<HTMLElement>('[data-swf-step-indicator]')) {
+      const index = Number(item.dataset.swfStepIndicator);
+      const button = item.querySelector<HTMLButtonElement>('button');
+      item.classList.toggle('is-done', index < this.currentStep);
+      item.classList.toggle('is-current', index === this.currentStep);
+      if (index === this.currentStep) item.setAttribute('aria-current', 'step');
+      else item.removeAttribute('aria-current');
+      if (button) button.disabled = index >= this.currentStep;
+    }
   }
 
   private revealError(wrapper: HTMLElement | null): void {

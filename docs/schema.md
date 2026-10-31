@@ -86,7 +86,8 @@ Yes/No) and the row path (`people[0].`) for fields inside repeaters.
   "notifications": [
     { "id": "admin", "name": "", "enabled": true, "to": "{admin_email}", "subject": "", "message": "{all_fields}",
       "replyTo": "{field:email}", "fromName": "", "logic": null }
-  ]
+  ],
+  "steps": { "enabled": false, "firstLabel": "", "indicator": "numbers|dots|text" }
 }
 ```
 
@@ -608,8 +609,14 @@ retains its native select for submission and the no-JavaScript fallback.
 * `html` is informational, produces no entry value and supports `settings.content` with
   the existing safe inline HTML allowlist (`a`, `strong`, `em`, `br`); paragraphs are
   generated from line breaks. Scripts, event handlers and form controls are not allowed.
-* `page-break` separates non-empty root-level steps. Its label titles the following step.
-  Breaks cannot be nested or placed first/last/consecutively. With JavaScript, Back/Next
+* `page-break` separates non-empty root-level steps. Its label titles the following step;
+  `settings.steps.firstLabel` titles the first one (empty labels render as "Step n").
+  Breaks require `settings.steps.enabled` (error `steps_disabled`) and cannot be nested or
+  placed first/last/consecutively. Documents without `settings.steps` that contain root
+  breaks normalize to `enabled: true`; stored ones render as before. The builder edits steps
+  as tabs and hides `page-break` from the palette; turning multi-step off removes all breaks.
+  `indicator` selects the progress display: numbered steps, dots (both an `<ol class="swf-steps">`
+  whose done steps navigate back without validation) or `text` ("Step 1 of 3: …" only). With JavaScript, Back/Next
   navigation and live progress are enabled; Next validates the current step on the server
   without consuming the token, storing uploads/entries or running actions. Final submission
   validates the entire document again. Earlier step controls retain their values. Without

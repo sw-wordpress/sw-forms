@@ -6,6 +6,7 @@ import type { FieldTypeDefinition, FormDetail } from '@/types/api';
 
 const types: FieldTypeDefinition[] = [
   { type: 'input', label: 'Input', icon: '', category: 'basic', isData: true, container: '', supports: ['key', 'label', 'required', 'logic'], settings: [], defaults: {} },
+  { type: 'page-break', label: 'Page break', icon: '', category: 'layout', isData: false, container: '', supports: ['label', 'adminLabel'], settings: [], defaults: {} },
   { type: 'group', label: 'Group', icon: '', category: 'layout', isData: true, container: 'children', supports: ['key', 'label', 'logic'], settings: [], defaults: { repeatable: false } },
 ];
 
@@ -125,5 +126,48 @@ describe('builder store', () => {
     await store.load(7);
     expect(await store.save()).toBe(false);
     expect(store.errorsById.get('old')).toEqual(['bad']);
+  });
+
+  it('manages steps as tabs and merges them when multi-step is turned off', async () => {
+    const store = useBuilderStore();
+    await store.load(7);
+    expect(store.stepsEnabled).toBe(false);
+    store.setStepsEnabled(true);
+    expect(store.steps.map((s) => s.count)).toEqual([1]);
+    store.addStep('Step 2');
+    expect(store.activeStep).toBe(1);
+    expect(store.steps.map((s) => s.label)).toEqual(['', 'Step 2']);
+    const added = store.addElement('input', 'step:1', 0)!;
+    store.renameStep(0, 'Contact');
+    store.renameStep(1, 'Details');
+    expect(store.steps.map((s) => [s.label, s.count])).toEqual([['Contact', 1], ['Details', 1]]);
+
+    store.select('old');
+    expect(store.activeStep).toBe(0);
+    store.moveToStep('old', 1);
+    expect(store.activeStep).toBe(1);
+    expect(store.document!.fields.map((n) => n.id)).toEqual([store.steps[1]!.breakId, added.id, 'old']);
+    store.moveToStep('old', 1);
+    store.moveToStep('missing', 0);
+
+    store.moveStep(1, -1);
+    expect(store.activeStep).toBe(0);
+    expect(store.steps.map((s) => s.label)).toEqual(['Details', 'Contact']);
+    const before = store.document!.fields.length;
+    store.moveStep(0, -1);
+    expect(store.document!.fields.length).toBe(before);
+
+    store.removeStep(1);
+    expect(store.steps).toHaveLength(1);
+    expect(store.activeStep).toBe(0);
+    store.addStep('Again');
+    store.setStepsEnabled(false);
+    expect(store.document!.fields.some((n) => n.type === 'page-break')).toBe(false);
+    expect(store.document!.settings.steps?.enabled).toBe(false);
+    store.undo();
+    expect(store.stepsEnabled).toBe(true);
+    expect(store.steps).toHaveLength(2);
+    store.showStep(99);
+    expect(store.activeStep).toBe(1);
   });
 });

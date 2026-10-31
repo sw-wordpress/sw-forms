@@ -67,7 +67,7 @@ final class FormView {
 			'i18n'    => array(
 				'sending'      => __( 'Sending…', 'sw-forms' ),
 				'networkError' => __( 'The form could not be sent. Please check your connection and try again.', 'sw-forms' ),
-				'progress'     => __( 'Step {current} of {total}', 'sw-forms' ),
+				'progress'     => __( 'Step {current} of {total}: {label}', 'sw-forms' ),
 				'summary'      => __( 'Please correct the following fields:', 'sw-forms' ),
 			),
 		);
@@ -81,10 +81,10 @@ final class FormView {
 
 		$html  .= '<form class="swf-form' . $armour_class . '" method="post" action="' . esc_url( add_query_arg( 'swf_form', $form_id ) ) . '" enctype="multipart/form-data" novalidate data-swf-form="' . $form_id . '">';
 		$html  .= self::summary( $form_id, $result );
-		$groups = \SWForms\WordPress\Forms\Steps::groups( $tree );
+		$groups = \SWForms\WordPress\Forms\Steps::groups( $tree, $settings );
 		$html  .= '<div class="swf-fields">';
 		if ( count( $groups ) > 1 ) {
-			$html .= '<p class="swf-step-progress" role="status" aria-live="polite" hidden></p>';
+			$html .= self::step_indicator( $groups, (string) ( $settings['steps']['indicator'] ?? 'numbers' ) );
 			foreach ( $groups as $index => $group ) {
 				$html .= '<section class="swf-step" data-swf-step="' . $index . '"><h3 tabindex="-1">' . esc_html( $group['label'] ) . '</h3>' . $renderer->render_ids( $group['ids'], $context ) . '</section>';
 			}
@@ -110,6 +110,26 @@ final class FormView {
 		$html .= '<script type="application/json" class="swf-config">' . wp_json_encode( $config, JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_SLASHES ) . '</script>';
 		$html .= '</form></div>';
 		return $html;
+	}
+
+	/**
+	 * Progress list (hidden until the runtime enables steps) plus a live status text.
+	 *
+	 * @param list<array{label: string, ids: list<string>}> $groups
+	 */
+	private static function step_indicator( array $groups, string $indicator ): string {
+		$status = 'text' === $indicator ? 'swf-step-progress' : 'swf-step-progress swf-sr-only';
+		$html   = '';
+		if ( 'text' !== $indicator ) {
+			$html .= '<ol class="swf-steps swf-steps--' . esc_attr( 'dots' === $indicator ? 'dots' : 'numbers' ) . '" aria-label="' . esc_attr__( 'Form progress', 'sw-forms' ) . '" hidden>';
+			foreach ( $groups as $index => $group ) {
+				$html .= '<li class="swf-steps__item" data-swf-step-indicator="' . $index . '"><button type="button" class="swf-steps__button" disabled>'
+					. '<span class="swf-steps__marker" aria-hidden="true">' . ( $index + 1 ) . '</span>'
+					. '<span class="swf-steps__label">' . esc_html( $group['label'] ) . '</span></button></li>';
+			}
+			$html .= '</ol>';
+		}
+		return $html . '<p class="' . $status . '" role="status" aria-live="polite" hidden></p>';
 	}
 
 	private static function summary( int $form_id, ?SubmissionResult $result ): string {

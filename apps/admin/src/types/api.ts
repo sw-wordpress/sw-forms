@@ -54,6 +54,14 @@ export interface FormSettings {
   spam: { honeypot: boolean; minSeconds: number; rateLimit: number; provider?: string };
   notifications: Notification[];
   webhooks?: Webhook[];
+  steps?: StepsSettings;
+}
+
+/** Multi-step mode; page breaks only split the form while enabled. */
+export interface StepsSettings {
+  enabled: boolean;
+  firstLabel: string;
+  indicator: 'numbers' | 'dots' | 'text';
 }
 
 export interface Webhook {
@@ -77,6 +85,15 @@ export interface FormDocument {
 }
 
 export type FormStatus = 'active' | 'inactive';
+
+/** Built-in starter document from `GET /form-templates`. */
+export interface FormTemplate {
+  id: string;
+  title: string;
+  description?: string;
+  icon?: string;
+  document: FormDocument;
+}
 
 export interface FormSummary {
   id: number;

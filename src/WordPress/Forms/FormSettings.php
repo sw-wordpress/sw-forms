@@ -13,6 +13,9 @@ final class FormSettings {
 
 	public const MAX_NOTIFICATIONS = 20;
 
+	/** Progress display of multi-step forms. */
+	public const STEP_INDICATORS = array( 'numbers', 'dots', 'text' );
+
 	/**
 	 * @param array<string, mixed> $input
 	 * @return array<string, mixed>
@@ -51,6 +54,23 @@ final class FormSettings {
 			),
 			'notifications' => $notifications,
 			'webhooks'      => \SWForms\WordPress\Webhooks\WebhookSettings::normalize( $input['webhooks'] ?? array() ),
+			'steps'         => self::steps( $input['steps'] ?? null ),
+		);
+	}
+
+	/**
+	 * Multi-step mode. Page breaks only split a form while `enabled` is true.
+	 *
+	 * @since 0.5.0
+	 * @return array{enabled: bool, firstLabel: string, indicator: string}
+	 */
+	public static function steps( mixed $input ): array {
+		$input     = is_array( $input ) ? $input : array();
+		$indicator = $input['indicator'] ?? 'numbers';
+		return array(
+			'enabled'    => ! empty( $input['enabled'] ),
+			'firstLabel' => self::text( $input['firstLabel'] ?? null, '' ),
+			'indicator'  => in_array( $indicator, self::STEP_INDICATORS, true ) ? $indicator : 'numbers',
 		);
 	}
 

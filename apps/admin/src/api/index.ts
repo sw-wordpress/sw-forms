@@ -11,6 +11,7 @@ import type {
   FormDetail,
   FormDocument,
   FormStatus,
+  FormTemplate,
   FormSummary,
   GlobalSettings,
   WpPage,
@@ -43,7 +44,7 @@ export function setApiForTests(value: ApiClient | null): void {
 }
 
 export const formsApi = {
-  templates: () => api().get<{ items: { id: string; title: string; document: FormDocument }[] }>('form-templates').then((r) => r.items),
+  templates: () => api().get<{ items: FormTemplate[] }>('form-templates').then((r) => r.items),
   import: (data: unknown) => api().post<{ id: number }>('forms/import', data),
   export: (id: number) => api().get<Record<string, unknown>>(`forms/${id}/export`),
   versions: (id: number, page = 1) => api().get<{ items: { version: number; createdAt: string; createdBy: number }[] }>(`forms/${id}/versions`, { page }).then((r) => r.items),

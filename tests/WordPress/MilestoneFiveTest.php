@@ -103,6 +103,39 @@ final class MilestoneFiveTest extends TestCase
         self::assertSame('success', $send($body)->get_data()['status']);
         self::assertSame(1, (new \SWForms\WordPress\Entries\EntryRepository())->counts($id)['inbox']);
     }
+    public function testMultiStepSettingControlsStepsIndicatorAndLegacyDocuments(): void
+    {
+        $service = FormService::create_default();
+        // Legacy documents (page breaks, no settings.steps) keep their steps.
+        self::assertSame(['enabled' => true, 'firstLabel' => '', 'indicator' => 'numbers'], $service->normalize(['fields' => $this->fields()])['settings']['steps']);
+        self::assertFalse($service->normalize(['fields' => []])['settings']['steps']['enabled']);
+        self::assertSame(['enabled' => false, 'firstLabel' => 'Start', 'indicator' => 'numbers'], \SWForms\WordPress\Forms\FormSettings::steps(['firstLabel' => 'Start', 'indicator' => 'bogus']));
+        $disabled = $service->validate($service->normalize(['fields' => $this->fields(), 'settings' => ['steps' => ['enabled' => false]]]));
+        self::assertSame(['steps_disabled'], array_column($disabled, 'code'));
+
+        $id = $this->form(['fields' => $this->fields(), 'settings' => ['steps' => ['enabled' => true, 'firstLabel' => 'Order', 'indicator' => 'dots']]]);
+        $html = FormView::render($id);
+        self::assertStringContainsString('class="swf-steps swf-steps--dots"', $html);
+        self::assertSame(2, substr_count($html, 'class="swf-steps__item"'));
+        self::assertStringContainsString('<span class="swf-steps__label">Order</span>', $html);
+        self::assertStringContainsString('<span class="swf-steps__label">Details</span>', $html);
+        self::assertStringContainsString('swf-step-progress swf-sr-only', $html);
+
+        $fields = $this->fields();
+        $fields[2]['label'] = '';
+        $id = $this->form(['fields' => $fields, 'settings' => ['steps' => ['enabled' => true, 'indicator' => 'text']]]);
+        $html = FormView::render($id);
+        self::assertStringNotContainsString('swf-steps__item', $html);
+        self::assertStringContainsString('<p class="swf-step-progress" role="status"', $html);
+        self::assertStringContainsString('<h3 tabindex="-1">Step 1</h3>', $html);
+        self::assertStringContainsString('<h3 tabindex="-1">Step 2</h3>', $html);
+
+        // Stored documents are rendered as saved: disabled steps ignore page breaks.
+        $groups = \SWForms\WordPress\Forms\Steps::groups(\SWForms\Core\Form\Tree::build($this->fields(), \SWForms\WordPress\Fields\FieldRegistry::instance()), ['steps' => ['enabled' => false]]);
+        self::assertCount(1, $groups);
+        self::assertSame(['quantity', 'price', 'name', 'total', 'info'], $groups[0]['ids']);
+        self::assertCount(2, \SWForms\WordPress\Forms\Steps::groups(\SWForms\Core\Form\Tree::build($this->fields(), \SWForms\WordPress\Fields\FieldRegistry::instance()), []));
+    }
     public function testSchemaRejectsNestedPageBreaksAndCalculationCycles(): void
     {
         $service = FormService::create_default();
@@ -162,9 +195,15 @@ final class MilestoneFiveTest extends TestCase
     }
     public function testTemplatesAndDynamicBlockRenderPublishedFormOnly(): void
     {
-        foreach ($this->api('GET', 'form-templates')->get_data()['items'] as $template) {
+        $templates = $this->api('GET', 'form-templates')->get_data()['items'];
+        foreach ($templates as $template) {
             self::assertSame([], FormService::create_default()->validate(FormService::create_default()->normalize($template['document'])));
+            self::assertNotSame('', $template['description']);
+            self::assertStringStartsWith('r_', $template['icon']);
         }
+        $travel = FormService::create_default()->normalize(array_column($templates, 'document', 'id')['travel']);
+        self::assertTrue($travel['settings']['steps']['enabled']);
+        self::assertSame(2, count(array_keys(array_column($travel['fields'], 'type'), 'page-break', true)));
         $id = $this->form(['fields' => [['id' => 'name', 'key' => 'name', 'type' => 'input', 'label' => 'Public label']]]);
         self::assertStringContainsString('Public label', render_block(['blockName' => 'swforms/form', 'attrs' => ['formId' => $id], 'innerBlocks' => [], 'innerHTML' => '', 'innerContent' => []]));
         FormService::create_default()->save_draft($id, ['fields' => [['id' => 'name', 'key' => 'name', 'type' => 'input', 'label' => 'Private draft']]]);

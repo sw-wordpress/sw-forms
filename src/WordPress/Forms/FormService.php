@@ -62,7 +62,14 @@ final class FormService {
 			$type = $tree->type( $id );
 			if ( 'page-break' === $type ) {
 				$position = array_search( $id, $root_ids, true );
-				if ( false === $position || 0 === $position || count( $root_ids ) - 1 === $position || 'page-break' === $tree->type( $root_ids[ $position - 1 ] ) ) {
+				$nested   = false === $position;
+				if ( ! $nested && empty( $document['settings']['steps']['enabled'] ) ) {
+					$errors[] = array(
+						'path'    => $id,
+						'code'    => 'steps_disabled',
+						'message' => __( 'Enable multi-step in the form settings or remove the page break.', 'sw-forms' ),
+					);
+				} elseif ( $nested || 0 === $position || count( $root_ids ) - 1 === $position || 'page-break' === $tree->type( $root_ids[ $position - 1 ] ) ) {
 					$errors[] = array(
 						'path'    => $id,
 						'code'    => 'page_break',

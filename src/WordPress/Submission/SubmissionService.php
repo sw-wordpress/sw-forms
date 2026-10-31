@@ -92,7 +92,7 @@ final class SubmissionService {
 		$errors = (array) apply_filters( 'swf_validation_errors', $errors, $values, $form_id );
 		$step   = $request['step'] ?? null;
 		if ( null !== $step ) {
-			$groups = \SWForms\WordPress\Forms\Steps::groups( $tree );
+			$groups = \SWForms\WordPress\Forms\Steps::groups( $tree, $settings );
 			if ( ! is_int( $step ) || ! isset( $groups[ $step ] ) ) {
 				return SubmissionResult::error( 'step', __( 'This form step does not exist.', 'sw-forms' ) );
 			}

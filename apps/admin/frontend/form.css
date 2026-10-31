@@ -462,3 +462,133 @@
 .swf-matrix th[scope="row"] { text-align: start; min-width: 9rem; }
 .swf-matrix input[type="radio"] { width: 1.25rem; height: 1.25rem; cursor: pointer; }
 .swf-field--matrix { min-width: 0; }
+
+/* ---------- multi-step progress ---------- */
+.swf-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.swf-steps {
+  display: flex;
+  margin: 0 0 0.25rem;
+  padding: 0;
+  list-style: none;
+}
+.swf-steps[hidden] {
+  display: none;
+}
+.swf-steps__item {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* Themes often number list items via markers or ::before counters. */
+.swf-steps__item::marker {
+  content: '';
+}
+/* Connector from the previous marker to this one. */
+.swf-steps__item + .swf-steps__item::before {
+  content: '';
+  position: absolute;
+  top: calc(var(--swf-step-marker) / 2 - 1px);
+  right: calc(50% + var(--swf-step-marker) / 2 + 0.35rem);
+  left: calc(-50% + var(--swf-step-marker) / 2 + 0.35rem);
+  height: 2px;
+  border-radius: 2px;
+  background: var(--swf-border);
+}
+.swf-steps__item.is-done + .swf-steps__item::before,
+.swf-steps__item.is-done + .swf-steps__item.is-current::before {
+  background: var(--swf-accent);
+}
+.swf-steps__button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  padding: 0;
+  font: inherit;
+  color: var(--swf-muted);
+  background: none;
+  border: 0;
+  cursor: default;
+}
+.swf-steps__button:not(:disabled) {
+  cursor: pointer;
+}
+.swf-steps__button:focus-visible {
+  outline: 2px solid var(--swf-accent);
+  outline-offset: 3px;
+  border-radius: var(--swf-radius);
+}
+.swf-steps__marker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--swf-step-marker);
+  height: var(--swf-step-marker);
+  font-size: 0.85em;
+  font-weight: 650;
+  line-height: 1;
+  color: var(--swf-muted);
+  background: var(--swf-bg);
+  border: 2px solid var(--swf-border);
+  border-radius: 50%;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+}
+.swf-steps__label {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 0.875em;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.swf-steps__item.is-done .swf-steps__marker {
+  color: #fff;
+  background: var(--swf-accent);
+  border-color: var(--swf-accent);
+}
+.swf-steps__item.is-done .swf-steps__button:hover .swf-steps__label {
+  text-decoration: underline;
+}
+.swf-steps__item.is-current .swf-steps__marker {
+  color: var(--swf-accent);
+  border-color: var(--swf-accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--swf-accent) 18%, transparent);
+}
+.swf-steps__item.is-current .swf-steps__label {
+  font-weight: 650;
+  color: var(--swf-text);
+}
+.swf-steps {
+  --swf-step-marker: 2rem;
+}
+.swf-steps--dots {
+  --swf-step-marker: 0.85rem;
+}
+.swf-steps--dots .swf-steps__marker {
+  font-size: 0;
+}
+.swf-steps--dots .swf-steps__item.is-current .swf-steps__marker {
+  background: var(--swf-accent);
+}
+/* Narrow forms: only the current label stays visible. */
+@container (max-width: 480px) {
+  .swf-steps__item:not(.is-current) .swf-steps__label {
+    visibility: hidden;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .swf-steps__marker {
+    transition: none;
+  }
+}

@@ -1,11 +1,14 @@
 /**
  * Pure operations on a form document (no Vue, no store). Lists are addressed by a list id:
  * `root` for the form level, a group id for its children, a column id for a column's children.
+ * In multi-step mode, `step:<n>` addresses the root elements of step n (between page breaks).
  */
 import type { ColumnNode, ElementNode, Logic } from '@shared/types';
-import type { FieldTypeDefinition, FormDocument } from '@/types/api';
+import type { FieldTypeDefinition, FormDocument, StepsSettings } from '@/types/api';
 
 export const ROOT = 'root';
+export const PAGE_BREAK = 'page-break';
+const STEP_PREFIX = 'step:';
 export const MAX_COLUMNS = 6;
 export const COLUMN_PRESETS: number[][] = [
   [6, 6],
@@ -115,7 +118,7 @@ export function walk(
 
 /** Id of the data object (`root` or a group id) a list belongs to: columns are transparent. */
 export function dataOwner(document: FormDocument, listId: string): string {
-  let current = listId;
+  let current = isStepList(listId) ? ROOT : listId;
   for (;;) {
     if (current === ROOT) return ROOT;
     const found = locate(document.fields, current);
@@ -167,7 +170,119 @@ export function createElement(definition: FieldTypeDefinition, taken: Set<string
   return node;
 }
 
+// ---------- steps ----------
+
+export interface StepSegment {
+  /** Page break that starts the step; null for the first step. */
+  breakNode: ElementNode | null;
+  /** Index range of the step's own root elements in `document.fields` (end exclusive). */
+  start: number;
+  end: number;
+}
+
+export function stepListId(index: number): string {
+  return `${STEP_PREFIX}${index}`;
+}
+
+export function isStepList(listId: string): boolean {
+  return listId.startsWith(STEP_PREFIX);
+}
+
+export function stepSegments(fields: ElementNode[]): StepSegment[] {
+  const segments: StepSegment[] = [{ breakNode: null, start: 0, end: 0 }];
+  fields.forEach((node, index) => {
+    const current = segments[segments.length - 1] as StepSegment;
+    if (node.type === PAGE_BREAK) {
+      current.end = index;
+      segments.push({ breakNode: node, start: index + 1, end: index + 1 });
+    } else {
+      current.end = index + 1;
+    }
+  });
+  return segments;
+}
+
+export function stepElements(fields: ElementNode[], step: number): ElementNode[] {
+  const segment = stepSegments(fields)[step];
+  return segment ? fields.slice(segment.start, segment.end) : [];
+}
+
+/** Step that holds an element (by its root ancestor); -1 when unknown. */
+export function stepOf(fields: ElementNode[], id: string): number {
+  const rootIndex = fields.findIndex((node) => node.id === id || locate([node], id) !== null);
+  if (rootIndex < 0) return -1;
+  // A page break belongs to the step it starts.
+  return stepSegments(fields).findIndex((s) => (rootIndex >= s.start && rootIndex < s.end) || rootIndex === s.start - 1);
+}
+
+/** Translates a `step:<n>` list position to the root list; other lists pass through. */
+export function resolveList(document: FormDocument, listId: string, index: number): { listId: string; index: number } {
+  if (!isStepList(listId)) return { listId, index };
+  const segment = stepSegments(document.fields)[Number(listId.slice(STEP_PREFIX.length))];
+  if (!segment) return { listId: ROOT, index: document.fields.length };
+  return { listId: ROOT, index: segment.start + Math.max(0, Math.min(index, segment.end - segment.start)) };
+}
+
+/** Labels of all steps; the first one comes from the form settings. */
+export function stepLabels(document: FormDocument): string[] {
+  return stepSegments(document.fields).map((s) => (s.breakNode ? (s.breakNode.label ?? '') : (document.settings.steps?.firstLabel ?? '')));
+}
+
+export function setStepLabel(document: FormDocument, step: number, label: string): void {
+  if (step === 0) {
+    document.settings.steps = { ...defaultSteps(), ...document.settings.steps, firstLabel: label };
+    return;
+  }
+  const node = stepSegments(document.fields)[step]?.breakNode;
+  if (node) node.label = label;
+}
+
+export function defaultSteps(): StepsSettings {
+  return { enabled: false, firstLabel: '', indicator: 'numbers' };
+}
+
+/** Removes a step; its elements join the previous step (the next one for the first step). */
+export function removeStep(document: FormDocument, step: number): boolean {
+  const segments = stepSegments(document.fields);
+  if (segments.length < 2 || !segments[step]) return false;
+  if (step === 0) {
+    const next = segments[1] as StepSegment;
+    setStepLabel(document, 0, next.breakNode?.label ?? '');
+    document.fields.splice(next.start - 1, 1);
+    return true;
+  }
+  document.fields.splice((segments[step] as StepSegment).start - 1, 1);
+  return true;
+}
+
+/** Swaps step `step` with its neighbour; labels travel with their elements, break ids stay in place. */
+export function moveStep(document: FormDocument, step: number, delta: number): boolean {
+  const segments = stepSegments(document.fields);
+  const target = step + delta;
+  if (!segments[step] || !segments[target]) return false;
+  const labels = stepLabels(document);
+  const parts = segments.map((s) => document.fields.slice(s.start, s.end));
+  const breaks = segments.slice(1).map((s) => s.breakNode as ElementNode);
+  [parts[step], parts[target]] = [parts[target] as ElementNode[], parts[step] as ElementNode[]];
+  [labels[step], labels[target]] = [labels[target] as string, labels[step] as string];
+  const fields: ElementNode[] = [...(parts[0] as ElementNode[])];
+  breaks.forEach((node, i) => {
+    node.label = labels[i + 1] ?? '';
+    fields.push(node, ...(parts[i + 1] as ElementNode[]));
+  });
+  document.fields.splice(0, document.fields.length, ...fields);
+  setStepLabel(document, 0, labels[0] ?? '');
+  return true;
+}
+
+/** Drops all page breaks (multi-step off); the step elements stay in order. */
+export function removePageBreaks(document: FormDocument): void {
+  const kept = document.fields.filter((node) => node.type !== PAGE_BREAK);
+  document.fields.splice(0, document.fields.length, ...kept);
+}
+
 export function insert(document: FormDocument, listId: string, index: number, node: ElementNode): boolean {
+  ({ listId, index } = resolveList(document, listId, index));
   const list = listById(document, listId);
   if (!list) return false;
   list.splice(Math.max(0, Math.min(index, list.length)), 0, node);
@@ -176,7 +291,7 @@ export function insert(document: FormDocument, listId: string, index: number, no
 
 /** Whether `listId` lies inside the element `id` (dropping a container into itself). */
 export function isInside(document: FormDocument, listId: string, id: string): boolean {
-  let current: string = listId;
+  let current: string = isStepList(listId) ? ROOT : listId;
   while (current !== ROOT) {
     if (current === id) return true;
     const found = locate(document.fields, current);
@@ -193,6 +308,11 @@ export function move(
   toListId: string,
   toIndex: number,
 ): boolean {
+  const crossStep = isStepList(fromListId) && isStepList(toListId) && fromListId !== toListId;
+  ({ listId: fromListId, index: fromIndex } = resolveList(document, fromListId, fromIndex));
+  ({ listId: toListId, index: toIndex } = resolveList(document, toListId, toIndex));
+  // Between steps the target index is counted before removal (same list underneath).
+  if (crossStep && fromIndex < toIndex) toIndex--;
   const from = listById(document, fromListId);
   const to = listById(document, toListId);
   const node = from?.[fromIndex];

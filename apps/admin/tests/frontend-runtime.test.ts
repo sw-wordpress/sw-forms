@@ -66,6 +66,53 @@ describe('actual frontend form runtime', () => {
     expect((vi.mocked(fetch).mock.calls[1]![1]!.body as FormData).has('swf_step')).toBe(false);
   });
 
+  it('shows step progress, marks done steps and navigates back through the indicator', async () => {
+    const item = (i: number, label: string) => `<li class="swf-steps__item" data-swf-step-indicator="${i}"><button type="button" class="swf-steps__button" disabled><span class="swf-steps__marker">${i + 1}</span><span class="swf-steps__label">${label}</span></button></li>`;
+    const html = `<ol class="swf-steps swf-steps--numbers" hidden>${item(0, 'Trip')}${item(1, 'Wishes')}${item(2, 'Contact')}</ol><p class="swf-step-progress swf-sr-only" hidden></p>`
+      + ['Trip', 'Wishes', 'Contact'].map((label, i) => `<section class="swf-step" data-swf-step="${i}"><h3 tabindex="-1">${label}</h3>${wrap(`f${i}`, `<input name="swf[f${i}]">`)}</section>`).join('')
+      + '<div class="swf-step-nav" hidden><button type="button" class="swf-step-back">Back</button><button type="button" class="swf-step-next">Next</button></div>';
+    await mountForm(true, { fields: [field('f0'), field('f1'), field('f2')], html });
+    const items = [...document.querySelectorAll<HTMLElement>('.swf-steps__item')];
+    const buttons = items.map((li) => li.querySelector('button')!);
+    const pages = [...document.querySelectorAll<HTMLElement>('.swf-step')];
+    expect(document.querySelector<HTMLElement>('.swf-steps')!.hidden).toBe(false);
+    expect(items[0]!.getAttribute('aria-current')).toBe('step');
+    expect(buttons.every((b) => b.disabled)).toBe(true);
+    expect(document.querySelector('.swf-step-progress')!.textContent).toBe('1/3');
+
+    vi.mocked(fetch).mockResolvedValue(response({ status: 'success', code: 'step' }));
+    document.querySelector<HTMLButtonElement>('.swf-step-next')!.click(); await flushPromises();
+    document.querySelector<HTMLButtonElement>('.swf-step-next')!.click(); await flushPromises();
+    expect(pages[2]!.hidden).toBe(false);
+    expect(items[0]!.classList.contains('is-done')).toBe(true);
+    expect(items[1]!.classList.contains('is-done')).toBe(true);
+    expect(items[2]!.classList.contains('is-current')).toBe(true);
+    expect(items[1]!.hasAttribute('aria-current')).toBe(false);
+    expect(buttons[0]!.disabled).toBe(false);
+    expect(buttons[2]!.disabled).toBe(true);
+
+    buttons[0]!.click();
+    expect(pages[0]!.hidden).toBe(false);
+    expect(pages[2]!.hidden).toBe(true);
+    expect(items[0]!.classList.contains('is-current')).toBe(true);
+    expect(items[1]!.classList.contains('is-done')).toBe(false);
+    expect(buttons[1]!.disabled).toBe(true);
+    // Forward jumps are not possible through the indicator (validation runs on Next).
+    buttons[1]!.disabled = false;
+    buttons[1]!.click();
+    expect(pages[0]!.hidden).toBe(false);
+  });
+
+  it('includes the step label in the progress text', async () => {
+    const html = '<p class="swf-step-progress" hidden></p>' + ['A', 'B'].map((label, i) => `<section class="swf-step" data-swf-step="${i}"><h3 tabindex="-1">${label}</h3>${wrap(`f${i}`, `<input name="swf[f${i}]">`)}</section>`).join('') + '<div class="swf-step-nav" hidden><button type="button" class="swf-step-back">Back</button><button type="button" class="swf-step-next">Next</button></div>';
+    const fields = [field('f0'), field('f1')];
+    document.body.innerHTML = '';
+    const config = { formId: 7, rest: '/submit', ajax: '/ajax', preview: true, nonce: 'n', fields, i18n: { sending: 'Sending', networkError: 'Offline', summary: 'Correct', progress: 'Step {current} of {total}: {label}' } };
+    document.body.innerHTML = `<div><form class="swf-form" data-swf-form="7">${html}<input name="swf_token" value="old"><button class="swf-submit">Send</button><script class="swf-config" type="application/json">${JSON.stringify(config)}</script></form></div>`;
+    await import('../frontend/main');
+    expect(document.querySelector('.swf-step-progress')!.textContent).toBe('Step 1 of 2: A');
+  });
+
   it('reads matrix values for conditions and submits stable keys in independent repeater rows', async () => {
     const controls = (prefix: string) => ['service', 'quality'].map((row) => [1, 5].map((value) => `<input type="radio" data-swf-matrix-row="${row}" name="${prefix}[${row}]" value="${value}">`).join('')).join('');
     const rows = field('rows', 'group', 'none', { container: 'children', settings: { repeatable: true }, children: [field('nested', 'matrix', 'matrix'), field('why', 'input', 'text', { logic: condition('nested', 'is', '5') })] });

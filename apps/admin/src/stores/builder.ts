@@ -30,6 +30,8 @@ export const useBuilderStore = defineStore('builder', () => {
   const meta = shallowRef<FormDetail | null>(null);
   const types = shallowRef<FieldTypeDefinition[]>([]);
   const selectedId = ref<string | null>(null);
+  /** Step tab shown on the canvas in multi-step mode. */
+  const activeStep = ref(0);
   const errors = ref<SchemaError[]>([]);
   const saving = ref(false);
   const draftState = ref<'idle' | 'pending' | 'saving' | 'saved' | 'failed'>('idle');
@@ -67,6 +69,18 @@ export const useBuilderStore = defineStore('builder', () => {
     if (!document.value || !selectedId.value) return null;
     return doc.locate(document.value.fields, selectedId.value);
   });
+  const stepsEnabled = computed(() => document.value?.settings.steps?.enabled === true);
+  const steps = computed(() => {
+    void revision.value;
+    if (!document.value) return [];
+    const labels = doc.stepLabels(document.value);
+    return doc.stepSegments(document.value.fields).map((segment, index) => ({
+      index,
+      label: labels[index] ?? '',
+      breakId: segment.breakNode?.id ?? null,
+      count: segment.end - segment.start,
+    }));
+  });
   const errorsById = computed(() => {
     const map = new Map<string, string[]>();
     for (const error of errors.value) {
@@ -91,6 +105,7 @@ export const useBuilderStore = defineStore('builder', () => {
     past.value = [];
     future.value = [];
     selectedId.value = null;
+    activeStep.value = 0;
     manualKeys.clear();
     lockPresetComponentKeys(document.value?.fields ?? []);
     // A pending draft is unsaved work: compare against the published state.
@@ -119,6 +134,7 @@ export const useBuilderStore = defineStore('builder', () => {
     document.value = data.document;
     if (selectedId.value && !doc.locate(data.document.fields, selectedId.value)) selectedId.value = null;
     revision.value++;
+    showStep(activeStep.value);
     scheduleDraft();
   }
 
@@ -270,6 +286,66 @@ export const useBuilderStore = defineStore('builder', () => {
 
   function select(id: string | null): void {
     selectedId.value = id;
+    if (id && stepsEnabled.value && document.value) {
+      const step = doc.stepOf(document.value.fields, id);
+      if (step >= 0) activeStep.value = step;
+    }
+  }
+
+  // ---------- steps ----------
+
+  function showStep(index: number): void {
+    activeStep.value = Math.max(0, Math.min(index, steps.value.length - 1));
+  }
+
+  /** Turning multi-step off merges all steps into one page (undoable). */
+  function setStepsEnabled(enabled: boolean): void {
+    change((d) => {
+      d.settings.steps = { ...doc.defaultSteps(), ...d.settings.steps, enabled };
+      if (!enabled) doc.removePageBreaks(d);
+    });
+    activeStep.value = 0;
+  }
+
+  /** Appends an empty step and shows it. */
+  function addStep(label: string): void {
+    const definition = typeMap.value.get(doc.PAGE_BREAK);
+    if (!definition) return;
+    change((d) => {
+      const node = doc.createElement(definition, new Set(), label);
+      d.fields.push(node);
+    });
+    showStep(steps.value.length - 1);
+  }
+
+  function renameStep(index: number, label: string): void {
+    change((d) => doc.setStepLabel(d, index, label), `step:${index}:label`);
+  }
+
+  function removeStep(index: number): void {
+    change((d) => {
+      doc.removeStep(d, index);
+    });
+    showStep(Math.max(0, index - 1));
+  }
+
+  function moveStep(index: number, delta: number): void {
+    let moved = false;
+    change((d) => {
+      moved = doc.moveStep(d, index, delta);
+    });
+    if (!moved) past.value.pop();
+    else showStep(index + delta);
+  }
+
+  /** Moves a root element of the current step to the end of another step. */
+  function moveToStep(id: string, step: number): void {
+    if (!document.value) return;
+    const from = doc.stepOf(document.value.fields, id);
+    const index = doc.stepElements(document.value.fields, from).findIndex((n) => n.id === id);
+    if (from < 0 || index < 0 || from === step) return;
+    const target = doc.stepElements(document.value.fields, step).length;
+    if (moveElement(doc.stepListId(from), index, doc.stepListId(step), target)) showStep(step);
   }
 
   // ---------- persistence ----------
@@ -336,6 +412,9 @@ export const useBuilderStore = defineStore('builder', () => {
     types,
     selectedId,
     selected,
+    activeStep,
+    stepsEnabled,
+    steps,
     errors,
     errorsById,
     saving,
@@ -361,6 +440,13 @@ export const useBuilderStore = defineStore('builder', () => {
     columnsChange,
     updateFormSettings,
     select,
+    showStep,
+    setStepsEnabled,
+    addStep,
+    renameStep,
+    removeStep,
+    moveStep,
+    moveToStep,
     saveDraft,
     save,
     setStatus,

@@ -93,7 +93,7 @@ All form-tool routes require `swf_manage_forms`, except embedding choices as not
 
 | Method | Route | Contract |
 | --- | --- | --- |
-| GET | `/form-templates` | `{items: [{id, title, document}]}` for contact, registration and survey starters. No notifications are enabled by the starters. |
+| GET | `/form-templates` | `{items: [{id, title, description, icon, document}]}` for contact, registration, survey and multi-step travel starters. `icon` is a Material Symbols (round) name. No notifications are enabled by the starters. |
 | GET | `/forms/{id}/export` | Private uncached JSON envelope `{format: "swforms", formatVersion: 1, title, document}`. Exports the editable draft or current publication; no entries or site secrets. |
 | POST | `/forms/import` | Accepts that envelope (up to 1 MB, schema version 1). Validates before creation; returns `{id}` (201) for a new **inactive** form. Never overwrites an existing form. Missing add-on types return validation errors (422). |
 | GET | `/forms/{id}/versions?page=1` | `{items: [{version, createdAt, createdBy}]}`, newest first, 50 per page. Unknown form: 404. |

@@ -1,11 +1,14 @@
 <?php
 
-/** A green coverage job must include executed adapter code, not just the portable core. */
+/**
+ * A green coverage job must include executed adapter code, not just the portable core.
+ * Usage: php tests/coverage/check.php [clover.xml]; defaults to coverage/clover.xml.
+ */
 
 declare(strict_types=1);
 
 $report = new DOMDocument();
-if (!$report->load(dirname(__DIR__, 2) . '/coverage/clover.xml', LIBXML_NONET)) {
+if (!$report->load($argv[1] ?? dirname(__DIR__, 2) . '/coverage/clover.xml', LIBXML_NONET)) {
     throw new RuntimeException('Missing or invalid merged coverage report.');
 }
 $coverage = [];
@@ -43,7 +46,8 @@ foreach ($required as $name => $minimum) {
     printf("%s: %.2f%% lines\n", $name, $coverage[$name]);
 }
 $total = $statements > 0 ? 100 * $executed / $statements : 0;
-if ($total < 80) {
-    throw new RuntimeException(sprintf('Full PHP source coverage %.2f%% is below 80%%.', $total));
+// Strictly more than 80 % (integer comparison, no float rounding): exactly 80 % fails.
+if (5 * $executed <= 4 * $statements) {
+    throw new RuntimeException(sprintf('Full PHP source coverage %d/%d (%.2f%%) must be more than 80%%.', $executed, $statements, $total));
 }
 printf("Full PHP source: %d/%d lines (%.2f%%).\n", $executed, $statements, $total);

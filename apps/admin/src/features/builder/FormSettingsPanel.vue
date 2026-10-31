@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { pagesApi } from '@/api';
+import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import SwfCard from '@/components/ui/SwfCard.vue';
 import { useClipboard } from '@/composables/useClipboard';
 import { useBuilderStore } from '@/stores/builder';
@@ -44,6 +45,25 @@ watch(
   { immediate: true },
 );
 
+// ---------- multi-step ----------
+const confirmMerge = ref(false);
+const indicators = computed(() => [
+  { value: 'numbers', label: t('steps.indicatorNumbers') },
+  { value: 'dots', label: t('steps.indicatorDots') },
+  { value: 'text', label: t('steps.indicatorText') },
+]);
+function toggleSteps(enabled: boolean): void {
+  if (!enabled && store.steps.length > 1) {
+    confirmMerge.value = true;
+    return;
+  }
+  store.setStepsEnabled(enabled);
+}
+function mergeSteps(): void {
+  confirmMerge.value = false;
+  store.setStepsEnabled(false);
+}
+
 const shortcode = computed(() => store.meta?.shortcode ?? '');
 const php = computed(() => `<?php echo swf_render_form( ${store.formId} ); ?>`);
 </script>
@@ -54,6 +74,24 @@ const php = computed(() => `<?php echo swf_render_form( ${store.formId} ); ?>`);
       <div class="swf-stack swf-stack--tight">
         <q-input :model-value="settings.submitLabel" outlined dense :label="t('formSettings.submitLabel')" @update:model-value="set((s) => (s.submitLabel = String($event ?? '')), 'submitLabel')" />
         <q-input :model-value="settings.cssClass" outlined dense input-class="swf-mono" :label="t('formSettings.cssClass')" @update:model-value="set((s) => (s.cssClass = String($event ?? '')), 'cssClass')" />
+      </div>
+    </SwfCard>
+
+    <SwfCard :title="t('steps.settingsTitle')" :subtitle="t('steps.settingsText')" icon="r_linear_scale">
+      <div class="swf-stack swf-stack--tight">
+        <q-toggle :model-value="store.stepsEnabled" :label="t('steps.enable')" @update:model-value="toggleSteps(!!$event)" />
+        <template v-if="store.stepsEnabled">
+          <q-btn-toggle
+            :model-value="settings.steps?.indicator ?? 'numbers'"
+            no-caps
+            unelevated
+            toggle-color="primary"
+            :options="indicators"
+            :aria-label="t('steps.indicator')"
+            @update:model-value="set((s) => (s.steps = { enabled: true, firstLabel: s.steps?.firstLabel ?? '', indicator: $event }), '')"
+          />
+          <p class="swf-muted">{{ t('steps.settingsHint', { n: store.steps.length }) }}</p>
+        </template>
       </div>
     </SwfCard>
 
@@ -170,5 +208,13 @@ const php = computed(() => `<?php echo swf_render_form( ${store.formId} ); ?>`);
         <p v-if="store.meta?.currentVersion === 0" class="swf-warning"><q-icon name="r_info" size="16px" /> {{ t('formSettings.notPublished') }}</p>
       </div>
     </SwfCard>
+    <ConfirmDialog
+      v-model="confirmMerge"
+      :title="t('steps.disableTitle')"
+      :message="t('steps.disableText', { n: store.steps.length })"
+      :confirm-label="t('steps.disableConfirm')"
+      :danger="false"
+      @confirm="mergeSteps"
+    />
   </div>
 </template>

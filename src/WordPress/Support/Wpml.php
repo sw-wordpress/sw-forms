@@ -70,6 +70,9 @@ final class Wpml {
 				$document['settings'][ $setting ] = $callback( $prefix . $setting, (string) $document['settings'][ $setting ] );
 			}
 		}
+		if ( isset( $document['settings']['steps']['firstLabel'] ) && '' !== $document['settings']['steps']['firstLabel'] ) {
+			$document['settings']['steps']['firstLabel'] = $callback( $prefix . 'step-1', (string) $document['settings']['steps']['firstLabel'] );
+		}
 		if ( isset( $document['settings']['confirmation']['message'] ) && '' !== $document['settings']['confirmation']['message'] ) {
 			$document['settings']['confirmation']['message'] = $callback( $prefix . 'confirmation', (string) $document['settings']['confirmation']['message'] );
 		}
