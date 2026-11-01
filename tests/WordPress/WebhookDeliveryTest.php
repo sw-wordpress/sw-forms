@@ -82,7 +82,7 @@ final class WebhookDeliveryTest extends TestCase
     {
         $save = FormService::create_default()->save($this->formId, 'Delivery', $this->document($store, $count));
         self::assertSame([], $save['errors']);
-        $result = swf_submit($this->formId, ['name' => 'Max']);
+        $result = swf_submit($this->formId, ['name' => 'Max Mustermann']);
         self::assertSame('success', $result->status);
         global $wpdb;
         $entry = $result->entry_id ?: (int) $wpdb->get_var($wpdb->prepare("SELECT id FROM %i WHERE form_id = %d AND status = 'temporary'", Schema::table('entries'), $this->formId));
@@ -115,7 +115,8 @@ final class WebhookDeliveryTest extends TestCase
         self::assertSame([], $this->requests, 'Submission must not perform network I/O.');
         $repo = new DeliveryRepository();
         $row = $repo->find($id);
-        self::assertStringNotContainsString('Max', $row['payload']);
+        // The space cannot occur in base64 ciphertext; a bare 'Max' matched random output (flaky).
+        self::assertStringNotContainsString('Max Mustermann', $row['payload']);
         self::assertStringNotContainsString('private-token', $row['payload']);
         $queued = $this->rememberActions($id);
         \ActionScheduler::runner()->process_action($queued[0], 'SW Forms integration');
