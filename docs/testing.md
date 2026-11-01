@@ -122,6 +122,7 @@ Measured locally with PHP 8.2/PCOV and Vitest V8 during this change:
 | Complete PHP application after media integration | 87.95% (4175/4747) |
 | Complete frontend before new tests | 30.81% |
 | Complete frontend after media tests | 44.93% |
+| Complete frontend after view/shell component tests | 98.96% (6567/6636) |
 | Frontend form runtime | 88.74% |
 | Filename parser, REST client, entry-file component | 100% |
 | PHP upload field | 98.28% |

@@ -58,6 +58,8 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     include: ['tests/**/*.test.ts'],
+    // Mounting real Quasar views under parallel V8 coverage can exceed the 5 s default on CI.
+    testTimeout: 20_000,
     css: false,
     coverage: {
       provider: 'v8',
