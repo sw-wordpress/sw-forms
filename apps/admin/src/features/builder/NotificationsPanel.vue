@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, toRaw } from 'vue';
 import { useI18n } from 'vue-i18n';
 import EmptyState from '@/components/ui/EmptyState.vue';
 import SwfCard from '@/components/ui/SwfCard.vue';
@@ -43,7 +43,7 @@ function duplicate(notification: Notification): void {
   const id = newId('n');
   store.updateFormSettings((s) => {
     const index = s.notifications.findIndex((x) => x.id === notification.id);
-    s.notifications.splice(index + 1, 0, { ...structuredClone(notification), id, name: `${notification.name} (2)` });
+    s.notifications.splice(index + 1, 0, { ...structuredClone(toRaw(notification)), id, name: `${notification.name} (2)` });
   });
   open.value = id;
 }

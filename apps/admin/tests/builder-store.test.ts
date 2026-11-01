@@ -7,6 +7,7 @@ import type { FieldTypeDefinition, FormDetail } from '@/types/api';
 const types: FieldTypeDefinition[] = [
   { type: 'input', label: 'Input', icon: '', category: 'basic', isData: true, container: '', supports: ['key', 'label', 'required', 'logic'], settings: [], defaults: {} },
   { type: 'page-break', label: 'Page break', icon: '', category: 'layout', isData: false, container: '', supports: ['label', 'adminLabel'], settings: [], defaults: {} },
+  { type: 'columns', label: 'Columns', icon: '', category: 'layout', isData: false, container: 'columns', supports: [], settings: [], defaults: {} },
   { type: 'group', label: 'Group', icon: '', category: 'layout', isData: true, container: 'children', supports: ['key', 'label', 'logic'], settings: [], defaults: { repeatable: false } },
 ];
 
@@ -169,5 +170,115 @@ describe('builder store', () => {
     expect(store.steps).toHaveLength(2);
     store.showStep(99);
     expect(store.activeStep).toBe(1);
+  });
+  it('exposes the tree, selection and definitions', async () => {
+    const draft = detail();
+    draft.document.fields.push({ id: 'grp', type: 'group', key: 'grp', label: 'Group', settings: { repeatable: true }, children: [{ id: 'inner', type: 'input', key: 'inner' }] });
+    vi.mocked(formsApi.get).mockResolvedValue(draft);
+    const store = useBuilderStore();
+    await store.load(7);
+    expect(store.definition('input')?.label).toBe('Input');
+    expect(store.definition('nope')).toBeUndefined();
+    expect(store.tree.ids()).toEqual(['old', 'grp', 'inner']);
+    expect(store.tree.isRepeater('grp')).toBe(true);
+    expect(store.tree.scopeOf('inner')).toBe('grp');
+    expect(store.selected).toBeNull();
+    store.select('inner');
+    expect(store.selected?.listId).toBe('grp');
+
+    store.removeElement('grp');
+    expect(store.selectedId).toBeNull();
+    expect(store.tree.ids()).toEqual(['old']);
+    store.select('old');
+    store.removeElement('missing');
+    expect(store.selectedId).toBe('old');
+  });
+
+  it('coalesces title edits into one undo step', async () => {
+    const store = useBuilderStore();
+    store.setTitle('ignored without document');
+    expect(store.title).toBe('');
+    await store.load(7);
+    store.setTitle('C');
+    store.setTitle('Co');
+    expect(store.title).toBe('Co');
+    expect(store.dirty).toBe(true);
+    expect(store.canUndo).toBe(true);
+    vi.advanceTimersByTime(1500);
+    store.setTitle('Contact us');
+    store.undo();
+    expect(store.title).toBe('Co');
+    store.undo();
+    expect(store.title).toBe('Contact');
+    expect(store.canRedo).toBe(true);
+  });
+
+  it('updates settings, logic, columns and form settings', async () => {
+    const draft = detail();
+    draft.document.fields.push({ id: 'cols', type: 'columns', columns: [{ id: 'c1', children: [] }] });
+    vi.mocked(formsApi.get).mockResolvedValue(draft);
+    const store = useBuilderStore();
+    await store.load(7);
+
+    store.updateSetting('old', 'placeholder', 'you@example.com');
+    store.updateSetting('missing', 'placeholder', 'x');
+    expect(store.document!.fields[0]!.settings).toEqual({ placeholder: 'you@example.com' });
+
+    const logic = { action: 'show', match: 'all', rules: [] } as never;
+    store.updateLogic('old', logic);
+    store.updateLogic('c1', null);
+    store.updateLogic('missing', logic);
+    expect(store.document!.fields[0]!.logic).toEqual(logic);
+    expect(store.document!.fields[1]!.columns![0]!.logic).toBeNull();
+
+    store.columnsChange('cols', (node) => node.columns!.push({ id: 'c2', children: [] }));
+    const untouched = vi.fn();
+    store.columnsChange('old', untouched, 'x');
+    expect(untouched).not.toHaveBeenCalled();
+    expect(store.document!.fields[1]!.columns!.map((c) => c.id)).toEqual(['c1', 'c2']);
+
+    store.updateFormSettings((settings) => { settings.submitLabel = 'Go'; }, 'submit');
+    store.updateFormSettings((settings) => { settings.cssClass = 'x'; });
+    expect(store.document!.settings.submitLabel).toBe('Go');
+    expect(store.document!.settings.cssClass).toBe('x');
+  });
+
+  it('publishes, keeps the selection and reports draft failures', async () => {
+    const store = useBuilderStore();
+    expect(await store.save()).toBe(false);
+    expect(await store.saveDraft()).toBeNull();
+    await store.load(7);
+    store.select('old');
+    store.updateElement('old', { label: 'Mail' });
+    const published = detail();
+    published.title = 'Published';
+    vi.spyOn(formsApi, 'save').mockResolvedValue(published);
+    expect(await store.save()).toBe(true);
+    expect(store.title).toBe('Published');
+    expect(store.selectedId).toBe('old');
+    expect(store.dirty).toBe(false);
+    expect(store.draftState).toBe('idle');
+    expect(store.saving).toBe(false);
+
+    vi.mocked(formsApi.save).mockRejectedValue(new Error('offline'));
+    await expect(store.save()).rejects.toThrow('offline');
+    expect(store.saving).toBe(false);
+
+    vi.mocked(formsApi.saveDraft).mockRejectedValue(new Error('offline'));
+    expect(await store.saveDraft()).toBeNull();
+    expect(store.draftState).toBe('failed');
+  });
+
+  it('changes the publication status', async () => {
+    const store = useBuilderStore();
+    const inactive = { ...detail(), status: 'inactive' as const };
+    const setStatus = vi.spyOn(formsApi, 'setStatus').mockResolvedValue(inactive);
+    await store.setStatus('inactive');
+    expect(store.status).toBe('inactive');
+    expect(store.meta).toBeNull();
+    await store.load(7);
+    await store.setStatus('inactive');
+    expect(setStatus).toHaveBeenLastCalledWith(7, 'inactive');
+    expect(store.meta?.status).toBe('inactive');
   });
 });
