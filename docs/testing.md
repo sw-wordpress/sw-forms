@@ -13,9 +13,10 @@ mkdir -p coverage
 XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-clover coverage/unit.xml --log-junit coverage/unit-junit.xml
 ```
 
-PHPUnit measures the complete PHP application: `src/`, `includes/`, `sw-forms.php` and
-`uninstall.php`. Unexecuted WordPress files remain in the denominator; they are not excluded
-to improve the percentage. The regular suite requires no WordPress installation or database.
+PHPUnit measures and PHPStan (level 8, no baseline) analyses the complete PHP application: `src/`,
+`includes/`, `sw-forms.php` and `uninstall.php`. PHPStan's plugin constants, optional plugin
+functions (WP Armour, WPBakery) and corrected core PHPDoc live in `tests/phpstan/`.
+Unexecuted WordPress files remain in the denominator; they are not excluded to improve the percentage. The regular suite requires no WordPress installation or database.
 Coverage needs Xdebug in coverage mode or PCOV. No coverage driver means a failing coverage job.
 
 ## Real WordPress and HTTP tests
@@ -108,6 +109,14 @@ CI fails on missing/unexecuted coverage or missing test-execution artifacts. It 
   image-preview lifecycle at least 95%, and REST client at least 95% line coverage.
 
 SonarQube's configured quality gate remains independent; these checks do not waive it.
+
+Dependency security: every push/PR fails on known advisories in **shipped** dependencies
+(`composer audit --locked --no-dev`, `npm audit --omit=dev --audit-level=high`). New advisories
+appear without code changes, so `.github/workflows/security-audit.yml` audits all dependencies,
+including dev tooling, daily. It keeps one open issue labelled `security-audit` (repo watchers are
+notified; edits/comments only when findings change) and closes it once clean.
+`.github/dependabot.yml` opens weekly update PRs for Composer, npm and GitHub Actions.
+Dependabot alerts and security updates must be enabled in the repository settings.
 The artifacts imported by its separate job are `coverage/clover.xml`, `coverage/junit.xml`,
 `apps/admin/coverage/lcov.info` and `apps/admin/coverage/test-execution.xml`. Coverage-merger
 and test-report conversion have regression tests for overlapping hits, portable paths,

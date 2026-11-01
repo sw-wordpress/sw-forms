@@ -201,7 +201,8 @@ final class EntryRepository {
 		$wpdb->query( $wpdb->prepare( 'DELETE FROM %i WHERE entry_id = %d', Schema::table( 'entry_log' ), $id ) );
 		$deleted = $wpdb->query( $wpdb->prepare( 'DELETE FROM %i WHERE id = %d', Schema::table( 'entries' ), $id ) );
 		if ( false !== $deleted ) {
-			UploadStorage::delete( is_array( $entry['meta']['uploads'] ?? null ) ? $entry['meta']['uploads'] : array() );
+			$uploads = $entry['meta']['uploads'] ?? null;
+			UploadStorage::delete( is_array( $uploads ) ? $uploads : array() );
 		}
 	}
 
@@ -251,7 +252,7 @@ final class EntryRepository {
 	public function privacy_batch( int $after ): array {
 		global $wpdb;
 		$rows = $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM %i WHERE id > %d ORDER BY id LIMIT 100', Schema::table( 'entries' ), $after ), ARRAY_A );
-		return array_map( self::hydrate( ... ), is_array( $rows ) ? $rows : array() );
+		return array_values( array_map( self::hydrate( ... ), is_array( $rows ) ? $rows : array() ) );
 	}
 
 	/** Deletes entries of a form older than the retention period. Returns the number of deleted entries. */

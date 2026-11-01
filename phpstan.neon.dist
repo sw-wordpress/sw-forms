@@ -2,4 +2,21 @@ parameters:
     level: 8
     paths:
         - src/Core
+        - src/WordPress
+        - includes
+        - sw-forms.php
+        - uninstall.php
+    bootstrapFiles:
+        - tests/phpstan/bootstrap.php
+    stubFiles:
+        - tests/phpstan/WP_REST_Request.stub
+    scanFiles:
+        - vendor/woocommerce/action-scheduler/functions.php
+        - tests/phpstan/stubs.php
+    dynamicConstantNames:
+        - SWF_VERSION
+        - SWF_FILE
+        - SWF_DIR
+        - SWF_URL
+        - SWF_MIN_PHP
     tmpDir: .phpstan.cache

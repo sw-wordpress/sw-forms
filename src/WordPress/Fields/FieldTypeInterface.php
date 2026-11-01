@@ -107,6 +107,8 @@ interface FieldTypeInterface {
 
 	/**
 	 * How the frontend script reads the value: `text`, `bool`, `list`, `radio`, `matrix` or `none`.
+	 *
+	 * @param array<string, mixed> $element
 	 */
 	public function value_kind( array $element ): string;
 }

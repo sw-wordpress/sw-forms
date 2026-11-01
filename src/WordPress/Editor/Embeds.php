@@ -31,23 +31,29 @@ final class Embeds {
 			) . ';',
 			'before'
 		);
-		register_block_type(
-			'swforms/form',
-			array(
-				'api_version'     => 3,
-				'editor_script'   => 'sw-forms-block',
-				'attributes'      => array(
-					'formId' => array(
-						'type'    => 'integer',
-						'default' => 0,
-					),
-					'title'  => array(
-						'type'    => 'boolean',
-						'default' => false,
-					),
+		register_block_type( 'swforms/form', self::block_args() );
+	}
+
+	/**
+	 * Integer `api_version` like WordPress' own block.json loader; the core PHPDoc documents a string.
+	 *
+	 * @return array<string, mixed>
+	 */
+	private static function block_args(): array {
+		return array(
+			'api_version'     => 3,
+			'editor_script'   => 'sw-forms-block',
+			'attributes'      => array(
+				'formId' => array(
+					'type'    => 'integer',
+					'default' => 0,
 				),
-				'render_callback' => static fn ( array $attributes ): string => empty( $attributes['formId'] ) ? '' : FormView::render( absint( $attributes['formId'] ), array( 'title' => ! empty( $attributes['title'] ) ) ),
-			)
+				'title'  => array(
+					'type'    => 'boolean',
+					'default' => false,
+				),
+			),
+			'render_callback' => static fn ( array $attributes ): string => empty( $attributes['formId'] ) ? '' : FormView::render( absint( $attributes['formId'] ), array( 'title' => ! empty( $attributes['title'] ) ) ),
 		);
 	}
 

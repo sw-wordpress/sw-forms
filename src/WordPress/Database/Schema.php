@@ -37,11 +37,14 @@ final class Schema {
 		if ( $installed >= self::CURRENT ) {
 			return;
 		}
-		if ( $installed < 1 ) {
-			self::migrate_to_1();
-		}
-		if ( $installed < 3 ) {
-			self::migrate_to_3();
+		$steps = array(
+			1 => static fn () => self::migrate_to_1(),
+			3 => static fn () => self::migrate_to_3(),
+		);
+		foreach ( $steps as $version => $step ) {
+			if ( $installed < $version ) {
+				$step();
+			}
 		}
 		update_option( self::VERSION_OPTION, self::CURRENT, true );
 	}

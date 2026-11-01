@@ -3,8 +3,10 @@
 Concept: `docs/schema.md` (form document), `docs/hooks.md`, `docs/rest-api.md`, `docs/extending.md`.
 
 ## Architecture
-- `src/Core` is framework independent: no WordPress functions. PSR-12, `strict_types`, camelCase, PHPStan level 8.
+- `src/Core` is framework independent: no WordPress functions. PSR-12, `strict_types`, camelCase.
 - `src/WordPress` is the WordPress adapter: WPCS (tabs, snake_case), PSR-4 class names.
+- PHPStan level 8 covers Core, adapter, `includes`, `sw-forms.php`, `uninstall.php`; no baseline or ignores.
+  Constants and optional third-party APIs: `tests/phpstan/`.
 - The form is one JSON document. Builder, renderer, validation and data shape all derive from it.
 - Conditional logic exists twice (PHP `src/Core/Logic`, TypeScript `apps/admin/shared/logic.ts`);
   both must pass `tests/fixtures/logic/*.json`. Change both together and extend the fixtures.

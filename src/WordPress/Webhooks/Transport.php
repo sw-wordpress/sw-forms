@@ -39,7 +39,7 @@ final class Transport {
 			$request['sslverify']           = true;
 			$request['cookies']             = array();
 			$response                       = wp_safe_remote_request( $url, $request );
-			$code                           = is_wp_error( $response ) ? 0 : wp_remote_retrieve_response_code( $response );
+			$code                           = is_wp_error( $response ) ? 0 : (int) wp_remote_retrieve_response_code( $response ); // '' (no status, e.g. filtered response) becomes 0.
 			// Do not log HTTP error strings: transport implementations can include credentials.
 			$message = is_wp_error( $response ) ? 'Transport error: ' . $response->get_error_code() : wp_strip_all_tags( wp_remote_retrieve_body( $response ) );
 			foreach ( $request['headers'] ?? array() as $value ) {
