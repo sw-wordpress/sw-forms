@@ -5,7 +5,7 @@
   "type": "module",
   "description": "SW Forms admin (Vue 3 + Quasar, no Quasar CLI) and frontend runtime",
   "engines": {
-    "node": ">=20.19"
+    "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
   },
   "scripts": {
     "dev": "vite",

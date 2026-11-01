@@ -118,7 +118,7 @@ notified; edits/comments only when findings change) and closes it once clean.
 `.github/dependabot.yml` opens weekly grouped PRs: security fixes, peer-coupled packages
 (vitest, vite toolchain), dev tools, runtime minor/patch; runtime majors arrive individually.
 Dependabot PRs get no repository secrets, so SonarQube analyses them only after merging.
-The frontend toolchain needs Node >= 20.19 (CI and releases use 22).
+The frontend toolchain needs Node `^22.22.2 || ^24.15.0 || >=26` (jsdom 30; vue-i18n/Quasar need >= 22); `apps/admin/.nvmrc` pins 22 like CI.
 Dependabot alerts and security updates must be enabled in the repository settings.
 The artifacts imported by its separate job are `coverage/clover.xml`, `coverage/junit.xml`,
 `apps/admin/coverage/lcov.info` and `apps/admin/coverage/test-execution.xml`. Coverage-merger
