@@ -13,11 +13,20 @@ if ( ! function_exists( 'swf_render_form' ) ) {
 	 *
 	 * @since 0.1.0
 	 *
-	 * @param int  $form_id Form id.
-	 * @param bool $title   Show the form title.
+	 * @since 0.6.0 `$variant` overrides the stored design variant.
+	 *
+	 * @param int    $form_id Form id.
+	 * @param bool   $title   Show the form title.
+	 * @param string $variant Design variant slug (docs/schema.md), empty for the stored design.
 	 */
-	function swf_render_form( int $form_id, bool $title = false ): string {
-		return \SWForms\WordPress\Frontend\FormView::render( $form_id, array( 'title' => $title ) );
+	function swf_render_form( int $form_id, bool $title = false, string $variant = '' ): string {
+		return \SWForms\WordPress\Frontend\FormView::render(
+			$form_id,
+			array(
+				'title'   => $title,
+				'variant' => $variant,
+			)
+		);
 	}
 }
 

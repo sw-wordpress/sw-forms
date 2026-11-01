@@ -55,6 +55,17 @@ export interface FormSettings {
   notifications: Notification[];
   webhooks?: Webhook[];
   steps?: StepsSettings;
+  design?: DesignSettings;
+}
+
+export type DesignVariant = 'classic' | 'floating' | 'minimal' | 'dark-focus' | 'guided-card' | 'animated-float' | 'surprise-motion';
+export type DesignToken = 'accent' | 'text' | 'background' | 'surface' | 'border';
+
+/** Presentation only (docs/schema.md); the server normalises it. */
+export interface DesignSettings {
+  variant: DesignVariant;
+  scheme: 'light' | 'dark' | 'auto';
+  tokens: Partial<Record<DesignToken, string>> & { radius?: number };
 }
 
 /** Multi-step mode; page breaks only split the form while enabled. */

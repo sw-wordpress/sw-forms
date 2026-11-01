@@ -41,6 +41,7 @@ export const stubs = {
   QBtnToggle: control('QBtnToggle'),
   QIcon: true,
   MergeTagMenu: true,
+  DesignSettings: true,
   OptionsEditor: control('OptionsEditor'),
   ConfirmDialog: {
     props: ['modelValue', 'title'],

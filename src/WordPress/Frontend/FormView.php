@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace SWForms\WordPress\Frontend;
 
+use SWForms\Core\Design\Design;
 use SWForms\Core\Form\Tree;
 use SWForms\Core\Logic\Evaluator;
 use SWForms\WordPress\Fields\FieldRegistry;
@@ -22,7 +23,8 @@ use SWForms\WordPress\Support\Wpml;
 final class FormView {
 
 	/**
-	 * @param array{preview?: bool, title?: bool} $options
+	 * @param array{preview?: bool, title?: bool, variant?: string} $options `variant` overrides the
+	 *                                                                     stored design variant (0.6.0).
 	 */
 	public static function render( int $form_id, array $options = array() ): string {
 		$forms   = new FormRepository();
@@ -43,25 +45,77 @@ final class FormView {
 		if ( null !== $result && SubmissionResult::SUCCESS === $result->status ) {
 			return '<div class="swf swf-confirmation" role="status" tabindex="-1">' . $result->message . '</div>';
 		}
+		$options['heading'] = (string) $form['title'];
+		return self::markup( $form_id, Wpml::translate( $document, $form_id ), $options, $result );
+	}
 
+	/**
+	 * Non-persistent demonstration of a document (design gallery): the runtime validates
+	 * required fields locally and never sends data; the markup has no postback target.
+	 *
+	 * @internal
+	 * @param array<string, mixed> $document
+	 */
+	public static function render_demo( int $demo_id, array $document, string $heading ): string {
+		return self::markup(
+			$demo_id,
+			$document,
+			array(
+				'demo'    => true,
+				'title'   => true,
+				'heading' => $heading,
+			),
+			null
+		);
+	}
+
+	/**
+	 * Effective design: stored settings, then the embed `variant`, then `swf_form_design`.
+	 *
+	 * @param array<string, mixed> $settings
+	 * @return array{variant: string, scheme: string, tokens: array<string, string|int>}
+	 */
+	public static function design( int $form_id, array $settings, string $variant = '' ): array {
+		$design = Design::normalize( $settings['design'] ?? null );
+		if ( null !== Design::variant( $variant ) ) {
+			$design['variant'] = $variant;
+		}
+		/**
+		 * Filters the design (variant, colour scheme, token overrides) of a rendered form.
+		 *
+		 * @since 0.6.0
+		 *
+		 * @param array{variant: string, scheme: string, tokens: array<string, string|int>} $design
+		 * @param int                                                                         $form_id
+		 */
+		return Design::normalize( apply_filters( 'swf_form_design', $design, $form_id ) );
+	}
+
+	/**
+	 * @param array<string, mixed>                                                                 $document
+	 * @param array{preview?: bool, title?: bool, variant?: string, demo?: bool, heading?: string} $options
+	 */
+	private static function markup( int $form_id, array $document, array $options, ?SubmissionResult $result ): string {
+		$preview = ! empty( $options['preview'] );
+		$demo    = ! empty( $options['demo'] );
 		Assets::enqueue();
-		$document   = Wpml::translate( $document, $form_id );
 		$registry   = FieldRegistry::instance();
 		$fields     = is_array( $document['fields'] ?? null ) ? $document['fields'] : array();
 		$settings   = is_array( $document['settings'] ?? null ) ? $document['settings'] : array();
+		$design     = self::design( $form_id, $settings, (string) ( $options['variant'] ?? '' ) );
 		$tree       = Tree::build( $fields, $registry );
 		$renderer   = new Renderer( $registry, $tree );
 		$values     = null !== $result && array() !== $result->values ? $result->values : $renderer->defaults();
 		$errors     = null !== $result ? $result->errors : array();
 		$visibility = ( new Evaluator( $tree ) )->evaluate( $values );
 		$values     = \SWForms\WordPress\Forms\Calculations::apply( $tree, $values, $visibility );
-		$context    = new RenderContext( $renderer, $form_id, $values, $errors, $visibility );
+		$context    = new RenderContext( $renderer, $form_id, $values, $errors, $visibility, '', 'swf', '', '', Design::floatingLabels( $design['variant'] ) );
 
 		$config = array(
 			'formId'  => $form_id,
-			'rest'    => esc_url_raw( rest_url( 'swforms/v1/forms/' . $form_id . '/submit' ) ),
+			'rest'    => $demo ? '' : esc_url_raw( rest_url( 'swforms/v1/forms/' . $form_id . '/submit' ) ),
 			'ajax'    => esc_url_raw( admin_url( 'admin-ajax.php' ) ),
-			'preview' => $preview,
+			'preview' => $preview || $demo,
 			'nonce'   => $preview ? wp_create_nonce( 'wp_rest' ) : '',
 			'fields'  => $renderer->public_tree( $fields ),
 			'i18n'    => array(
@@ -71,15 +125,24 @@ final class FormView {
 				'summary'      => __( 'Please correct the following fields:', 'sw-forms' ),
 			),
 		);
-
-		$classes = trim( 'swf swf-form-wrap ' . (string) ( $settings['cssClass'] ?? '' ) );
-		$html    = '<div class="' . esc_attr( $classes ) . '" id="swf-' . $form_id . '">';
-		if ( ! empty( $options['title'] ) ) {
-			$html .= '<h2 class="swf-title">' . esc_html( $form['title'] ) . '</h2>';
+		if ( $demo ) {
+			$config['demo']                 = true;
+			$config['i18n']['required']     = __( 'This field is required.', 'sw-forms' );
+			$config['i18n']['demoComplete'] = __( 'Demo only: the values are valid and were not sent.', 'sw-forms' );
 		}
-		$armour_class = ! $preview && \SWForms\WordPress\Spam\WpArmour::available() ? ' wpa_form' : '';
 
-		$html  .= '<form class="swf-form' . $armour_class . '" method="post" action="' . esc_url( add_query_arg( 'swf_form', $form_id ) ) . '" enctype="multipart/form-data" novalidate data-swf-form="' . $form_id . '">';
+		$classes = trim( 'swf swf-form-wrap ' . implode( ' ', Design::classes( $design ) ) . ' ' . (string) ( $settings['cssClass'] ?? '' ) );
+		$style   = Design::style( $design );
+		$html    = '<div class="' . esc_attr( $classes ) . '" id="swf-' . $form_id . '" data-swf-variant="' . esc_attr( $design['variant'] ) . '"' . ( '' !== $style ? ' style="' . esc_attr( $style ) . '"' : '' ) . '>';
+		if ( ! empty( $options['title'] ) ) {
+			$level = $demo ? 'h3' : 'h2';
+			$html .= '<' . $level . ' class="swf-title">' . esc_html( (string) ( $options['heading'] ?? '' ) ) . '</' . $level . '>';
+		}
+		$armour_class = ! $preview && ! $demo && \SWForms\WordPress\Spam\WpArmour::available() ? ' wpa_form' : '';
+		// Demo forms have no postback target: without JavaScript they only reload the page.
+		$action = $demo ? '' : ' action="' . esc_url( add_query_arg( 'swf_form', $form_id ) ) . '"';
+
+		$html  .= '<form class="swf-form' . $armour_class . '" method="post"' . $action . ' enctype="multipart/form-data" novalidate data-swf-form="' . $form_id . '">';
 		$html  .= self::summary( $form_id, $result );
 		$groups = \SWForms\WordPress\Forms\Steps::groups( $tree, $settings );
 		$html  .= '<div class="swf-fields">';
@@ -93,16 +156,18 @@ final class FormView {
 			$html .= $renderer->render_ids( $tree->rootIds(), $context );
 		}
 		$html .= '</div>';
-		$html .= '<input type="hidden" name="swf_form_id" value="' . $form_id . '">';
-		$html .= '<input type="hidden" name="swf_token" value="' . esc_attr( ( new SpamGuard() )->issue_token( $form_id ) ) . '">';
-		if ( ! empty( $settings['spam']['honeypot'] ) ) {
+		if ( ! $demo ) {
+			$html .= '<input type="hidden" name="swf_form_id" value="' . $form_id . '">';
+			$html .= '<input type="hidden" name="swf_token" value="' . esc_attr( ( new SpamGuard() )->issue_token( $form_id ) ) . '">';
+		}
+		if ( ! $demo && ! empty( $settings['spam']['honeypot'] ) ) {
 			// Visually hidden, skipped by keyboard and assistive technology; bots tend to fill it in.
 			$html .= '<div class="swf-hp" aria-hidden="true"><label for="swf-' . $form_id . '-hp">' . esc_html__( 'Leave this field empty', 'sw-forms' ) . '</label>'
 				. '<input type="text" id="swf-' . $form_id . '-hp" name="' . esc_attr( SpamGuard::HONEYPOT_FIELD ) . '" value="" tabindex="-1" autocomplete="off"></div>';
 		}
 		$html         .= '<div class="swf-actions"><button type="submit" class="swf-button swf-submit">' . esc_html( (string) ( $settings['submitLabel'] ?? __( 'Submit', 'sw-forms' ) ) ) . '</button></div>';
 		$provider_name = (string) ( $settings['spam']['provider'] ?? '' );
-		if ( ! $preview && '' !== $provider_name ) {
+		if ( ! $preview && ! $demo && '' !== $provider_name ) {
 			$provider          = \SWForms\WordPress\Spam\ProviderRegistry::instance()->get( $provider_name );
 			$config['captcha'] = $provider?->public_config() ?? array( 'provider' => $provider_name );
 			$html             .= '<div class="swf-captcha" role="group" aria-label="' . esc_attr__( 'Spam protection', 'sw-forms' ) . '"></div><input type="hidden" name="swf_captcha" value=""><noscript>' . esc_html__( 'JavaScript is required to complete the CAPTCHA.', 'sw-forms' ) . '</noscript>';

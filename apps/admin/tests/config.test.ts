@@ -10,6 +10,7 @@ const baseConfig: SwfConfig = {
   adminUrl: '',
   capabilities: [],
   siteUrl: '',
+  galleryUrl: '',
 };
 
 describe('config', () => {
@@ -31,6 +32,7 @@ describe('config', () => {
       adminUrl: '',
       capabilities: [],
       siteUrl: '',
+      galleryUrl: '',
     });
     const full = normaliseConfig({
       restRoot: 'http://x/?rest_route=/swforms/v1/',

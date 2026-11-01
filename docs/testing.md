@@ -170,6 +170,23 @@ The new PHP media fields and frontend media modules have 95% coverage guards (co
 audio/video PHP types require 100%). These do not waive SonarQube's separate quality gate.
 
 
+## Design variants (0.6.0)
+
+`tests/Unit/DesignTest.php` (normalisation, colour/contrast, safe inline tokens) and
+`tests/WordPress/DesignTest.php` (classic markup unchanged, floatable/filled markup, embed
+`variant`, `swf_form_design`, demo forms without postback/REST, gallery access). Vitest:
+`field-state`, `frontend-designs` (filled/valid state, demo mode without network),
+`design-css` (stylesheet contract: transform-only 180–240 ms label motion, easing,
+reduced motion, schemes) and `design-settings` (builder card, contrast warnings).
+
+Layout, motion and overlap need a real engine: `node apps/admin/scripts/e2e/designs.mjs`
+checks label geometry (border position, no text overlap, no layout shift, intermediate frame),
+blur with/without content, programmatic/prefilled/select values, keyboard and ARIA errors,
+surprise-motion effects and ticks, reduced motion, 390 px layout, dark schemes and that a
+published animated-float form stores unchanged data. It creates/deletes its own form/page.
+Measured: PHP 89.00% (6091/6844; the local loopback upload suite fails independently),
+frontend 92.40% (2881/3118); `Core\Design` 100%.
+
 ## Milestone 3
 
 `tests/WordPress/MilestoneThreeTest.php` covers filtered CSV and permissions, original-version

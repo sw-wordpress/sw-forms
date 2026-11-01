@@ -48,6 +48,7 @@ final class Plugin {
 		( new Assets() )->register();
 		( new Postback() )->register();
 		( new Preview() )->register();
+		( new \SWForms\WordPress\Frontend\DesignGallery() )->register();
 		( new TokenEndpoint() )->register();
 		( new Maintenance() )->register();
 		( new \SWForms\WordPress\Support\Privacy() )->register();

@@ -1,6 +1,6 @@
 <?php
 /**
- * `[sw_form id="3" title="yes"]`
+ * `[sw_form id="3" title="yes" variant="animated-float"]`
  *
  * @package SWForms
  */
@@ -23,8 +23,9 @@ final class Shortcode {
 	public function render( $atts ): string {
 		$atts = shortcode_atts(
 			array(
-				'id'    => '0',
-				'title' => 'no',
+				'id'      => '0',
+				'title'   => 'no',
+				'variant' => '',
 			),
 			is_array( $atts ) ? $atts : array(),
 			self::TAG
@@ -33,6 +34,12 @@ final class Shortcode {
 		if ( 0 === $id ) {
 			return '';
 		}
-		return FormView::render( $id, array( 'title' => in_array( strtolower( (string) $atts['title'] ), array( 'yes', 'true', '1' ), true ) ) );
+		return FormView::render(
+			$id,
+			array(
+				'title'   => in_array( strtolower( (string) $atts['title'] ), array( 'yes', 'true', '1' ), true ),
+				'variant' => sanitize_key( (string) $atts['variant'] ),
+			)
+		);
 	}
 }

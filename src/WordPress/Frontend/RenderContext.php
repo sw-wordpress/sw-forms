@@ -35,7 +35,17 @@ final class RenderContext {
 		private readonly string $name_prefix = 'swf',
 		private readonly string $id_prefix = '',
 		private readonly string $row_index = '',
+		private readonly bool $floating_labels = false,
 	) {}
+
+	/**
+	 * Whether the form design places labels inside single controls (floating labels).
+	 *
+	 * @since 0.6.0
+	 */
+	public function floating_labels(): bool {
+		return $this->floating_labels;
+	}
 
 	/** Request name, e.g. `swf[abc]` or `swf[rep][0][abc][]`. */
 	public function name( string $id, string $suffix = '' ): string {
@@ -100,7 +110,8 @@ final class RenderContext {
 			$this->path_prefix . $repeater_id . '[' . $index . '].',
 			$this->name_prefix . '[' . $repeater_id . '][' . $index . ']',
 			$this->dom_id( $repeater_id ) . '-' . $index,
-			$index
+			$index,
+			$this->floating_labels
 		);
 	}
 }

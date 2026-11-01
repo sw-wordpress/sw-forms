@@ -1,0 +1,503 @@
+/*
+ * Design variants (settings.design, docs/schema.md). Every variant only re-styles the markup of
+ * form.css through custom properties and state classes; fields, names and validation are shared.
+ *
+ * State hooks: `.swf-field--floatable` (single control, label may float), `--filled` (value),
+ * `--valid` (validated without error), `--error`; plus `:focus-within`, `:placeholder-shown`
+ * and `:autofill`. Motion uses transform/opacity only and is removed for reduced motion
+ * (form.css). Colours use light-dark(); the scheme classes choose the colour scheme.
+ */
+
+/* ---------- colour schemes ---------- */
+.swf.swf-scheme--light:not(.swf--classic, .swf--dark-focus) {
+  color-scheme: light;
+}
+.swf.swf-scheme--dark {
+  color-scheme: dark;
+}
+.swf.swf-scheme--auto {
+  color-scheme: light dark;
+}
+.swf:is(.swf-scheme--dark, .swf-scheme--auto),
+.swf.swf--dark-focus {
+  --swf-text: light-dark(#1f2430, #e8eaf0);
+  --swf-muted: light-dark(#5b6472, #a7adbb);
+  --swf-border: light-dark(#c7cdd6, #444b5c);
+  --swf-bg: light-dark(#ffffff, #1b1e28);
+  --swf-surface: light-dark(transparent, #12141b);
+  --swf-accent: light-dark(#2563eb, #8fb0ff);
+  --swf-accent-contrast: light-dark(#ffffff, #0b1020);
+  --swf-error: light-dark(#b42318, #ffa197);
+  --swf-error-bg: light-dark(#fef3f2, #3b1916);
+  --swf-success: light-dark(#067647, #73e2a7);
+  --swf-success-bg: light-dark(#ecfdf3, #0f2e20);
+}
+/* A form with its own surface needs breathing room inside it. */
+.swf:is(.swf-scheme--dark, .swf-scheme--auto, .swf--has-surface, .swf--dark-focus, .swf--guided-card) {
+  box-sizing: border-box;
+  padding: 1.5rem;
+  border-radius: calc(var(--swf-radius) * 1.6);
+}
+.swf:not(.swf--classic) .swf-title {
+  margin: 0 0 1rem;
+  color: var(--swf-text);
+}
+/* Themes style input[type=...] with higher specificity than .swf-input; variants own their colours. */
+.swf:is(:not(.swf--classic), .swf-scheme--dark, .swf-scheme--auto) :is(.swf-input, .swf-textarea, .swf-select) {
+  color: var(--swf-text);
+  background-color: var(--swf-bg);
+}
+@container (max-width: 479px) {
+  .swf:not(.swf--classic) .swf-actions .swf-button {
+    flex: 1 1 auto;
+  }
+}
+
+/* ---------- shared: floating labels (floating, animated-float) ---------- */
+.swf:is(.swf--floating, .swf--animated-float) .swf-field--floatable {
+  --swf-f: 0;
+  position: relative;
+}
+/* Floated: focus, a value (class from server/runtime), a typed value or a native date/time display. */
+.swf:is(.swf--floating, .swf--animated-float) .swf-field--floatable:is(
+    :focus-within,
+    .swf-field--filled,
+    :has(> :is(.swf-input, .swf-textarea):not(:placeholder-shown)),
+    :has(> input:is([type='date'], [type='time'], [type='datetime-local']))
+  ) {
+  --swf-f: 1;
+}
+/* Separate rules: an unsupported pseudo-class must not invalidate the rule above. */
+.swf:is(.swf--floating, .swf--animated-float) .swf-field--floatable:has(> :autofill) {
+  --swf-f: 1;
+}
+.swf:is(.swf--floating, .swf--animated-float) .swf-field--floatable:has(> :-webkit-autofill) {
+  --swf-f: 1;
+}
+.swf:is(.swf--floating, .swf--animated-float) .swf-field--floatable > .swf-label {
+  position: absolute;
+  z-index: 1;
+  top: var(--swf-label-top);
+  left: var(--swf-label-left);
+  max-width: calc(100% - 2 * var(--swf-label-left));
+  overflow: hidden;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5rem;
+  color: var(--swf-muted);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  pointer-events: none;
+  transform-origin: left center;
+  /* 16px label at rest, 12px when floated; only transform changes, never layout. */
+  transform: translateY(calc(var(--swf-f) * var(--swf-label-shift))) scale(calc(1 - var(--swf-f) * 0.25));
+  transition:
+    transform var(--swf-duration) var(--swf-ease),
+    color var(--swf-duration) var(--swf-ease);
+}
+.swf:is(.swf--floating, .swf--animated-float) .swf-field--floatable:focus-within > .swf-label {
+  color: var(--swf-accent);
+}
+.swf:is(.swf--floating, .swf--animated-float) .swf-field--error.swf-field--floatable > .swf-label {
+  color: var(--swf-error);
+}
+.swf:is(.swf--floating, .swf--animated-float) .swf-field--floatable > :is(.swf-input, .swf-select) {
+  height: var(--swf-control-h);
+}
+/* Author placeholders appear only once the label made room. */
+.swf:is(.swf--floating, .swf--animated-float) .swf-field--floatable > :is(.swf-input, .swf-textarea)::placeholder {
+  opacity: 0;
+  transition: opacity var(--swf-duration) var(--swf-ease);
+}
+.swf:is(.swf--floating, .swf--animated-float) .swf-field--floatable:focus-within > :is(.swf-input, .swf-textarea)::placeholder {
+  opacity: 1;
+}
+/* The empty option of an untouched select would collide with the resting label. */
+.swf:is(.swf--floating, .swf--animated-float) .swf-field--floatable:not(:focus-within, .swf-field--filled) > .swf-select {
+  color: transparent;
+}
+.swf:is(.swf--floating, .swf--animated-float) .swf-field--floatable > .swf-select option {
+  color: var(--swf-text);
+}
+
+/* ---------- 01 floating labels ---------- */
+.swf.swf--floating {
+  --swf-accent: light-dark(#2563eb, #8fb0ff);
+  --swf-bg: light-dark(#ffffff, #1b1e28);
+  --swf-border: light-dark(#d0d5dd, #444b5c);
+  --swf-radius: 10px;
+  --swf-gap: 1rem;
+  --swf-control-h: 3.5rem;
+  --swf-label-top: 1rem;
+  --swf-label-left: 0.875rem;
+  --swf-label-shift: -0.875rem;
+}
+.swf--floating :is(.swf-input, .swf-textarea, .swf-select) {
+  border-color: var(--swf-border);
+  box-shadow: 0 1px 2px rgb(16 24 40 / 0.05);
+  transition:
+    border-color var(--swf-duration) var(--swf-ease),
+    box-shadow var(--swf-duration) var(--swf-ease);
+}
+.swf--floating :is(.swf-input, .swf-textarea, .swf-select):focus {
+  box-shadow:
+    0 1px 2px rgb(16 24 40 / 0.05),
+    0 0 0 4px color-mix(in srgb, var(--swf-accent) 18%, transparent);
+}
+.swf--floating .swf-field--floatable > :is(.swf-input, .swf-select) {
+  padding: 1.5rem 0.875rem 0.375rem;
+}
+.swf--floating .swf-field--floatable > .swf-textarea {
+  padding: 1.75rem 0.875rem 0.5rem;
+}
+
+/* ---------- 02 minimal lines ---------- */
+.swf.swf--minimal {
+  --swf-accent: light-dark(#4f46e5, #a5b4fc);
+  --swf-button-bg: light-dark(#111827, #f3f4f6);
+  --swf-accent-contrast: light-dark(#ffffff, #111827);
+  --swf-border: light-dark(#c4c9d2, #4b5263);
+  --swf-gap: 1.75rem;
+  --swf-radius: 2px;
+}
+.swf--minimal .swf-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--swf-muted);
+  letter-spacing: 0.01em;
+}
+.swf--minimal .swf-field:focus-within > .swf-label {
+  color: var(--swf-text);
+}
+.swf--minimal :is(.swf-input, .swf-textarea, .swf-select) {
+  padding: 0.5rem 0;
+  background-color: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--swf-border);
+  border-radius: 0;
+  transition:
+    border-color var(--swf-duration) ease,
+    box-shadow var(--swf-duration) ease;
+}
+.swf--minimal :is(.swf-input, .swf-textarea, .swf-select):focus {
+  border-bottom-color: var(--swf-accent);
+  box-shadow: 0 1px 0 0 var(--swf-accent);
+}
+.swf--minimal .swf-field--error :is(.swf-input, .swf-textarea, .swf-select) {
+  border-bottom-color: var(--swf-error);
+}
+.swf--minimal .swf-button {
+  padding: 0.75em 1.75em;
+  font-weight: 500;
+}
+
+/* ---------- 03 dark focus (always dark) ---------- */
+.swf.swf--dark-focus {
+  color-scheme: dark;
+  --swf-surface: #0f1117;
+  --swf-bg: #1a1d29;
+  --swf-text: #eceef4;
+  --swf-muted: #a9afbf;
+  --swf-border: #3b4154;
+  --swf-accent: #a78bfa;
+  --swf-button-bg: #7c3aed;
+  --swf-accent-contrast: #ffffff;
+  --swf-radius: 10px;
+  --swf-error: #ffa197;
+  --swf-error-bg: #3b1916;
+  --swf-success: #73e2a7;
+  --swf-success-bg: #0f2e20;
+}
+.swf--dark-focus .swf-label {
+  font-weight: 500;
+}
+.swf--dark-focus :is(.swf-input, .swf-textarea, .swf-select) {
+  padding: 0.75em 0.875em;
+  transition:
+    border-color var(--swf-duration) var(--swf-ease),
+    box-shadow var(--swf-duration) var(--swf-ease);
+}
+.swf--dark-focus :is(.swf-input, .swf-textarea, .swf-select):hover {
+  border-color: #545b70;
+}
+.swf--dark-focus :is(.swf-input, .swf-textarea, .swf-select):focus {
+  border-color: var(--swf-accent);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--swf-accent) 35%, transparent),
+    0 0 24px -4px color-mix(in srgb, var(--swf-accent) 45%, transparent);
+}
+.swf--dark-focus .swf-button:focus-visible {
+  outline: 2px solid var(--swf-accent);
+  outline-offset: 3px;
+}
+
+/* ---------- 04 guided card ---------- */
+.swf.swf--guided-card {
+  --swf-accent: light-dark(#0f766e, #5eead4);
+  --swf-accent-contrast: light-dark(#ffffff, #042f2e);
+  --swf-surface: light-dark(#eef4f8, #0f141a);
+  --swf-bg: light-dark(#f8fafc, #121820);
+  --swf-border: light-dark(#cbd5e1, #3a4555);
+  --swf-radius: 10px;
+  --swf-card: light-dark(#ffffff, #171d26);
+}
+.swf--guided-card .swf-form {
+  padding: clamp(1.25rem, 5cqi, 2.25rem);
+  background: var(--swf-card);
+  border: 1px solid light-dark(#e3e8ef, #2a313c);
+  border-radius: 16px;
+  box-shadow:
+    0 1px 2px rgb(16 24 40 / 0.04),
+    0 12px 32px -16px rgb(16 24 40 / 0.18);
+}
+.swf--guided-card :is(.swf-input, .swf-textarea, .swf-select) {
+  padding: 0.7em 0.875em;
+  transition:
+    border-color var(--swf-duration) var(--swf-ease),
+    box-shadow var(--swf-duration) var(--swf-ease),
+    background-color var(--swf-duration) var(--swf-ease);
+}
+.swf--guided-card :is(.swf-input, .swf-textarea, .swf-select):focus {
+  background-color: var(--swf-card);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--swf-accent) 20%, transparent);
+}
+.swf--guided-card .swf-step > h3,
+.swf--guided-card .swf-field--group > .swf-label {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 650;
+}
+.swf--guided-card .swf-step > h3 {
+  outline-offset: 4px;
+}
+/* Sections: the one being edited is highlighted. */
+.swf--guided-card .swf-field--group {
+  background: color-mix(in srgb, var(--swf-bg) 60%, transparent);
+  border: 1px solid transparent;
+  border-radius: 12px;
+  transition:
+    border-color var(--swf-duration) var(--swf-ease),
+    background-color var(--swf-duration) var(--swf-ease);
+}
+.swf--guided-card .swf-field--group:focus-within {
+  background: color-mix(in srgb, var(--swf-accent) 6%, var(--swf-card));
+  border-color: color-mix(in srgb, var(--swf-accent) 45%, transparent);
+}
+/* Progress bar: one segment per step, filled for done and current steps. */
+.swf--guided-card .swf-steps {
+  gap: 0.375rem;
+  margin-bottom: 0.5rem;
+}
+.swf--guided-card .swf-steps__item + .swf-steps__item::before {
+  display: none;
+}
+.swf--guided-card .swf-steps__button {
+  align-items: stretch;
+}
+.swf--guided-card .swf-steps__marker {
+  width: 100%;
+  height: 0.375rem;
+  font-size: 0;
+  background: var(--swf-border);
+  border: 0;
+  border-radius: 999px;
+}
+.swf--guided-card .swf-steps__item:is(.is-done, .is-current) .swf-steps__marker {
+  background: var(--swf-accent);
+  box-shadow: none;
+}
+.swf--guided-card .swf-steps__label {
+  text-align: start;
+}
+.swf--guided-card .swf-step-nav,
+.swf--guided-card .swf-actions {
+  justify-content: space-between;
+  padding-top: 1rem;
+  border-top: 1px solid light-dark(#e3e8ef, #2a313c);
+}
+.swf--guided-card .swf-step-next,
+.swf--guided-card .swf-actions .swf-submit {
+  margin-left: auto;
+}
+.swf--guided-card .swf-step-back {
+  color: var(--swf-text);
+  background: transparent;
+  border: 1px solid var(--swf-border);
+}
+.swf--guided-card .swf-step-back::before {
+  content: '←';
+  content: '←' / '';
+  margin-right: 0.4em;
+}
+.swf--guided-card :is(.swf-step-next, .swf-submit)::after {
+  content: '→';
+  content: '→' / '';
+  margin-left: 0.4em;
+}
+
+/* ---------- 05 animated float (outlined; the label settles into the border) ---------- */
+.swf.swf--animated-float {
+  --swf-accent: light-dark(#2563eb, #8fb0ff);
+  --swf-border: light-dark(#b9c0cb, #4b5263);
+  --swf-radius: 8px;
+  --swf-control-h: 3.25rem;
+  --swf-label-top: 0.875rem;
+  --swf-label-left: 0.625rem;
+  /* Moves the label's centre line onto the top border: label-top + half line height. */
+  --swf-label-shift: -1.625rem;
+}
+.swf--animated-float .swf-fields {
+  padding-top: 0.5rem;
+}
+.swf--animated-float :is(.swf-input, .swf-textarea, .swf-select) {
+  transition:
+    border-color var(--swf-duration) var(--swf-ease),
+    box-shadow var(--swf-duration) var(--swf-ease);
+}
+.swf--animated-float :is(.swf-input, .swf-textarea, .swf-select):focus {
+  border-color: var(--swf-accent);
+  box-shadow: inset 0 0 0 1px var(--swf-accent);
+}
+.swf--animated-float .swf-field--floatable > :is(.swf-input, .swf-select) {
+  padding: 0 0.875rem;
+}
+.swf--animated-float .swf-field--floatable > .swf-textarea {
+  padding: 0.875rem;
+}
+.swf--animated-float .swf-field--floatable > .swf-label {
+  padding: 0 0.25rem;
+  border-radius: 4px;
+  /* Lower half in the field colour hides the border behind the text; the upper half stays transparent. */
+  background: linear-gradient(to bottom, transparent calc(50% - 2px), var(--swf-bg) calc(50% - 2px));
+}
+.swf--animated-float .swf-field--error > :is(.swf-input, .swf-textarea, .swf-select) {
+  box-shadow: inset 0 0 0 1px var(--swf-error);
+}
+
+/* ---------- 06 surprise motion ---------- */
+.swf.swf--surprise-motion {
+  --swf-accent: light-dark(#4f46e5, #a5b4fc);
+  --swf-accent-contrast: light-dark(#ffffff, #1e1b4b);
+  --swf-bg: light-dark(#f7f8fb, #191c26);
+  --swf-border: light-dark(#b8bfcc, #4b5263);
+  --swf-radius: 8px;
+  --swf-duration: 240ms;
+}
+.swf--surprise-motion .swf-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+/* Neutral underline plus an accent line (background layer) that grows from the left. */
+.swf--surprise-motion :is(.swf-input, .swf-textarea, .swf-select) {
+  padding: 0.7em 0.75em;
+  background-color: var(--swf-bg);
+  background-image: linear-gradient(var(--swf-accent), var(--swf-accent));
+  background-position: left bottom;
+  background-repeat: no-repeat;
+  background-size: 0% 2px;
+  border: 0;
+  border-bottom: 1px solid var(--swf-border);
+  border-radius: var(--swf-radius) var(--swf-radius) 0 0;
+  transition:
+    background-size var(--swf-duration) var(--swf-ease),
+    box-shadow var(--swf-duration) var(--swf-ease);
+}
+.swf--surprise-motion .swf-select:not([multiple]) {
+  padding-right: 2rem;
+  appearance: none;
+  background-image:
+    linear-gradient(var(--swf-accent), var(--swf-accent)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%237b8494' stroke-width='1.6'/%3E%3C/svg%3E");
+  background-position:
+    left bottom,
+    right 0.75rem center;
+  background-size:
+    0% 2px,
+    0.75rem;
+}
+.swf--surprise-motion :is(.swf-input, .swf-textarea, .swf-select):focus {
+  background-size: 100% 2px;
+  box-shadow: 0 12px 22px -18px var(--swf-accent);
+}
+.swf--surprise-motion .swf-select:not([multiple]):focus {
+  background-size:
+    100% 2px,
+    0.75rem;
+}
+.swf--surprise-motion .swf-field--error :is(.swf-input, .swf-textarea, .swf-select) {
+  border-bottom-color: var(--swf-error);
+}
+/* Success tick: only after a real validation (runtime adds .swf-field--valid). */
+.swf--surprise-motion .swf-field > label.swf-label {
+  display: flex;
+  gap: 0.25em;
+  align-items: baseline;
+}
+.swf--surprise-motion .swf-field > label.swf-label::after {
+  content: '✓';
+  content: '✓' / '';
+  margin-left: auto;
+  font-weight: 700;
+  color: var(--swf-success);
+  opacity: 0;
+  transform: scale(0.6);
+  transition:
+    opacity var(--swf-duration) var(--swf-ease),
+    transform var(--swf-duration) var(--swf-ease);
+}
+.swf--surprise-motion .swf-field--valid > label.swf-label::after {
+  opacity: 1;
+  transform: none;
+}
+/* Primary buttons: arrow nudge, one light sweep on hover, press feedback. */
+.swf--surprise-motion :is(.swf-submit, .swf-step-next) {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  gap: 0.5em;
+  align-items: center;
+  overflow: hidden;
+  transition:
+    transform 120ms var(--swf-ease),
+    box-shadow var(--swf-duration) var(--swf-ease);
+}
+.swf--surprise-motion :is(.swf-submit, .swf-step-next)::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(110deg, transparent 30%, rgb(255 255 255 / 0.28) 50%, transparent 70%);
+  transform: translateX(-100%);
+  transition: transform 600ms var(--swf-ease);
+  pointer-events: none;
+}
+.swf--surprise-motion :is(.swf-submit, .swf-step-next)::after {
+  content: '→';
+  content: '→' / '';
+  display: inline-block;
+  transition: transform var(--swf-duration) var(--swf-ease);
+}
+.swf--surprise-motion :is(.swf-submit, .swf-step-next):is(:hover, :focus-visible):not(:disabled) {
+  box-shadow: 0 10px 22px -12px var(--swf-button-bg);
+}
+.swf--surprise-motion :is(.swf-submit, .swf-step-next):is(:hover, :focus-visible):not(:disabled)::before {
+  transform: translateX(100%);
+}
+.swf--surprise-motion :is(.swf-submit, .swf-step-next):is(:hover, :focus-visible):not(:disabled)::after {
+  transform: translateX(4px);
+}
+.swf--surprise-motion :is(.swf-submit, .swf-step-next):active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* Reduced motion: no decorative movement; states still change (colour, line, tick). */
+@media (prefers-reduced-motion: reduce) {
+  .swf--surprise-motion :is(.swf-submit, .swf-step-next)::before {
+    display: none;
+  }
+  .swf--surprise-motion :is(.swf-submit, .swf-step-next),
+  .swf--surprise-motion :is(.swf-submit, .swf-step-next)::after,
+  .swf--surprise-motion .swf-field > label.swf-label::after {
+    transform: none !important;
+  }
+}

@@ -15,3 +15,6 @@ Detailed feature list moved from the former README. Field types and settings: [s
 * Accessible output (labels, fieldsets, `aria-describedby`, error summary with focus), works
   without JavaScript.
 * Embedding: `[sw_form id="3"]` or `<?php echo swf_render_form( 3 ); ?>`.
+* Designs: seven variants (classic, floating labels, minimal lines, dark focus, guided card,
+  animated float, surprise motion), light/dark/system scheme, own colours; interactive gallery
+  ([schema](schema.md#design-060), [extending](extending.md#design-variants-060)).

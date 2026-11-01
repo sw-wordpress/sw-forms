@@ -43,6 +43,7 @@ const config = (locale: string): SwfConfig => ({
   adminUrl: '',
   capabilities: ['swf_manage_forms'],
   siteUrl: '',
+  galleryUrl: '',
 });
 
 function mountNode(): HTMLElement {

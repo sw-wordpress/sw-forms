@@ -87,9 +87,23 @@ Yes/No) and the row path (`people[0].`) for fields inside repeaters.
     { "id": "admin", "name": "", "enabled": true, "to": "{admin_email}", "subject": "", "message": "{all_fields}",
       "replyTo": "{field:email}", "fromName": "", "logic": null }
   ],
-  "steps": { "enabled": false, "firstLabel": "", "indicator": "numbers|dots|text" }
+  "steps": { "enabled": false, "firstLabel": "", "indicator": "numbers|dots|text" },
+  "design": { "variant": "classic", "scheme": "light|dark|auto", "tokens": {} }
 }
 ```
+
+### Design (0.6.0)
+
+Presentation only; fields, names, validation and data never depend on it.
+`variant`: `classic` (default, the original look), `floating`, `minimal`, `dark-focus` (always
+dark), `guided-card`, `animated-float`, `surprise-motion`. Unknown values become `classic`.
+`tokens` optionally override `accent`, `text`, `background` (fields), `surface` (form) and
+`border` (hex colours only) and `radius` (0–32 px). They are emitted as inline CSS custom
+properties; a readable button text colour is derived from `accent`. The builder warns below
+WCAG AA contrast. Normalisation: `Core\Design\Design`.
+
+Per embed the stored variant can be overridden: `[sw_form id="3" variant="animated-float"]`,
+`swf_render_form( 3, false, 'minimal' )`; the `swf_form_design` filter runs last.
 
 ## Webhook configuration (Milestone 2)
 

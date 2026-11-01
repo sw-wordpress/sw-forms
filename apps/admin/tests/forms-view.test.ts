@@ -18,7 +18,7 @@ vi.mock('@/composables/useNotify', () => ({ useNotify: () => notify }));
 const ALL_CAPS = ['swf_manage_forms', 'swf_view_entries', 'swf_manage_entries', 'swf_settings'];
 
 function config(capabilities: string[]): void {
-  setConfigForTests({ restRoot: 'http://x/wp-json/swforms/v1/', wpRestRoot: 'http://x/wp-json/wp/v2/', nonce: 'n', locale: 'en_US', version: '', adminUrl: '', capabilities, siteUrl: '' });
+  setConfigForTests({ restRoot: 'http://x/wp-json/swforms/v1/', wpRestRoot: 'http://x/wp-json/wp/v2/', nonce: 'n', locale: 'en_US', version: '', adminUrl: '', capabilities, siteUrl: '', galleryUrl: '' });
 }
 
 function summary(over: Partial<FormSummary> = {}): FormSummary {

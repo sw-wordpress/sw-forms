@@ -1,4 +1,0 @@
-- Modal für "Vorlagen / Import" ist wirklich hässlich
-- Multistep Forms müssen eine Art "Prozess Darstellung möglich machen". z.B. (1) Daten--->(2) Reiseinformation --->(3) Kontaktdaten. Evtl. als Dots
-- Wäre es bei Multistep Forms nicht besser, das im Editor in Tab Form anzuzeigen? Damit könnte jeder Tab eine Titel erhalten, welches im Flow angezeigt wird
-- Multistep muss in den Einstellunge des Forms aktiviert werden

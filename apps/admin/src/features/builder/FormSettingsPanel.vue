@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { pagesApi } from '@/api';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
+import DesignSettings from './DesignSettings.vue';
 import SwfCard from '@/components/ui/SwfCard.vue';
 import { useClipboard } from '@/composables/useClipboard';
 import { useBuilderStore } from '@/stores/builder';
@@ -76,6 +77,8 @@ const php = computed(() => `<?php echo swf_render_form( ${store.formId} ); ?>`);
         <q-input :model-value="settings.cssClass" outlined dense input-class="swf-mono" :label="t('formSettings.cssClass')" @update:model-value="set((s) => (s.cssClass = String($event ?? '')), 'cssClass')" />
       </div>
     </SwfCard>
+
+    <DesignSettings />
 
     <SwfCard :title="t('steps.settingsTitle')" :subtitle="t('steps.settingsText')" icon="r_linear_scale">
       <div class="swf-stack swf-stack--tight">

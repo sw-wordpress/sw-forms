@@ -21,7 +21,7 @@ function mountView(): VueWrapper {
 }
 
 beforeEach(() => {
-  setConfigForTests({ restRoot: 'http://x/wp-json/swforms/v1/', wpRestRoot: 'http://x/wp-json/wp/v2/', nonce: 'n', locale: 'en_US', version: '', adminUrl: '', capabilities: ['swf_settings'], siteUrl: '' });
+  setConfigForTests({ restRoot: 'http://x/wp-json/swforms/v1/', wpRestRoot: 'http://x/wp-json/wp/v2/', nonce: 'n', locale: 'en_US', version: '', adminUrl: '', capabilities: ['swf_settings'], siteUrl: '', galleryUrl: '' });
   Object.values(notify).forEach((fn) => fn.mockReset());
 });
 afterEach(() => {

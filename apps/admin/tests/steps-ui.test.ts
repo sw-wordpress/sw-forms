@@ -38,6 +38,7 @@ const btnToggle = defineComponent({
 });
 const slot = { template: '<div><slot /></div>' };
 const stubs = {
+  DesignSettings: true,
   QBtn: button, QInput: input, QToggle: toggle, QBtnToggle: btnToggle, QSelect: input, QIcon: true, QTooltip: true, QSpinner: true, QSkeleton: { template: '<div class="skeleton" />' },
   QDialog: { props: ['modelValue'], template: '<div v-if="modelValue" class="dialog"><slot /></div>' }, QCard: slot, QCardSection: slot,
   CanvasList: { props: ['listId', 'elements'], template: '<div class="list" :data-list="listId">{{ elements.map((e) => e.id).join(",") }}</div>' },

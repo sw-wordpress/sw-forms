@@ -80,6 +80,7 @@ final class AdminPage {
 			'adminUrl'     => esc_url_raw( admin_url( 'admin.php?page=' . self::SLUG ) ),
 			'capabilities' => Capabilities::current_user_caps(),
 			'siteUrl'      => esc_url_raw( home_url( '/' ) ),
+			'galleryUrl'   => current_user_can( Capabilities::MANAGE_FORMS ) ? esc_url_raw( \SWForms\WordPress\Frontend\DesignGallery::url() ) : '',
 		);
 	}
 

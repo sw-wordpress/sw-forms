@@ -293,7 +293,7 @@ describe('useCapabilities', () => {
   afterEach(() => setConfigForTests(null));
 
   it('checks capabilities from the config', () => {
-    setConfigForTests({ restRoot: 'http://x/', wpRestRoot: 'http://x/', nonce: '', locale: 'en_US', version: '', adminUrl: '', capabilities: ['swf_view_entries'], siteUrl: '' });
+    setConfigForTests({ restRoot: 'http://x/', wpRestRoot: 'http://x/', nonce: '', locale: 'en_US', version: '', adminUrl: '', capabilities: ['swf_view_entries'], siteUrl: '', galleryUrl: '' });
     const { can } = useCapabilities();
     expect(can('swf_view_entries')).toBe(true);
     expect(can('swf_settings')).toBe(false);

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SW Forms 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-31 21:52+0100\n"
+"POT-Creation-Date: 2026-11-01 12:19+0100\n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -34,7 +34,7 @@ msgstr ""
 "Website prüfen."
 
 #: src/WordPress/Admin/AdminPage.php:30 src/WordPress/Admin/AdminPage.php:31
-#: src/WordPress/Editor/Embeds.php:80
+#: src/WordPress/Editor/Embeds.php:86
 msgid "SW Forms"
 msgstr "SW Forms"
 
@@ -54,12 +54,12 @@ msgstr ""
 msgid "SW Forms requires JavaScript."
 msgstr "SW Forms benötigt JavaScript."
 
-#: src/WordPress/Editor/Embeds.php:27 src/WordPress/Editor/Embeds.php:86
+#: src/WordPress/Editor/Embeds.php:27 src/WordPress/Editor/Embeds.php:92
 #: src/WordPress/Support/Privacy.php:93
 msgid "Form"
 msgstr "Formular"
 
-#: src/WordPress/Editor/Embeds.php:28 src/WordPress/Editor/Embeds.php:74
+#: src/WordPress/Editor/Embeds.php:28 src/WordPress/Editor/Embeds.php:80
 msgid "Select a form"
 msgstr "Formular auswählen"
 
@@ -67,7 +67,7 @@ msgstr "Formular auswählen"
 msgid "Show form title"
 msgstr "Formulartitel anzeigen"
 
-#: src/WordPress/Editor/Embeds.php:82 src/WordPress/Fields/HtmlField.php:32
+#: src/WordPress/Editor/Embeds.php:88 src/WordPress/Fields/HtmlField.php:32
 msgid "Content"
 msgstr "Inhalt"
 
@@ -93,7 +93,7 @@ msgstr ""
 "Beim Bearbeiten eines Eintrags müssen die vorhandenen Wiederholungszeilen "
 "erhalten bleiben."
 
-#: src/WordPress/Fields/AbstractFieldType.php:170
+#: src/WordPress/Fields/AbstractFieldType.php:181
 #: src/WordPress/Fields/CheckboxField.php:246
 msgid "(required)"
 msgstr "(Pflichtfeld)"
@@ -231,43 +231,43 @@ msgstr "Ja"
 msgid "No"
 msgstr "Nein"
 
-#: src/WordPress/Fields/ChoiceField.php:28
+#: src/WordPress/Fields/ChoiceField.php:29
 msgid "Options"
 msgstr "Optionen"
 
-#: src/WordPress/Fields/ChoiceField.php:31
+#: src/WordPress/Fields/ChoiceField.php:32
 msgid "Option 1"
 msgstr "Option 1"
 
-#: src/WordPress/Fields/ChoiceField.php:35
+#: src/WordPress/Fields/ChoiceField.php:36
 msgid "Option 2"
 msgstr "Option 2"
 
-#: src/WordPress/Fields/ChoiceField.php:51
+#: src/WordPress/Fields/ChoiceField.php:53
 msgid "Arrangement"
 msgstr "Anordnung"
 
-#: src/WordPress/Fields/ChoiceField.php:56
+#: src/WordPress/Fields/ChoiceField.php:58
 msgid "One below the other"
 msgstr "Untereinander"
 
-#: src/WordPress/Fields/ChoiceField.php:60
+#: src/WordPress/Fields/ChoiceField.php:62
 msgid "Side by side"
 msgstr "Nebeneinander"
 
-#: src/WordPress/Fields/ChoiceField.php:75
+#: src/WordPress/Fields/ChoiceField.php:77
 msgid "Presentation"
 msgstr "Darstellung"
 
-#: src/WordPress/Fields/ChoiceField.php:80
+#: src/WordPress/Fields/ChoiceField.php:82
 msgid "Standard"
 msgstr "Standard"
 
-#: src/WordPress/Fields/ChoiceField.php:84
+#: src/WordPress/Fields/ChoiceField.php:86
 msgid "Buttons"
 msgstr "Schaltflächen"
 
-#: src/WordPress/Fields/ChoiceField.php:88
+#: src/WordPress/Fields/ChoiceField.php:90
 msgid "Images"
 msgstr "Bilder"
 
@@ -816,6 +816,7 @@ msgid "Name"
 msgstr "Name"
 
 #: src/WordPress/Fields/NameField.php:24
+#: src/WordPress/Frontend/DesignGallery.php:91
 msgid "Salutation"
 msgstr "Anrede"
 
@@ -828,6 +829,7 @@ msgid "Family name"
 msgstr "Nachname"
 
 #: src/WordPress/Fields/NameField.php:27
+#: src/WordPress/Frontend/DesignGallery.php:114
 msgid "Title"
 msgstr "Titel"
 
@@ -1041,7 +1043,9 @@ msgstr "Videoaufnahme"
 
 #: src/WordPress/Forms/FormService.php:70
 msgid "Enable multi-step in the form settings or remove the page break."
-msgstr "Mehrstufig in den Formulareinstellungen aktivieren oder den Seitenumbruch entfernen."
+msgstr ""
+"Mehrstufig in den Formulareinstellungen aktivieren oder den Seitenumbruch "
+"entfernen."
 
 #: src/WordPress/Forms/FormService.php:76
 msgid "Page breaks must separate non-empty steps at the top level."
@@ -1077,29 +1081,30 @@ msgstr "Unbenanntes Formular"
 msgid "%s (copy)"
 msgstr "%s (Kopie)"
 
-#: src/WordPress/Forms/FormSettings.php:39
-#: src/WordPress/Frontend/FormView.php:103
+#: src/WordPress/Forms/FormSettings.php:41
+#: src/WordPress/Frontend/FormView.php:168
 msgid "Submit"
 msgstr "Absenden"
 
-#: src/WordPress/Forms/FormSettings.php:43
+#: src/WordPress/Forms/FormSettings.php:45
 msgid "Thank you! Your message has been sent."
 msgstr "Vielen Dank! Die Nachricht wurde gesendet."
 
-#: src/WordPress/Forms/FormSettings.php:84
+#: src/WordPress/Forms/FormSettings.php:87
 msgid "Admin notification"
 msgstr "Admin-Benachrichtigung"
 
-#: src/WordPress/Forms/FormSettings.php:87
+#: src/WordPress/Forms/FormSettings.php:90
 msgid "New entry: {form:title}"
 msgstr "Neuer Eintrag: {form:title}"
 
-#: src/WordPress/Forms/FormSettings.php:101
+#: src/WordPress/Forms/FormSettings.php:104
 msgid "Notification"
 msgstr "Benachrichtigung"
 
 #. translators: %d: step number.
-#: src/WordPress/Forms/Steps.php:43
+#: src/WordPress/Forms/Steps.php:40
+#, php-format
 msgid "Step %d"
 msgstr "Schritt %d"
 
@@ -1146,7 +1151,9 @@ msgstr "Reiseanfrage"
 #: src/WordPress/Forms/Templates.php:104
 msgid ""
 "Multi-step form: trip, wishes and contact details with a progress display."
-msgstr "Mehrstufiges Formular: Reise, Wünsche und Kontaktdaten mit Fortschrittsanzeige."
+msgstr ""
+"Mehrstufiges Formular: Reise, Wünsche und Kontaktdaten mit "
+"Fortschrittsanzeige."
 
 #: src/WordPress/Forms/Templates.php:112
 msgid "Destination"
@@ -1176,62 +1183,210 @@ msgstr "Kontaktdaten"
 msgid "Trip"
 msgstr "Reise"
 
-#: src/WordPress/Frontend/FormView.php:32
+#: src/WordPress/Frontend/DesignGallery.php:42
+msgid "You are not allowed to view the design gallery."
+msgstr "Du darfst die Design-Galerie nicht ansehen."
+
+#: src/WordPress/Frontend/DesignGallery.php:48
+#: src/WordPress/Frontend/DesignGallery.php:161
+msgid "Form design gallery"
+msgstr "Formular-Design-Galerie"
+
+#: src/WordPress/Frontend/DesignGallery.php:64
+msgid "Classic"
+msgstr "Klassisch"
+
+#: src/WordPress/Frontend/DesignGallery.php:64
+msgid "The original, theme friendly look."
+msgstr "Das ursprüngliche, zum Theme passende Aussehen."
+
+#: src/WordPress/Frontend/DesignGallery.php:65
+msgid "Floating labels"
+msgstr "Floating Labels"
+
+#: src/WordPress/Frontend/DesignGallery.php:65
+msgid "Light SaaS style; labels move to the top inside the field."
+msgstr "Heller SaaS-Stil; Beschriftungen wandern im Feld nach oben."
+
+#: src/WordPress/Frontend/DesignGallery.php:66
+msgid "Minimal lines"
+msgstr "Minimal Lines"
+
+#: src/WordPress/Frontend/DesignGallery.php:66
+msgid "Underlined fields, generous white space, no motion."
+msgstr "Unterstrichene Felder, viel Weißraum, keine Animationen."
+
+#: src/WordPress/Frontend/DesignGallery.php:67
+msgid "Dark focus"
+msgstr "Dark Focus"
+
+#: src/WordPress/Frontend/DesignGallery.php:67
+msgid "Dark surfaces with a violet accent and a soft focus glow."
+msgstr "Dunkle Flächen mit violettem Akzent und sanftem Fokus-Glow."
+
+#: src/WordPress/Frontend/DesignGallery.php:68
+msgid "Guided card"
+msgstr "Guided Card"
+
+#: src/WordPress/Frontend/DesignGallery.php:68
+msgid "A friendly card with section titles and progress."
+msgstr "Freundliche Card mit Abschnittstiteln und Fortschritt."
+
+#: src/WordPress/Frontend/DesignGallery.php:69
+msgid "Animated float"
+msgstr "Animated Float"
+
+#: src/WordPress/Frontend/DesignGallery.php:69
+msgid "Outlined fields; the label glides into the border."
+msgstr "Umrandete Felder; die Beschriftung gleitet in den Rahmen."
+
+#: src/WordPress/Frontend/DesignGallery.php:70
+msgid "Surprise motion"
+msgstr "Surprise Motion"
+
+#: src/WordPress/Frontend/DesignGallery.php:70
+msgid "Growing underlines, an animated button and success ticks."
+msgstr "Wachsende Unterstreichungen, animierter Button und Erfolgshäkchen."
+
+#: src/WordPress/Frontend/DesignGallery.php:93
+msgid "Ms"
+msgstr "Frau"
+
+#: src/WordPress/Frontend/DesignGallery.php:93
+msgid "Mr"
+msgstr "Herr"
+
+#: src/WordPress/Frontend/DesignGallery.php:93
+msgid "Not specified"
+msgstr "Keine Angabe"
+
+#: src/WordPress/Frontend/DesignGallery.php:105
+msgid "First name"
+msgstr "Vorname"
+
+#: src/WordPress/Frontend/DesignGallery.php:110
+msgid "Last name"
+msgstr "Nachname"
+
+#: src/WordPress/Frontend/DesignGallery.php:114
+msgid "Optional, e.g. Dr."
+msgstr "Optional, z. B. Dr."
+
+#: src/WordPress/Frontend/DesignGallery.php:117
+msgid "Continue"
+msgstr "Weiter"
+
+#: src/WordPress/Frontend/DesignGallery.php:141
+msgid "All"
+msgstr "Alle"
+
+#: src/WordPress/Frontend/DesignGallery.php:150
+msgid "Personal details"
+msgstr "Persönliche Daten"
+
+#: src/WordPress/Frontend/DesignGallery.php:155
+msgid "Light"
+msgstr "Hell"
+
+#: src/WordPress/Frontend/DesignGallery.php:156
+msgid "Dark"
+msgstr "Dunkel"
+
+#: src/WordPress/Frontend/DesignGallery.php:157
+msgid "System"
+msgstr "System"
+
+#: src/WordPress/Frontend/DesignGallery.php:162
+msgid ""
+"Try every variant with the same fields. Nothing you enter here is sent or "
+"stored."
+msgstr "Probiere jede Variante mit denselben Feldern aus. Eingaben werden weder gesendet noch gespeichert."
+
+#: src/WordPress/Frontend/DesignGallery.php:164
+msgid "Variant"
+msgstr "Variante"
+
+#: src/WordPress/Frontend/DesignGallery.php:165
+msgid "Colour scheme"
+msgstr "Farbschema"
+
+#: src/WordPress/Frontend/DesignGallery.php:166
+msgid "Fill with sample data"
+msgstr "Mit Beispieldaten füllen"
+
+#: src/WordPress/Frontend/DesignGallery.php:167
+msgid "Show validation"
+msgstr "Validierung zeigen"
+
+#: src/WordPress/Frontend/DesignGallery.php:168
+msgid "Reset"
+msgstr "Zurücksetzen"
+
+#: src/WordPress/Frontend/FormView.php:34
 msgid "SW Forms: this form does not exist."
 msgstr "SW Forms: Dieses Formular existiert nicht."
 
-#: src/WordPress/Frontend/FormView.php:36
+#: src/WordPress/Frontend/FormView.php:38
 msgid "SW Forms: this form has not been saved yet."
 msgstr "SW Forms: Dieses Formular wurde noch nicht gespeichert."
 
-#: src/WordPress/Frontend/FormView.php:39
+#: src/WordPress/Frontend/FormView.php:41
 msgid "SW Forms: this form is inactive."
 msgstr "SW Forms: Dieses Formular ist inaktiv."
 
-#: src/WordPress/Frontend/FormView.php:68
+#: src/WordPress/Frontend/FormView.php:122
 msgid "Sending…"
 msgstr "Wird gesendet …"
 
-#: src/WordPress/Frontend/FormView.php:69
+#: src/WordPress/Frontend/FormView.php:123
 msgid "The form could not be sent. Please check your connection and try again."
 msgstr ""
 "Das Formular konnte nicht gesendet werden. Bitte die Verbindung prüfen und "
 "erneut versuchen."
 
-#: src/WordPress/Frontend/FormView.php:70
+#: src/WordPress/Frontend/FormView.php:124
 msgid "Step {current} of {total}: {label}"
 msgstr "Schritt {current} von {total}: {label}"
 
-#: src/WordPress/Frontend/FormView.php:71
+#: src/WordPress/Frontend/FormView.php:125
 msgid "Please correct the following fields:"
 msgstr "Bitte folgende Felder korrigieren:"
 
-#: src/WordPress/Frontend/FormView.php:91
+#: src/WordPress/Frontend/FormView.php:130
+#: src/WordPress/Support/Messages.php:29
+msgid "This field is required."
+msgstr "Dieses Feld ist ein Pflichtfeld."
+
+#: src/WordPress/Frontend/FormView.php:131
+msgid "Demo only: the values are valid and were not sent."
+msgstr "Nur Demo: Die Werte sind gültig und wurden nicht gesendet."
+
+#: src/WordPress/Frontend/FormView.php:154
 msgid "Back"
 msgstr "Zurück"
 
-#: src/WordPress/Frontend/FormView.php:91
+#: src/WordPress/Frontend/FormView.php:154
 msgid "Next"
 msgstr "Weiter"
 
-#: src/WordPress/Frontend/FormView.php:100
+#: src/WordPress/Frontend/FormView.php:165
 msgid "Leave this field empty"
 msgstr "Dieses Feld leer lassen"
 
-#: src/WordPress/Frontend/FormView.php:108
+#: src/WordPress/Frontend/FormView.php:173
 msgid "Spam protection"
 msgstr "Spamschutz"
 
-#: src/WordPress/Frontend/FormView.php:108
+#: src/WordPress/Frontend/FormView.php:173
 msgid "JavaScript is required to complete the CAPTCHA."
 msgstr "Für das CAPTCHA ist JavaScript erforderlich."
 
-#: src/WordPress/Frontend/FormView.php:124
+#: src/WordPress/Frontend/FormView.php:189
 msgid "Form progress"
 msgstr "Formularfortschritt"
 
 #: src/WordPress/Frontend/Preview.php:38
-#: src/WordPress/Rest/SubmitController.php:43
+#: src/WordPress/Rest/SubmitController.php:42
 msgid "You are not allowed to preview this form."
 msgstr "Keine Berechtigung für die Vorschau dieses Formulars."
 
@@ -1329,23 +1484,23 @@ msgid "Your entry could not be saved. Please try again later."
 msgstr ""
 "Die Angaben konnten nicht gespeichert werden. Bitte später erneut versuchen."
 
-#: src/WordPress/Submission/SubmissionService.php:251
+#: src/WordPress/Submission/SubmissionService.php:257
 msgid "The page was open for a long time. Please submit the form again."
 msgstr "Die Seite war lange geöffnet. Bitte das Formular erneut absenden."
 
-#: src/WordPress/Submission/SubmissionService.php:252
+#: src/WordPress/Submission/SubmissionService.php:258
 msgid "That was very fast. Please wait a moment and submit again."
 msgstr "Das ging sehr schnell. Bitte einen Moment warten und erneut absenden."
 
-#: src/WordPress/Submission/SubmissionService.php:253
+#: src/WordPress/Submission/SubmissionService.php:259
 msgid "This form has already been submitted."
 msgstr "Dieses Formular wurde bereits abgesendet."
 
-#: src/WordPress/Submission/SubmissionService.php:254
+#: src/WordPress/Submission/SubmissionService.php:260
 msgid "Too many submissions. Please try again in a few minutes."
 msgstr "Zu viele Einsendungen. Bitte in einigen Minuten erneut versuchen."
 
-#: src/WordPress/Submission/SubmissionService.php:255
+#: src/WordPress/Submission/SubmissionService.php:261
 msgid "The form could not be verified. Please reload the page and try again."
 msgstr ""
 "Das Formular konnte nicht überprüft werden. Bitte die Seite neu laden und "
@@ -1394,10 +1549,6 @@ msgstr "Bitte höchstens %d Datei(en) hochladen."
 #: src/WordPress/Support/Messages.php:28
 msgid "Please answer every question in this matrix."
 msgstr "Bitte beantworte jede Frage in dieser Matrix."
-
-#: src/WordPress/Support/Messages.php:29
-msgid "This field is required."
-msgstr "Dieses Feld ist ein Pflichtfeld."
 
 #: src/WordPress/Support/Messages.php:30
 msgid "The email addresses do not match."

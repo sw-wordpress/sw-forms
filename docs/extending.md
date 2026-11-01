@@ -225,6 +225,22 @@ receives `sw_forms`, form values and protection fields, excluding SW Forms token
 unrelated request metadata. Extended may log values/IPs and block IPs according to its
 settings. Clear page caches after activation/deactivation.
 
+## Design variants (0.6.0)
+
+Variants only restyle the shared markup (`apps/admin/frontend/designs.css`) through custom
+properties (`--swf-accent`, `--swf-bg`, `--swf-surface`, `--swf-radius`, `--swf-duration`, …) and
+state classes. Add-on fields built with `AbstractFieldType::wrap()` take part automatically:
+a non-fieldset wrapper with exactly one text-like input, textarea or single select gets
+`swf-field--floatable` (plus `swf-field--filled` for a value) when
+`RenderContext::floating_labels()` is true; text controls without placeholder get
+`placeholder=" "` so `:placeholder-shown` reflects programmatic values. Other controls keep
+the label above. The runtime adds `swf-field--valid` only after a real validation without
+error. Theme overrides: `.swf--animated-float { --swf-accent: #c00; }`.
+
+The interactive gallery `/?swf_design_gallery=1&_wpnonce=…` (form managers, linked from the
+builder's Design card) renders every variant with the same demo fields. Demo forms have no
+postback target, token or REST URL; the runtime checks required fields locally.
+
 ## Embedding and document tools (0.5.0)
 
 Gutenberg registers the dynamic block `swforms/form` with attributes `formId` (integer)

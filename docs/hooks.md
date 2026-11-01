@@ -30,6 +30,7 @@ All hooks use the prefix `swf_`. Unless stated otherwise exceptions of callbacks
 | `swf_webhook_payload` | `array $payload, array $webhook, Submission $submission` | Prepared webhook envelope after mapping, before serialization/signing. Webhook settings exclude the signing secret. Used once before freezing a queued request, and for synthetic test requests. | 0.2.0 |
 | `swf_email_args` | `array{to, subject, message, headers, attachments?} $args, array $notification, Submission $submission` | Change a notification e-mail. Optional `attachments: list<string>` (local paths) was added in 0.5.0; omission remains supported. | 0.1.0 |
 | `swf_merge_tag` | `?string $value, string $tag, string $argument, Submission $submission` | Resolve custom merge tags (`null` = unknown, tag stays). | 0.1.0 |
+| `swf_form_design` | `array{variant, scheme, tokens} $design, int $form_id` | Change the design of a rendered form after the stored setting and the embed `variant`; the result is normalised again ([schema](schema.md#design-060)). | 0.6.0 |
 | `swf_element_markup` | `string $html, array $element, RenderContext $context` | Change the HTML of one element. | 0.1.0 |
 | `swf_captcha_allowed_hostnames` | `list<string> $hosts, string $provider` | Hostnames accepted by CAPTCHA verification; defaults to the lowercase home URL hostname. | 0.3.0 |
 | `swf_client_ip` | `string $ip` | IP for rate limiting / hashing. Return the forwarded address behind a trusted proxy. | 0.1.0 |
@@ -39,9 +40,9 @@ The `wpa_handle_spammers` action belongs to WP Armour, not SW Forms; see its [in
 
 ## Public PHP functions
 
-All three functions were introduced in 0.1.0. `swf_submit()` is a trusted server-side API:
+All three functions were introduced in 0.1.0; `$variant` was added in 0.6.0. `swf_submit()` is a trusted server-side API:
 do not expose it directly to anonymous callers without your own authorization/spam checks.
 
-* `swf_render_form( int $form_id, bool $title = false ): string`
+* `swf_render_form( int $form_id, bool $title = false, string $variant = '' ): string` – `$variant` overrides the stored design variant
 * `swf_get_form( int $form_id ): ?array` – published document
 * `swf_submit( int $form_id, array $values ): SubmissionResult` – full pipeline without spam checks

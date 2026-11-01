@@ -3,6 +3,8 @@
  * Without this script forms still work (server side postback).
  */
 import './form.css';
+import './designs.css';
+import { clearValid, markValid, syncFilled } from './fieldState';
 import { calculate } from '../shared/arithmetic';
 import { CaptchaControl } from './captcha';
 import { TimePickers } from './timePicker';
@@ -23,9 +25,11 @@ interface Config {
   rest: string;
   ajax: string;
   preview: boolean;
+  /** Design gallery: required fields are checked locally and nothing is sent. */
+  demo?: boolean;
   nonce: string;
   fields: ElementNode[];
-  i18n: { progress?: string; sending: string; networkError: string; summary: string };
+  i18n: { progress?: string; sending: string; networkError: string; summary: string; required?: string; demoComplete?: string };
 }
 
 interface SubmitResponse {
@@ -116,9 +120,12 @@ class SwForm {
         this.imagePreviews.clear();
         this.mediaInputs.clear();
         this.apply();
+        form.querySelectorAll('.swf-field--valid').forEach((field) => clearValid(field));
         this.showStep(0, false);
       }, 0);
     });
+    // Back/forward cache and form restoration change values without events.
+    window.addEventListener('pageshow', () => syncFilled(form));
     form.addEventListener('dragover', (event) => {
       const upload = (event.target as Element | null)?.closest('.swf-upload');
       if (upload && !upload.querySelector<HTMLInputElement>('input')?.disabled) event.preventDefault();
@@ -242,6 +249,9 @@ class SwForm {
     }
     const wrapper = target?.closest<HTMLElement>('[data-swf-path]');
     if (wrapper?.classList.contains('swf-field--error')) this.clearError(wrapper);
+    clearValid(wrapper);
+    const floatable = target?.closest('.swf-field--floatable');
+    if (floatable) syncFilled(floatable);
     if (target instanceof HTMLInputElement && target.classList.contains('swf-other-text') && target.value !== '') {
       const radio = target.parentElement?.querySelector<HTMLInputElement>('input[type="radio"]');
       if (radio) radio.checked = true;
@@ -273,6 +283,7 @@ class SwForm {
     this.timePickers.sync();
     this.mediaInputs.sync();
     this.selects.sync();
+    syncFilled(this.form);
   }
 
   private applyTo(ids: string[], scope: ParentNode, prefix: string, visibility: Map<string, boolean>, enabled: Map<string, boolean>, required: Map<string, boolean>): void {
@@ -453,8 +464,46 @@ class SwForm {
     if (step) this.showStep(Number(step.dataset.swfStep), false);
   }
 
+  /** Section that a step validation covers, or the whole form. */
+  private validationScope(validateStep: number | null): ParentNode {
+    return (validateStep !== null ? this.form.querySelector<HTMLElement>(`.swf-step[data-swf-step="${validateStep}"]`) : null) ?? this.form;
+  }
+
+  /** Gallery forms: required check with the shared evaluator; never any network request. */
+  private demoSubmit(validateStep: number | null): void {
+    const values = this.collect(this.tree.rootIds, this.form, 'swf');
+    const states = this.evaluator.states(values);
+    const scope = this.validationScope(validateStep);
+    const errors: Record<string, string> = {};
+    for (const id of this.tree.ids()) {
+      if (!this.tree.isLeafData(id) || !(id in values) || !this.element(scope, id)) continue;
+      const active = states.visible.get(id) !== false && states.enabled.get(id) !== false;
+      const value = values[id];
+      const empty = value === '' || value === false || (Array.isArray(value) && value.length === 0);
+      if (active && states.required.get(id) === true && empty) errors[id] = this.config.i18n.required ?? '';
+    }
+    this.showErrors('', errors);
+    markValid(scope);
+    if (Object.keys(errors).length > 0) return;
+    if (validateStep !== null) {
+      this.showStep(validateStep + 1);
+      return;
+    }
+    const summary = this.form.querySelector<HTMLElement>('.swf-summary');
+    const title = summary?.querySelector('.swf-summary__title');
+    if (!summary || !title) return;
+    summary.hidden = false;
+    summary.classList.add('swf-summary--ok');
+    title.textContent = this.config.i18n.demoComplete ?? '';
+    summary.focus();
+  }
+
   private async submit(allowRetry: boolean, validateStep: number | null = null): Promise<void> {
     if (this.busy) return;
+    if (this.config.demo) {
+      this.demoSubmit(validateStep);
+      return;
+    }
     const pending = this.form.querySelector<HTMLInputElement>('input[data-swf-media-busy]:not(:disabled)');
     if (pending) { this.showErrors(pending.dataset.swfBusyMessage ?? this.config.i18n.networkError, {}); return; }
     this.busy = true;
@@ -484,6 +533,7 @@ class SwForm {
       if (result.status === 'success') {
         if (validateStep !== null && result.code === 'step') {
           this.showErrors('', {});
+          markValid(this.validationScope(validateStep));
           this.showStep(validateStep + 1);
           return;
         }
@@ -492,6 +542,7 @@ class SwForm {
       }
       if (result.status === 'invalid') {
         this.showErrors(result.message, result.errors ?? {});
+        markValid(this.validationScope(validateStep));
       } else if (allowRetry && (result.code === 'expired' || result.code === 'invalid_token')) {
         retry = 'token';
       } else if (allowRetry && result.code === 'too_fast') {

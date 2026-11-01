@@ -16,6 +16,12 @@
   --swf-radius: 6px;
   --swf-gap: 1.1rem;
   --swf-input-padding: 0.6em 0.75em;
+  /* Design tokens of the variants (designs.css); inline overrides come from settings.design. */
+  --swf-surface: transparent;
+  --swf-button-bg: var(--swf-accent);
+  --swf-accent-contrast: #fff;
+  --swf-duration: 220ms;
+  --swf-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   /*
    * A size container reports no content width. In shrink-to-fit theme layouts (flex items,
    * floats) it would collapse; the viewport based minimum keeps it usable there.
@@ -26,6 +32,7 @@
   min-width: min(20rem, 100vw - 2rem);
   container-type: inline-size;
   color: var(--swf-text);
+  background: var(--swf-surface);
 }
 
 .swf *,
@@ -291,8 +298,8 @@
   padding: 0.7em 1.4em;
   font: inherit;
   font-weight: 600;
-  color: #fff;
-  background: var(--swf-accent);
+  color: var(--swf-accent-contrast);
+  background: var(--swf-button-bg);
   border: 0;
   border-radius: var(--swf-radius);
   cursor: pointer;
@@ -326,8 +333,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .swf * {
+  .swf *,
+  .swf *::before,
+  .swf *::after {
     transition: none !important;
+    animation: none !important;
   }
 }
 

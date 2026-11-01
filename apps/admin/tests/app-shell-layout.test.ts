@@ -24,7 +24,7 @@ vi.mock('@/features/settings/SettingsView.vue', () => ({ default: { name: 'Setti
 const ALL_CAPS: Capability[] = ['swf_manage_forms', 'swf_view_entries', 'swf_manage_entries', 'swf_settings'];
 
 function useConfig(capabilities: string[], version = '1.2.3') {
-  setConfigForTests({ restRoot: 'http://x/', wpRestRoot: 'http://x/wp/v2/', nonce: 'n', locale: 'en_US', version, adminUrl: '', capabilities, siteUrl: '' });
+  setConfigForTests({ restRoot: 'http://x/', wpRestRoot: 'http://x/wp/v2/', nonce: 'n', locale: 'en_US', version, adminUrl: '', capabilities, siteUrl: '', galleryUrl: '' });
 }
 
 const plugins = (): Array<Plugin | [Plugin, ...unknown[]]> => [

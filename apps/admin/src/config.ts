@@ -26,6 +26,7 @@ export function normaliseConfig(raw: Partial<SwfConfig> | undefined): SwfConfig 
       ? raw.capabilities.filter((c): c is string => typeof c === 'string')
       : [],
     siteUrl: str(raw.siteUrl, ''),
+    galleryUrl: str(raw.galleryUrl, ''),
   };
 }
 

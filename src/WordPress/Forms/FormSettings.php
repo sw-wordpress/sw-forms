@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace SWForms\WordPress\Forms;
 
+use SWForms\Core\Design\Design;
+
 final class FormSettings {
 
 	public const MAX_NOTIFICATIONS = 20;
@@ -55,6 +57,7 @@ final class FormSettings {
 			'notifications' => $notifications,
 			'webhooks'      => \SWForms\WordPress\Webhooks\WebhookSettings::normalize( $input['webhooks'] ?? array() ),
 			'steps'         => self::steps( $input['steps'] ?? null ),
+			'design'        => Design::normalize( $input['design'] ?? null ),
 		);
 	}
 
