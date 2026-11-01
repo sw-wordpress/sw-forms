@@ -93,7 +93,8 @@ All form-tool routes require `swf_manage_forms`, except embedding choices as not
 
 | Method | Route | Contract |
 | --- | --- | --- |
-| GET | `/form-templates` | `{items: [{id, title, description, icon, document}]}` for contact, registration, survey and multi-step travel starters. `icon` is a Material Symbols (round) name. No notifications are enabled by the starters. |
+| GET | `/form-templates` | `{categories: [{slug, title, icon, count}], items: [{id, version, title, description, icon, category, tags, fields, steps, conditions, isMultiStep}]}`. Gallery metadata only — the list shape changed in 0.7.0 and no longer carries `document`. `icon` is a Material Symbols (round) name. The starters enable no notifications. |
+| GET | `/form-templates/{id}` | Full gallery item plus `document` (schema version 1, unnormalized) and `previewUrl` (0.7.0). Unknown id: 404. Uncached like the list. Create a form with `POST /forms/import` and that document: the result is an **independent** inactive form, no template reference is stored and later template versions never change it (see [extending](extending.md#starter-template-catalog-070)). |
 | GET | `/forms/{id}/export` | Private uncached JSON envelope `{format: "swforms", formatVersion: 1, title, document}`. Exports the editable draft or current publication; no entries or site secrets. |
 | POST | `/forms/import` | Accepts that envelope (up to 1 MB, schema version 1). Validates before creation; returns `{id}` (201) for a new **inactive** form. Never overwrites an existing form. Missing add-on types return validation errors (422). |
 | GET | `/forms/{id}/versions?page=1` | `{items: [{version, createdAt, createdBy}]}`, newest first, 50 per page. Unknown form: 404. |

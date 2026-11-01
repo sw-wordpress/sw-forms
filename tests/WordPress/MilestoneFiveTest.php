@@ -171,7 +171,7 @@ final class MilestoneFiveTest extends TestCase
         self::assertSame(400, $this->api('POST', 'forms/import', ['format' => 'swforms', 'formatVersion' => 1, 'document' => ['fields' => 'invalid']])->get_status());
         self::assertSame(400, $this->api('POST', 'forms/import', ['oversized' => str_repeat('x', 1048577)])->get_status());
         wp_set_current_user(0);
-        foreach (['forms/' . $id . '/export', 'forms/' . $id . '/versions', 'form-templates', 'forms/embed-options'] as $route) {
+        foreach (['forms/' . $id . '/export', 'forms/' . $id . '/versions', 'form-templates', 'form-templates/contact', 'forms/embed-options'] as $route) {
             self::assertSame(401, $this->api('GET', $route)->get_status());
         }
     }
@@ -195,15 +195,23 @@ final class MilestoneFiveTest extends TestCase
     }
     public function testTemplatesAndDynamicBlockRenderPublishedFormOnly(): void
     {
+        // The gallery list is metadata only; documents come from the detail route (see
+        // TemplateCatalogTest for the full quality gate of the catalog).
         $templates = $this->api('GET', 'form-templates')->get_data()['items'];
+        self::assertCount(16, $templates);
+        self::assertArrayNotHasKey('document', $templates[0]);
         foreach ($templates as $template) {
-            self::assertSame([], FormService::create_default()->validate(FormService::create_default()->normalize($template['document'])));
+            self::assertNotSame('', $template['title']);
             self::assertNotSame('', $template['description']);
             self::assertStringStartsWith('r_', $template['icon']);
+            self::assertGreaterThan(0, $template['fields']);
+            self::assertSame($template['steps'] > 1, $template['isMultiStep']);
         }
-        $travel = FormService::create_default()->normalize(array_column($templates, 'document', 'id')['travel']);
-        self::assertTrue($travel['settings']['steps']['enabled']);
-        self::assertSame(2, count(array_keys(array_column($travel['fields'], 'type'), 'page-break', true)));
+        $appointment = $this->api('GET', 'form-templates/appointment')->get_data()['document'];
+        self::assertSame([], FormService::create_default()->validate(FormService::create_default()->normalize($appointment)));
+        self::assertTrue($appointment['settings']['steps']['enabled']);
+        self::assertSame(2, count(array_keys(array_column($appointment['fields'], 'type'), 'page-break', true)));
+        self::assertSame(404, $this->api('GET', 'form-templates/unknown-template')->get_status());
         $id = $this->form(['fields' => [['id' => 'name', 'key' => 'name', 'type' => 'input', 'label' => 'Public label']]]);
         self::assertStringContainsString('Public label', render_block(['blockName' => 'swforms/form', 'attrs' => ['formId' => $id], 'innerBlocks' => [], 'innerHTML' => '', 'innerContent' => []]));
         FormService::create_default()->save_draft($id, ['fields' => [['id' => 'name', 'key' => 'name', 'type' => 'input', 'label' => 'Private draft']]]);

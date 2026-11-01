@@ -97,13 +97,33 @@ export interface FormDocument {
 
 export type FormStatus = 'active' | 'inactive';
 
-/** Built-in starter document from `GET /form-templates`. */
-export interface FormTemplate {
+/** Gallery card of `GET /form-templates` (metadata only, docs/rest-api.md). */
+export interface FormTemplateCard {
   id: string;
+  version: string;
   title: string;
   description?: string;
   icon?: string;
+  category: string;
+  tags: string[];
+  fields: number;
+  steps: number;
+  conditions: number;
+  isMultiStep: boolean;
+}
+
+/** Category group of the gallery. */
+export interface TemplateCategory {
+  slug: string;
+  title: string;
+  icon: string;
+  count: number;
+}
+
+/** Full item of `GET /form-templates/{id}`; `previewUrl` renders the real form (demo only). */
+export interface FormTemplate extends FormTemplateCard {
   document: FormDocument;
+  previewUrl: string;
 }
 
 export interface FormSummary {

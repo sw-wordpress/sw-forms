@@ -241,6 +241,49 @@ The interactive gallery `/?swf_design_gallery=1&_wpnonce=…` (form managers, li
 builder's Design card) renders every variant with the same demo fields. Demo forms have no
 postback target, token or REST URL; the runtime checks required fields locally.
 
+## Starter template catalog (0.7.0)
+
+`SWForms\WordPress\Forms\Templates` is the single source of the built-in starter documents:
+`all()` (with documents), `summaries()` (gallery cards, no documents), `get( string $id )`,
+`document( string $id )`, `exists()`, `ids()` and `categories()`. Item ids are stable public
+identifiers (`contact`, `registration`, `survey` predate 0.7.0 and keep their ids); the
+`CATEGORY_*` constants list the built-in groups. Metadata per item: `id`, `version`, `title`,
+`description`, `icon` (Material Symbols round name), `category`, `tags`, plus the computed
+`fields`, `steps`, `conditions`, `isMultiStep` (`SWForms\Core\Form\DocumentStats`).
+
+Add-ons register items through `swf_form_templates` (keyed by id) and their own group through
+`swf_form_template_categories` ([hooks](hooks.md#filters)). `SWForms\WordPress\Forms\TemplateElements`
+provides shorthand builders for schema version 1 elements (`text`, `select`, `consent`, `group`,
+`repeater`, `row`/`cell` for the 12-column layout, `step` for page breaks, `show`/`require_if`
+for conditions), so documents stay readable without inventing a private schema.
+
+Compatibility rules: a created form is an **independent copy** – no template reference is stored
+and there is no upgrade path, so changing a template never touches existing forms. Element ids
+and keys inside a published template document are data contracts of every form created from it:
+edit them only by adding a new template (or bumping `version` with an explicit migration), never
+in place. Conditional requirements use `show` plus a static `required` (hidden fields are never
+validated); `require_if` stays reserved for fields that remain visible.
+
+`GET /form-templates/{id}` also returns `previewUrl`: `/?swf_template_preview=<id>&_wpnonce=…`
+renders the document with the real PHP renderer inside the theme (form managers only, nonce
+action `swf_template_preview`; `TemplatePreview::url( string $id )` builds it for add-on
+templates too). Like the design gallery the demo form has no postback target, token or REST URL,
+so nothing typed there is sent or stored; the runtime checks required fields and steps locally.
+
+Catalog text is English source with `__()`; the German names of a German site come from
+`languages/sw-forms-de_DE.po` (`bin/i18n.sh update`, translate, `compile`, `check`). Add-on
+templates that want translated names wrap their own strings in `__()` of the plugin textdomain
+and keep ids and keys untouched.
+
+Quality gate: `tests/WordPress/TemplateCatalogTest.php` asserts the metadata contract, that every
+document passes normalization plus schema validation (ids, keys, condition references, logic
+cycles), that no element setting is silently dropped, that uploads stay inside the engine limits,
+that step counts match the page breaks and that `require` is never combined with hiding, and that
+the shipped German catalog names all 16 templates. `tests/WordPress/TemplatePreviewHttpTest.php`
+renders the route over loopback HTTP (fixture `tests/Support/preview-router.php`) and proves the
+preview carries neither `swf_token` nor `swf_form_id`.
+`tests/Unit/DocumentStatsTest.php` covers the counters.
+
 ## Embedding and document tools (0.5.0)
 
 Gutenberg registers the dynamic block `swforms/form` with attributes `formId` (integer)

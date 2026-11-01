@@ -12,8 +12,10 @@ import type {
   FormDocument,
   FormStatus,
   FormTemplate,
+  FormTemplateCard,
   FormSummary,
   GlobalSettings,
+  TemplateCategory,
   WpPage,
   WebhookTestResult,
 } from '@/types/api';
@@ -44,7 +46,12 @@ export function setApiForTests(value: ApiClient | null): void {
 }
 
 export const formsApi = {
-  templates: () => api().get<{ items: FormTemplate[] }>('form-templates').then((r) => r.items),
+  /** Category list plus card summaries; the documents themselves come per template. */
+  templates: () =>
+    api()
+      .get<{ categories?: TemplateCategory[]; items?: FormTemplateCard[] }>('form-templates')
+      .then((r) => ({ categories: r.categories ?? [], items: r.items ?? [] })),
+  template: (id: string) => api().get<FormTemplate>(`form-templates/${encodeURIComponent(id)}`),
   import: (data: unknown) => api().post<{ id: number }>('forms/import', data),
   export: (id: number) => api().get<Record<string, unknown>>(`forms/${id}/export`),
   versions: (id: number, page = 1) => api().get<{ items: { version: number; createdAt: string; createdBy: number }[] }>(`forms/${id}/versions`, { page }).then((r) => r.items),

@@ -38,6 +38,8 @@ $required = [
     'src/WordPress/Uploads/IncomingFile.php' => 95,
     'src/WordPress/Uploads/UploadStorage.php' => 95,
     'src/WordPress/Submission/SubmissionService.php' => 85,
+    'src/WordPress/Frontend/TemplatePreview.php' => 95,
+    'src/WordPress/Forms/Templates.php' => 95,
 ];
 foreach ($required as $name => $minimum) {
     if (!isset($coverage[$name]) || $coverage[$name] < $minimum) {

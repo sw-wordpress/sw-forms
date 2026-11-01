@@ -105,6 +105,10 @@ CI fails on missing/unexecuted coverage or missing test-execution artifacts. It 
   `npm run test:coverage`). Vitest thresholds are inclusive minimums on rounded percentages,
   so both gates compare integer line counts instead.
 - Upload field/transport/storage classes at least 95%, submission service at least 85%.
+- Starter template catalog and preview route at least 95% PHP lines (the preview route runs over
+  loopback HTTP in `TemplatePreviewHttpTest`).
+- Template gallery helpers and dialogs at least 95% (helper, detail dialog) and 85% (gallery) of
+  frontend lines (`apps/admin/vite.config.ts`).
 - Frontend form runtime at least 85%, filename parsing and entry-file presentation 100%,
   image-preview lifecycle at least 95%, and REST client at least 95% line coverage.
 
@@ -243,3 +247,8 @@ It exercises real step requests/calculations, history, templates, JSON file impo
 and Gutenberg ServerSideRender. It creates/deletes its own forms/pages and needs an admin
 and a working block editor in a disposable WordPress. Existing upload tests still cover
 MIME/provenance/size/rollback; attachment tests use the server-owned manifest.
+
+`node apps/admin/scripts/e2e/templates.mjs` checks the starter template gallery in the built app:
+categories and search, the interactive template preview (step validation, hidden conditional
+fields, values kept over Back), and that one click creates an inactive independent form. Its
+selectors avoid UI wording, so it runs with an English or German site.

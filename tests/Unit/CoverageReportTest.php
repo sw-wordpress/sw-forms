@@ -114,7 +114,7 @@ final class CoverageReportTest extends TestCase
         $required = [
             'Fields/MatrixField', 'Fields/SignatureField', 'Fields/RecordingField', 'Fields/AudioField',
             'Fields/VideoField', 'Fields/ImageField', 'Fields/FileField', 'Uploads/IncomingFile',
-            'Uploads/UploadStorage', 'Submission/SubmissionService',
+            'Uploads/UploadStorage', 'Submission/SubmissionService', 'Frontend/TemplatePreview', 'Forms/Templates',
         ];
         $files = '';
         foreach ($required as $name) {
@@ -151,6 +151,37 @@ final class CoverageReportTest extends TestCase
         [$status, $output] = $this->runCheck($this->checkReport(8001, 10000));
         self::assertSame(0, $status, $output);
         self::assertStringContainsString('Full PHP source: 8001/10000 lines (80.01%).', $output);
+    }
+
+    /** The catalog classes need real coverage as well, otherwise the gallery would ship untested. */
+    public function testCoverageGateRequiresTheStarterTemplateClassesToBeCovered(): void
+    {
+        $file = static function (string $name, int $covered, int $total): string {
+            $lines = '';
+            for ($line = 1; $line <= $total; ++$line) {
+                $lines .= '<line num="' . $line . '" type="stmt" count="' . ($line <= $covered ? 1 : 0) . '"/>';
+            }
+            return '<file name="src/' . $name . '.php">' . $lines . '</file>';
+        };
+        $report = '<coverage><project>';
+        foreach (
+            [
+                'WordPress/Fields/MatrixField', 'WordPress/Fields/SignatureField', 'WordPress/Fields/RecordingField',
+                'WordPress/Fields/AudioField', 'WordPress/Fields/VideoField', 'WordPress/Fields/ImageField',
+                'WordPress/Fields/FileField', 'WordPress/Uploads/IncomingFile', 'WordPress/Uploads/UploadStorage',
+                'WordPress/Submission/SubmissionService', 'WordPress/Forms/Templates',
+            ] as $name
+        ) {
+            $report .= $file($name, 20, 20);
+        }
+        $report .= $file('WordPress/Frontend/TemplatePreview', 1, 20);
+        $report .= '</project></coverage>';
+
+        $path = $this->directory . '/check-template-catalog.xml';
+        file_put_contents($path, $report);
+        [$status, $output] = $this->runCheck($path);
+        self::assertNotSame(0, $status, $output);
+        self::assertStringContainsString('src/WordPress/Frontend/TemplatePreview.php: 5.00% covered; at least 95% required.', $output);
     }
 
     public function testFullCoverageGateRejectsEmptyReports(): void
