@@ -38,18 +38,27 @@ async function loadTypes(): Promise<void> {
   }
 }
 
+/** Generation of the latest load, so responses of superseded requests are dropped. */
+let generation = 0;
+
 async function load(): Promise<void> {
-  if (!props.open || props.cardId === '') return;
+  const current = ++generation;
+  if (!props.open || props.cardId === '') {
+    loading.value = false;
+    return;
+  }
   loading.value = true;
   detail.value = null;
   view.value = 'preview';
   try {
-    detail.value = await formsApi.template(props.cardId);
+    const template = await formsApi.template(props.cardId);
+    if (current !== generation) return;
+    detail.value = template;
     await loadTypes();
   } catch (error) {
-    notify.error(error);
+    if (current === generation) notify.error(error);
   } finally {
-    loading.value = false;
+    if (current === generation) loading.value = false;
   }
 }
 

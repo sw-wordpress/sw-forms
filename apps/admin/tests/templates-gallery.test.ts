@@ -132,6 +132,7 @@ describe('template browser helpers', () => {
     expect(matchesQuery(card(), 'General', 'E-MAIL')).toBe(true);
     expect(matchesQuery(card(), 'General', 'contact zebra')).toBe(false);
     expect(matchesQuery(card(), 'General', '   ')).toBe(true);
+    expect(matchesQuery(card(), 'General', null)).toBe(true);
     expect(matchesQuery(card({ description: undefined }), 'General', 'e-mail Contact')).toBe(true);
     expect(matchesQuery(card({ description: undefined }), 'General', 'message')).toBe(false);
   });
@@ -266,6 +267,11 @@ describe('template gallery dialog', () => {
     await wrapper.find('.swf-library__search').setValue('nothing here');
     expect(wrapper.find('.swf-library__empty').exists()).toBe(true);
 
+    await wrapper.find('.swf-library__search').setValue('youth');
+    wrapper.findComponent(input).vm.$emit('update:modelValue', null); // Quasar's clear icon
+    await flushPromises();
+    expect(wrapper.findAll('.swf-library__card')).toHaveLength(2);
+
     await wrapper.find('.swf-library__search').setValue('');
     const chips = wrapper.findAll('.swf-library__chip');
     expect(chips).toHaveLength(3);
@@ -379,5 +385,19 @@ describe('template detail dialog', () => {
     await wrapper.find('.swf-template-detail__head button').trigger('click');
     await flushPromises();
     expect(wrapper.find('.dialog').exists()).toBe(false);
+  });
+
+  it('ignores the response of a superseded detail request', async () => {
+    let resolveFirst!: (value: FormTemplate) => void;
+    vi.spyOn(formsApi, 'template')
+      .mockImplementationOnce(() => new Promise<FormTemplate>((resolve) => { resolveFirst = resolve; }))
+      .mockResolvedValueOnce(detail('second'));
+    const wrapper = mount(TemplateDetail, { props: { cardId: 'first', open: true, creating: false }, global: { plugins: [i18n()], stubs } });
+    await wrapper.setProps({ cardId: 'second' });
+    await flushPromises();
+    resolveFirst(detail('first'));
+    await flushPromises();
+
+    expect(wrapper.find('iframe').attributes('src')).toContain('swf_template_preview=second');
   });
 });

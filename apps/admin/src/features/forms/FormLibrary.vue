@@ -26,7 +26,8 @@ const dragging = ref(false);
 const fileInput = ref<HTMLInputElement | null>(null);
 const categories = ref<TemplateCategory[]>([]);
 const cards = ref<FormTemplateCard[]>([]);
-const query = ref('');
+/** Quasar's clearable input sets the model to null, not ''. */
+const query = ref<string | null>('');
 const category = ref('');
 const detailId = ref('');
 const detailOpen = ref(false);
@@ -160,7 +161,7 @@ function onDrop(event: DragEvent): void {
             </div>
           </template>
           <template v-else>
-            <p v-if="matches === 0" class="swf-library__empty">{{ t('library.noResults', { query }) }}</p>
+            <p v-if="matches === 0" class="swf-library__empty">{{ t('library.noResults', { query: query ?? '' }) }}</p>
             <section v-for="group in groups" :key="group.slug" class="swf-library__section" :aria-labelledby="`swf-library-${group.slug}`">
               <h3 :id="`swf-library-${group.slug}`" class="swf-eyebrow">
                 <q-icon :name="group.icon" size="16px" aria-hidden="true" />{{ group.title }}

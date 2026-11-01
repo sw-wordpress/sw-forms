@@ -39,12 +39,12 @@ export interface StructureRow {
   condition: ConditionInfo | null;
 }
 
-function normalize(value: string): string {
-  return value.trim().toLocaleLowerCase();
+function normalize(value: string | null | undefined): string {
+  return (value ?? '').trim().toLocaleLowerCase();
 }
 
 /** Title, description, tags and category are searchable. */
-export function matchesQuery(item: FormTemplateCard, categoryTitle: string, query: string): boolean {
+export function matchesQuery(item: FormTemplateCard, categoryTitle: string, query: string | null | undefined): boolean {
   const needle = normalize(query);
   if (needle === '') return true;
   const haystack = [item.title, item.description ?? '', categoryTitle, ...item.tags].map(normalize).join(' ');
@@ -58,7 +58,7 @@ export function matchesQuery(item: FormTemplateCard, categoryTitle: string, quer
 export function groupTemplates(
   items: FormTemplateCard[],
   categories: TemplateCategory[],
-  query: string,
+  query: string | null | undefined,
   category: string,
 ): TemplateGroup[] {
   const known = new Map(categories.map((entry) => [entry.slug, entry]));
