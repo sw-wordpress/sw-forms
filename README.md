@@ -35,7 +35,7 @@ English, German.
 
 ### Requirements
 
-PHP 8.2+ with fileinfo, JSON and OpenSSL, WordPress 6.4+, MySQL or MariaDB; no multisite-specific handling.
+PHP 8.2+ with fileinfo, JSON and OpenSSL, WordPress 6.8+, MySQL or MariaDB; no multisite-specific handling.
 
 ### Settings
 

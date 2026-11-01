@@ -3,7 +3,7 @@
  * Plugin Name:       SW Forms
  * Description:       Drag and drop form builder with conditional logic, entries, notifications and an extension API.
  * Version:           0.5.0
- * Requires at least: 6.4
+ * Requires at least: 6.8
  * Requires PHP:      8.2
  * Author:            Stefan Warnat
  * License:           GPL-2.0-or-later

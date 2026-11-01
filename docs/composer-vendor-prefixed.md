@@ -16,7 +16,7 @@ Der Bootstrap lädt diesen Einstiegspunkt vor
 `plugins_loaded`; im Quellcode-Checkout nutzt er den Composer-Pfad als Fallback.
 Der Release-Smoke-Test prüft ausdrücklich, dass die Bibliothek mitgeladen wurde.
 
-Die Composer-Vorgabe `~3.8.2` erhält die Plugin-Mindestanforderung WordPress 6.4.
+Die Composer-Vorgabe `~4.2.0` setzt WordPress 6.8 voraus; das ist zugleich die Plugin-Mindestversion.
 Beim Upgrade der Bibliothek ihre WordPress-Mindestversion ebenfalls prüfen. Die aktive
 Scheduler-Version kann höher sein, wenn ein anderes Plugin eine neuere Kopie bündelt.
 Die gemeinsame API und Tabellen dürfen weder isoliert noch beim Entfernen von SW Forms
