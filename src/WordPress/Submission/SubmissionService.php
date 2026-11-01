@@ -217,16 +217,22 @@ final class SubmissionService {
 		 * @param Submission            $submission The submission.
 		 */
 		$actions = apply_filters( 'swf_register_actions', $actions, $submission );
-		foreach ( is_array( $actions ) ? $actions : array() as $action ) {
-			if ( ! $action instanceof ActionInterface ) {
-				continue;
-			}
+		foreach ( self::valid_actions( $actions ) as $action ) {
 			try {
 				$action->run( $submission );
 			} catch ( \Throwable $throwable ) {
 				$submission->log( $action->type(), '', 'failed', $throwable->getMessage() );
 			}
 		}
+	}
+
+	/**
+	 * Filter callbacks are third-party code: ignore anything that is not an action.
+	 *
+	 * @return list<ActionInterface>
+	 */
+	private static function valid_actions( mixed $actions ): array {
+		return array_values( array_filter( is_array( $actions ) ? $actions : array(), static fn ( mixed $action ): bool => $action instanceof ActionInterface ) );
 	}
 
 	/**

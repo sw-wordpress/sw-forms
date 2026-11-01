@@ -104,7 +104,7 @@ final class DeliveryRepository {
 		global $wpdb;
 		$now = gmdate( 'Y-m-d H:i:s' );
 		$wpdb->query( $wpdb->prepare( "UPDATE %i SET status = 'pending', next_attempt_at = %s, lease_token = '', lease_until = NULL WHERE payload_version = 1 AND status = 'running' AND lease_until < %s", Schema::table( 'webhook_deliveries' ), $now, $now ) );
-		return array_map( 'intval', $wpdb->get_col( $wpdb->prepare( "SELECT id FROM %i WHERE payload_version = 1 AND status = 'pending' AND next_attempt_at <= %s ORDER BY id LIMIT 100", Schema::table( 'webhook_deliveries' ), $now ) ) );
+		return array_values( array_map( 'intval', $wpdb->get_col( $wpdb->prepare( "SELECT id FROM %i WHERE payload_version = 1 AND status = 'pending' AND next_attempt_at <= %s ORDER BY id LIMIT 100", Schema::table( 'webhook_deliveries' ), $now ) ) ) );
 	}
 
 	public function pending_for_entry( int $entry_id ): bool {
@@ -116,19 +116,21 @@ final class DeliveryRepository {
 	public function for_entry( int $entry_id ): array {
 		global $wpdb;
 		$rows = $wpdb->get_results( $wpdb->prepare( 'SELECT id, webhook_id, event_id, status, attempts, response_code, message, duration_ms, next_attempt_at FROM %i WHERE entry_id = %d AND payload_version = 1 ORDER BY id', Schema::table( 'webhook_deliveries' ), $entry_id ), ARRAY_A );
-		return array_map(
-			static fn ( array $row ): array => array(
-				'id'            => (int) $row['id'],
-				'webhookId'     => $row['webhook_id'],
-				'eventId'       => $row['event_id'],
-				'status'        => $row['status'],
-				'attempts'      => (int) $row['attempts'],
-				'httpCode'      => (int) $row['response_code'],
-				'message'       => (string) $row['message'],
-				'durationMs'    => (int) $row['duration_ms'],
-				'nextAttemptAt' => $row['next_attempt_at'] ? mysql_to_rfc3339( $row['next_attempt_at'] ) : null,
-			),
-			is_array( $rows ) ? $rows : array()
+		return array_values(
+			array_map(
+				static fn ( array $row ): array => array(
+					'id'            => (int) $row['id'],
+					'webhookId'     => $row['webhook_id'],
+					'eventId'       => $row['event_id'],
+					'status'        => $row['status'],
+					'attempts'      => (int) $row['attempts'],
+					'httpCode'      => (int) $row['response_code'],
+					'message'       => (string) $row['message'],
+					'durationMs'    => (int) $row['duration_ms'],
+					'nextAttemptAt' => $row['next_attempt_at'] ? mysql_to_rfc3339( $row['next_attempt_at'] ) : null,
+				),
+				is_array( $rows ) ? $rows : array()
+			)
 		);
 	}
 
@@ -173,7 +175,7 @@ final class DeliveryRepository {
 	/** @return list<int> Old temporary rows left by interrupted submissions. */
 	public function temporary_cleanup_candidates(): array {
 		global $wpdb;
-		return array_map( 'intval', $wpdb->get_col( $wpdb->prepare( "SELECT id FROM %i WHERE status = 'temporary' AND created_at < %s LIMIT 100", Schema::table( 'entries' ), gmdate( 'Y-m-d H:i:s', time() - 600 ) ) ) );
+		return array_values( array_map( 'intval', $wpdb->get_col( $wpdb->prepare( "SELECT id FROM %i WHERE status = 'temporary' AND created_at < %s LIMIT 100", Schema::table( 'entries' ), gmdate( 'Y-m-d H:i:s', time() - 600 ) ) ) ) );
 	}
 
 	public function purge_detached(): void {

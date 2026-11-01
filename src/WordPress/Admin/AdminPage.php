@@ -57,8 +57,9 @@ final class AdminPage {
 		wp_enqueue_script( 'sw-forms-builder-api', SWF_URL . 'assets/builder-api.js', array(), SWF_VERSION, true );
 		wp_enqueue_script( self::HANDLE, SWF_URL . 'assets/admin/app.js', array( 'sw-forms-builder-api' ), $version, true );
 		foreach ( \SWForms\WordPress\Fields\FieldRegistry::instance()->all() as $type ) {
-			if ( $type instanceof \SWForms\WordPress\Fields\BuilderFieldTypeInterface && wp_script_is( $type->builder_script(), 'registered' ) ) {
-				wp_enqueue_script( $type->builder_script() );
+			$handle = $type instanceof \SWForms\WordPress\Fields\BuilderFieldTypeInterface ? $type->builder_script() : '';
+			if ( '' !== $handle && wp_script_is( $handle, 'registered' ) ) {
+				wp_enqueue_script( $handle );
 			}
 		}
 		wp_add_inline_script( self::HANDLE, 'window.swFormsConfig = ' . wp_json_encode( $this->config() ) . ';', 'before' );

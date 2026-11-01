@@ -138,7 +138,7 @@ final class EntriesController extends BaseController {
 	/**
 	 * First form level fields of the current version as list columns.
 	 *
-	 * @param list<array<string, mixed>> $fields
+	 * @param array<mixed> $fields Decoded document elements.
 	 * @return list<array{id: string, label: string}>
 	 */
 	private function columns( array $fields ): array {

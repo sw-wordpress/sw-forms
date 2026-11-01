@@ -79,7 +79,7 @@ final class Renderer {
 	 * Minimal element tree for the frontend script (structure, value kind and logic only;
 	 * settings such as notification addresses never reach the browser).
 	 *
-	 * @param list<mixed> $elements
+	 * @param array<mixed> $elements Decoded document elements; malformed entries are skipped.
 	 * @return list<array<string, mixed>>
 	 */
 	public function public_tree( array $elements ): array {

@@ -59,7 +59,8 @@ final class MergeTagResolver {
 			'field'       => $this->field( $arg ),
 			'entry'       => match ( $arg ) {
 				'id'    => (string) $this->submission->entry_id,
-				'date'  => wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ) ),
+				// wp_date() is only false for invalid timestamps; keep the `?string` filter contract.
+				'date'  => (string) wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ) ),
 				'url'   => $this->submission->entry_id > 0 ? admin_url( 'admin.php?page=sw-forms#/forms/' . $this->submission->form_id() . '/entries/' . $this->submission->entry_id ) : '',
 				// The existing privacy modes never retain a raw address. Do not expose hashes as IPs.
 				'ip' => '',
@@ -77,7 +78,7 @@ final class MergeTagResolver {
 				default => null,
 			},
 			'admin_email' => (string) get_option( 'admin_email' ),
-			'date'        => wp_date( '' === $arg ? (string) get_option( 'date_format' ) : $arg ),
+			'date'        => (string) wp_date( '' === $arg ? (string) get_option( 'date_format' ) : $arg ),
 			'user'        => \SWForms\WordPress\Support\DynamicDefaults::resolve( '{user:' . $arg . '}' ),
 			default       => null,
 		};
@@ -125,32 +126,34 @@ final class MergeTagResolver {
 	 */
 	private function elements(): array {
 		if ( null === $this->elements ) {
-			$this->elements = array();
-			$this->index( $this->submission->document['fields'], '' );
+			$this->elements = self::index( $this->submission->document['fields'], '' );
 		}
 		return $this->elements;
 	}
 
 	/**
 	 * @param array<mixed> $elements
+	 * @return array<string, array<string, mixed>> Element per key path.
 	 */
-	private function index( array $elements, string $prefix ): void {
+	private static function index( array $elements, string $prefix ): array {
+		$out = array();
 		foreach ( $elements as $element ) {
 			if ( ! is_array( $element ) ) {
 				continue;
 			}
 			foreach ( is_array( $element['columns'] ?? null ) ? $element['columns'] : array() as $column ) {
-				$this->index( is_array( $column['children'] ?? null ) ? $column['children'] : array(), $prefix );
+				$out = array_replace( $out, self::index( is_array( $column['children'] ?? null ) ? $column['children'] : array(), $prefix ) );
 			}
 			$key = (string) ( $element['key'] ?? '' );
 			if ( '' === $key ) {
 				continue;
 			}
-			$this->elements[ $prefix . $key ] = $element;
+			$out[ $prefix . $key ] = $element;
 			// Repeater rows have no single value; only plain groups are addressable with dots.
 			if ( is_array( $element['children'] ?? null ) && empty( $element['settings']['repeatable'] ) ) {
-				$this->index( $element['children'], $prefix . $key . '.' );
+				$out = array_replace( $out, self::index( $element['children'], $prefix . $key . '.' ) );
 			}
 		}
+		return $out;
 	}
 }

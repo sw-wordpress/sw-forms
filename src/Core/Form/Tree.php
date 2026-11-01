@@ -34,7 +34,7 @@ final class Tree
     }
 
     /**
-     * @param list<mixed> $elements
+     * @param array<mixed> $elements Decoded document elements; malformed entries are skipped.
      */
     public static function build(array $elements, TypeCatalog $types): self
     {
@@ -44,7 +44,7 @@ final class Tree
     }
 
     /**
-     * @param list<mixed> $elements
+     * @param array<mixed> $elements
      * @return list<string>
      */
     private function add(array $elements, ?string $parent, ?string $scope): array

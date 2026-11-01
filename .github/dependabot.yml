@@ -1,0 +1,37 @@
+version: 2
+updates:
+  # PHP: the only shipped dependency is Action Scheduler; dev tools are grouped.
+  - package-ecosystem: composer
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      php-dev-tools:
+        dependency-type: development
+        update-types: [minor, patch]
+
+  # Admin SPA and frontend runtime; runtime packages are bundled into the plugin.
+  - package-ecosystem: npm
+    directory: /apps/admin
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 10
+    groups:
+      npm-dev-tools:
+        dependency-type: development
+        update-types: [minor, patch]
+      npm-runtime:
+        dependency-type: production
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    groups:
+      github-actions:
+        patterns: ['*']

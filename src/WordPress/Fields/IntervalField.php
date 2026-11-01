@@ -100,7 +100,7 @@ abstract class IntervalField extends AbstractFieldType {
 			return array();
 		}
 		$bounds  = $this->bounds( $element );
-		$problem = TemporalInterval::problem( $value, $this->input_type(), $bounds['min'], $bounds['max'], (bool) $this->setting( $element, 'allowEqual', true ), 'time' === $this->input_type() ? (int) $this->setting( $element, 'step', 60 ) : null );
+		$problem = TemporalInterval::problem( array( $value[0], $value[1] ), $this->input_type(), $bounds['min'], $bounds['max'], (bool) $this->setting( $element, 'allowEqual', true ), 'time' === $this->input_type() ? (int) $this->setting( $element, 'step', 60 ) : null );
 		return null === $problem ? array() : array(
 			array(
 				'code'   => $problem,

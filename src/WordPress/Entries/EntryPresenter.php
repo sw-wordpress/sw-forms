@@ -20,8 +20,8 @@ final class EntryPresenter {
 	public function __construct( private readonly FieldRegistry $registry ) {}
 
 	/**
-	 * @param list<array<string, mixed>> $fields Elements of the form version.
-	 * @param array<string, mixed>       $data   Entry data keyed by field key.
+	 * @param array<mixed>         $fields Elements of the stored form version; malformed nodes are skipped.
+	 * @param array<string, mixed> $data   Entry data keyed by field key.
 	 * @return list<array<string, mixed>> Nodes: {id, type, label, value?, children?, rows?}
 	 */
 	public function present( array $fields, array $data ): array {

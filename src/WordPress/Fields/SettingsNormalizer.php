@@ -69,7 +69,7 @@ final class SettingsNormalizer {
 				$out = array();
 				foreach ( array_slice( is_array( $value ) ? $value : array(), 0, self::item_limit( $definition ) ) as $row ) {
 					if ( is_array( $row ) ) {
-						$out[] = self::normalize_schema( is_array( $definition['fields'] ?? null ) ? $definition['fields'] : array(), $row, $depth + 1 );
+						$out[] = self::normalize_schema( is_array( $definition['fields'] ?? null ) ? array_values( $definition['fields'] ) : array(), $row, $depth + 1 );
 					}
 				}
 				return $out;

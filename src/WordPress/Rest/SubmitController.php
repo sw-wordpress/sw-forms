@@ -37,7 +37,6 @@ final class SubmitController extends BaseController {
 	 */
 	public function submit( \WP_REST_Request $request ) {
 		$params  = $request->get_body_params();
-		$params  = is_array( $params ) ? $params : array();
 		$preview = ! empty( $params['swf_preview'] );
 		if ( $preview && ! current_user_can( Capabilities::MANAGE_FORMS ) ) {
 			return $this->error( 'swf_forbidden', __( 'You are not allowed to preview this form.', 'sw-forms' ), 403 );

@@ -73,7 +73,7 @@ final class EmailNotifications implements ActionInterface {
 			 *
 			 * @since 0.1.0
 			 *
-			 * @param array{to: list<string>, subject: string, message: string, headers: list<string>, attachments: list<string>} $args (attachments added in 0.5.0).
+			 * @param array{to: list<string>, subject: string, message: string, headers: list<string>, attachments?: list<string>} $args (attachments added in 0.5.0; callbacks written earlier may omit it).
 			 * @param array<string, mixed> $notification Notification settings.
 			 * @param Submission           $submission   Current submission.
 			 */
