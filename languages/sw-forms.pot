@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SW Forms\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-01 12:19+0100\n"
+"POT-Creation-Date: 2026-11-01 13:47+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -112,10 +112,16 @@ msgid "House number"
 msgstr ""
 
 #: src/WordPress/Fields/AddressField.php:26
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:163
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:358
+#: src/WordPress/Forms/Templates/EventsTemplates.php:419
 msgid "Postal code"
 msgstr ""
 
 #: src/WordPress/Fields/AddressField.php:27
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:172
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:370
+#: src/WordPress/Forms/Templates/EventsTemplates.php:428
 msgid "City"
 msgstr ""
 
@@ -158,6 +164,7 @@ msgid "Sum"
 msgstr ""
 
 #: src/WordPress/Fields/CalculationField.php:39
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:161
 msgid "Product"
 msgstr ""
 
@@ -223,10 +230,22 @@ msgid "Display as switch"
 msgstr ""
 
 #: src/WordPress/Fields/CheckboxField.php:179
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:485
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:90
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:335
+#: src/WordPress/Forms/Templates/EventsTemplates.php:446
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:171
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:191
 msgid "Yes"
 msgstr ""
 
 #: src/WordPress/Fields/CheckboxField.php:179
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:486
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:91
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:336
+#: src/WordPress/Forms/Templates/EventsTemplates.php:447
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:173
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:192
 msgid "No"
 msgstr ""
 
@@ -259,6 +278,7 @@ msgid "Presentation"
 msgstr ""
 
 #: src/WordPress/Fields/ChoiceField.php:82
+#: src/WordPress/Forms/Templates/EventsTemplates.php:79
 msgid "Standard"
 msgstr ""
 
@@ -503,7 +523,7 @@ msgstr ""
 msgid "Text"
 msgstr ""
 
-#: src/WordPress/Fields/InputField.php:59 src/WordPress/Forms/Templates.php:27
+#: src/WordPress/Fields/InputField.php:59
 msgid "Email"
 msgstr ""
 
@@ -519,7 +539,9 @@ msgstr ""
 msgid "Number"
 msgstr ""
 
-#: src/WordPress/Fields/InputField.php:75 src/WordPress/Support/Privacy.php:97
+#: src/WordPress/Fields/InputField.php:75
+#: src/WordPress/Forms/Templates/EventsTemplates.php:194
+#: src/WordPress/Support/Privacy.php:97
 msgid "Date"
 msgstr ""
 
@@ -774,11 +796,17 @@ msgstr ""
 msgid "Strongly agree"
 msgstr ""
 
-#: src/WordPress/Fields/NameField.php:17 src/WordPress/Forms/Templates.php:20
+#: src/WordPress/Fields/NameField.php:17
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:276
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:395
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:111
 msgid "Name"
 msgstr ""
 
 #: src/WordPress/Fields/NameField.php:24
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:126
+#: src/WordPress/Forms/Templates/EventsTemplates.php:38
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:42
 #: src/WordPress/Frontend/DesignGallery.php:91
 msgid "Salutation"
 msgstr ""
@@ -818,6 +846,14 @@ msgid "Label of \"Other\""
 msgstr ""
 
 #: src/WordPress/Fields/RadioField.php:54
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:305
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:431
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:43
+#: src/WordPress/Forms/Templates/EventsTemplates.php:93
+#: src/WordPress/Forms/Templates/EventsTemplates.php:317
+#: src/WordPress/Forms/Templates/EventsTemplates.php:497
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:164
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:295
 msgid "Other"
 msgstr ""
 
@@ -825,7 +861,7 @@ msgstr ""
 msgid "Number range"
 msgstr ""
 
-#: src/WordPress/Fields/RatingField.php:18 src/WordPress/Forms/Templates.php:88
+#: src/WordPress/Fields/RatingField.php:18
 msgid "Rating"
 msgstr ""
 
@@ -1050,77 +1086,1462 @@ msgstr ""
 msgid "Step %d"
 msgstr ""
 
-#: src/WordPress/Forms/Templates.php:34
+#: src/WordPress/Forms/TemplateElements.php:366
+#: src/WordPress/Frontend/DesignGallery.php:93
+msgid "Mr"
+msgstr ""
+
+#: src/WordPress/Forms/TemplateElements.php:367
+#: src/WordPress/Frontend/DesignGallery.php:93
+msgid "Ms"
+msgstr ""
+
+#: src/WordPress/Forms/TemplateElements.php:368
+#: src/WordPress/Forms/Templates/EventsTemplates.php:401
+msgid "Diverse"
+msgstr ""
+
+#: src/WordPress/Forms/TemplateElements.php:369
+#: src/WordPress/Forms/Templates/EventsTemplates.php:402
+msgid "Prefer not to say"
+msgstr ""
+
+#: src/WordPress/Forms/TemplateElements.php:378
+msgid "Monday"
+msgstr ""
+
+#: src/WordPress/Forms/TemplateElements.php:379
+msgid "Tuesday"
+msgstr ""
+
+#: src/WordPress/Forms/TemplateElements.php:380
+msgid "Wednesday"
+msgstr ""
+
+#: src/WordPress/Forms/TemplateElements.php:381
+msgid "Thursday"
+msgstr ""
+
+#: src/WordPress/Forms/TemplateElements.php:382
+msgid "Friday"
+msgstr ""
+
+#: src/WordPress/Forms/TemplateElements.php:383
+msgid "Saturday"
+msgstr ""
+
+#: src/WordPress/Forms/TemplateElements.php:384
+msgid "Sunday"
+msgstr ""
+
+#: src/WordPress/Forms/TemplateElements.php:393
+msgid "Morning"
+msgstr ""
+
+#: src/WordPress/Forms/TemplateElements.php:394
+msgid "Midday"
+msgstr ""
+
+#: src/WordPress/Forms/TemplateElements.php:395
+msgid "Afternoon"
+msgstr ""
+
+#: src/WordPress/Forms/TemplateElements.php:396
+msgid "Evening"
+msgstr ""
+
+#: src/WordPress/Forms/TemplateElements.php:414
+msgid "Thank you! Your entries:"
+msgstr ""
+
+#: src/WordPress/Forms/Templates.php:214
+msgid "General"
+msgstr ""
+
+#: src/WordPress/Forms/Templates.php:215
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:262
+msgid "Events"
+msgstr ""
+
+#: src/WordPress/Forms/Templates.php:216
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:154
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:182
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:407
+msgid "Company"
+msgstr ""
+
+#: src/WordPress/Forms/Templates.php:217
+msgid "Community and clubs"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:34
+msgid "Job application"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:35
+msgid ""
+"Contact data, vacancy, CV and cover letter as PDF uploads, plus an "
+"application-specific privacy notice."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:43
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:163
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:129
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:214
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:313
+#: src/WordPress/Forms/Templates/EventsTemplates.php:41
+#: src/WordPress/Forms/Templates/EventsTemplates.php:228
+#: src/WordPress/Forms/Templates/EventsTemplates.php:285
+#: src/WordPress/Forms/Templates/EventsTemplates.php:373
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:45
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:242
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:329
+#: src/WordPress/Frontend/DesignGallery.php:105
+msgid "First name"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:52
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:172
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:141
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:215
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:322
+#: src/WordPress/Forms/Templates/EventsTemplates.php:53
+#: src/WordPress/Forms/Templates/EventsTemplates.php:237
+#: src/WordPress/Forms/Templates/EventsTemplates.php:294
+#: src/WordPress/Forms/Templates/EventsTemplates.php:382
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:58
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:250
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:338
+#: src/WordPress/Frontend/DesignGallery.php:110
+msgid "Last name"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:62
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:194
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:282
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:97
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:182
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:330
+#: src/WordPress/Forms/Templates/EventsTemplates.php:60
+#: src/WordPress/Forms/Templates/EventsTemplates.php:247
+#: src/WordPress/Forms/Templates/EventsTemplates.php:304
+#: src/WordPress/Forms/Templates/EventsTemplates.php:439
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:66
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:115
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:200
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:348
+msgid "E-mail"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:63
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:195
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:183
+#: src/WordPress/Forms/Templates/EventsTemplates.php:62
+#: src/WordPress/Forms/Templates/EventsTemplates.php:248
+#: src/WordPress/Forms/Templates/EventsTemplates.php:305
+#: src/WordPress/Forms/Templates/EventsTemplates.php:440
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:69
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:114
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:349
+msgid "Telephone"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:65
+msgid "Application"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:68
+msgid "Vacancy"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:70
+msgid "Developer"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:71
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:60
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:293
+msgid "Support"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:72
+msgid "Administration"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:73
+msgid "Speculative application"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:80
+msgid "Which area do you want to work in?"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:91
+msgid "Professional experience"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:93
+msgid "None"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:94
+msgid "1–3 years"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:95
+msgid "3–5 years"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:96
+msgid "More than 5 years"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:99
+msgid "Earliest start date"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:103
+msgid "Salary expectation"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:103
+msgid "Annual gross in the currency of the vacancy."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:108
+msgid "Curriculum vitae (PDF)"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:115
+msgid ""
+"One PDF, at most 10 MB. Files are stored on the server, so keep personal "
+"data in mind."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:120
+msgid "Cover letter (PDF, optional)"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:126
+msgid "Portfolio or website"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:127
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:224
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:381
+#: src/WordPress/Forms/Templates/EventsTemplates.php:139
+#: src/WordPress/Forms/Templates/EventsTemplates.php:508
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:352
+msgid "Confirm"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:128
+msgid ""
+"Use Back to review your entries. The confirmation lists everything you "
+"submitted, including the uploaded files."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:131
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:248
+#: src/WordPress/Forms/Templates/EventsTemplates.php:160
+#: src/WordPress/Forms/Templates/EventsTemplates.php:351
+#: src/WordPress/Frontend/DesignGallery.php:150
+msgid "Personal details"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:144
+msgid "Request a quote"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:145
+msgid ""
+"Client type unlocks the company field, services as cards and a project "
+"description with a minimum length."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:151
+msgid "Who is requesting?"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:153
+msgid "Private customer"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:197
+msgid "Project"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:200
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:290
+msgid "What do you need?"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:202
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:292
+msgid "Consulting"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:203
+msgid "Implementation"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:204
+msgid "Design"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:205
+msgid "Maintenance"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:206
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:40
+msgid "Training"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:213
+msgid "Project description"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:220
+msgid "At least 20 characters: goal, scope and rough timing."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:227
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:459
+msgid "Budget range"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:229
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:461
+msgid "Up to 1,000"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:230
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:462
+msgid "1,000 to 5,000"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:231
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:463
+msgid "5,000 to 20,000"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:232
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:464
+msgid "More than 20,000"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:233
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:465
+msgid "Not decided yet"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:236
+msgid "Preferred start"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:240
+msgid "Attachments (optional)"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:247
+msgid "Up to five files, each at most 10 MB."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:249
+msgid "Round-up"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:250
+#: src/WordPress/Forms/Templates/EventsTemplates.php:260
+#: src/WordPress/Forms/Templates/EventsTemplates.php:348
+msgid ""
+"Use Back to review your entries. The confirmation lists everything you "
+"submitted."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:251
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:85
+msgid "Anything else?"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:254
+msgid "Customer"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:267
+msgid "Support ticket"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:268
+msgid ""
+"Area, problem type and priority; error reports ask for reproduction steps."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:288
+msgid "Product or area"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:290
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:163
+msgid "Website"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:291
+msgid "Shop"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:292
+msgid "Account"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:293
+msgid "Billing"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:300
+msgid "Type of problem"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:302
+msgid "Error"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:303
+msgid "How-to question"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:304
+msgid "Feature request"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:313
+msgid "Priority"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:315
+msgid "Low"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:316
+msgid "Normal"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:317
+msgid "High"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:322
+msgid "High means something is unusable for several people right now."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:325
+msgid "Affected version"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:328
+msgid "What happened?"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:335
+msgid "At least 20 characters, please."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:340
+msgid "Steps to reproduce"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:349
+msgid "What did you expect instead?"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:355
+msgid "Which type of problem is it?"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:364
+msgid "Screenshot or log file (optional)"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:371
+msgid "PDF, PNG, JPG or TXT, at most 10 MB per file. Export log files as TXT."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:388
+msgid "Lead qualification"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:389
+msgid ""
+"Contact, needs and a meeting wish: the appointment block only appears when a "
+"talk is wanted."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:404
+msgid "Work e-mail"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:417
+msgid "Your role"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:423
+msgid "Needs"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:426
+msgid "What is this about?"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:428
+msgid "Processes"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:429
+msgid "Software"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:430
+msgid "Marketing"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:438
+msgid "What else?"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:449
+msgid "Company size"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:451
+msgid "1–10 people"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:452
+msgid "11–50 people"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:453
+msgid "51–250 people"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:454
+msgid "More than 250 people"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:471
+msgid "When should it start?"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:473
+msgid "Right away"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:474
+msgid "Within three months"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:475
+msgid "Within six months"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:476
+msgid "Still open"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:480
+msgid "Meeting"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:483
+msgid "Do you want a consultation?"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:495
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:121
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:311
+msgid "Preferred date"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:501
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:312
+msgid "Preferred time"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:506
+msgid "Anything we should prepare?"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:509
+#: src/WordPress/Forms/Templates/EventsTemplates.php:436
 msgid "Contact"
 msgstr ""
 
-#: src/WordPress/Forms/Templates.php:35
-msgid "Name, email and message: the classic contact form."
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:520
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:401
+#: src/WordPress/Forms/Templates/EventsTemplates.php:547
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:374
+msgid "Data protection"
 msgstr ""
 
-#: src/WordPress/Forms/Templates.php:45
-msgid "Message"
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:521
+msgid ""
+"We use your entries to answer the request. Replace this text with your own "
+"privacy notice and add a link to it before publishing."
 msgstr ""
 
-#: src/WordPress/Forms/Templates.php:54
-msgid "Registration"
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:533
+msgid "Data protection for applications"
 msgstr ""
 
-#: src/WordPress/Forms/Templates.php:55
-msgid "Event or course registration with number of places."
+#: src/WordPress/Forms/Templates/BusinessTemplates.php:534
+msgid ""
+"We store your application only for this application process and delete it "
+"afterwards, unless a longer legal retention period applies. Replace this "
+"text with your own notice before publishing."
 msgstr ""
 
-#: src/WordPress/Forms/Templates.php:65
-msgid "Places"
-msgstr ""
-
-#: src/WordPress/Forms/Templates.php:79
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:31
 msgid "Survey"
 msgstr ""
 
-#: src/WordPress/Forms/Templates.php:80
-msgid "Star rating with optional free-text feedback."
-msgstr ""
-
-#: src/WordPress/Forms/Templates.php:95
-msgid "Feedback"
-msgstr ""
-
-#: src/WordPress/Forms/Templates.php:103
-msgid "Travel request"
-msgstr ""
-
-#: src/WordPress/Forms/Templates.php:104
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:32
 msgid ""
-"Multi-step form: trip, wishes and contact details with a progress display."
+"Two steps: rating and scales first, then the optional wish for a reply which "
+"unlocks the e-mail field."
 msgstr ""
 
-#: src/WordPress/Forms/Templates.php:112
-msgid "Destination"
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:38
+msgid "Which topics interest you?"
 msgstr ""
 
-#: src/WordPress/Forms/Templates.php:119
-msgid "Travel period"
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:41
+msgid "Tools"
 msgstr ""
 
-#: src/WordPress/Forms/Templates.php:126
-msgid "Travellers"
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:42
+msgid "Community"
 msgstr ""
 
-#: src/WordPress/Forms/Templates.php:137
-msgid "Wishes"
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:49
+msgid "Which other topic?"
 msgstr ""
 
-#: src/WordPress/Forms/Templates.php:143
-msgid "Special wishes"
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:55
+msgid "What matters most to you?"
 msgstr ""
 
-#: src/WordPress/Forms/Templates.php:148
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:57
+msgid "Quality"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:58
+msgid "Speed"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:59
+msgid "Price"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:65
+msgid "How satisfied are you?"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:68
+msgid "Rate one criterion on a scale"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:73
+msgid "One point is the weakest, ten the best result."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:77
+msgid "What is the main reason for your rating?"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:82
+msgid "What do you like most?"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:83
+msgid "What would you change?"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:84
+msgid "Finish"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:88
+msgid "Would you like a reply?"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:106
+msgid "Your opinion"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:119
+msgid "Club membership"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:120
+msgid ""
+"Address in two columns, membership cards and a repeatable group for further "
+"family members."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:148
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:216
+#: src/WordPress/Forms/Templates/EventsTemplates.php:130
+#: src/WordPress/Forms/Templates/EventsTemplates.php:394
+msgid "Date of birth"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:152
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:344
+#: src/WordPress/Forms/Templates/EventsTemplates.php:408
+msgid "Street and house number"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:185
+msgid "Membership"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:188
+msgid "Type of membership"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:190
+msgid "Individual membership"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:191
+msgid "Family membership"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:192
+msgid "Supporting membership"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:199
+msgid "Desired start date"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:202
+msgid "Department or group"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:204
+msgid "Gymnastics"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:205
+msgid "Football"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:206
+msgid "Hiking"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:212
+msgid "Further family members"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:220
+msgid ""
+"Add one row per person; the entries are stored together under this group."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:227
+msgid "Contribution"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:228
+msgid ""
+"Replace this text with the contribution of the selected membership type and "
+"the due dates."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:232
+msgid "Statute and order"
+msgstr ""
+
+#. translators: %s: placeholder that a club replaces with a real link.
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:235
+#, php-format
+msgid ""
+"Read the statute and the access rules. Replace this text with your own "
+"wording and add a link: %s"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:236
+msgid "Statute in full text"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:239
+msgid "Declarations"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:239
+msgid ""
+"I accept the statute and the contribution order, and I confirm that the data "
+"above is correct."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:242
+msgid "Direct debit authorisation"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:243
+msgid ""
+"I authorise the club to collect the contribution by direct debit. Only add "
+"this field when your accounting really uses SEPA."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:261
+msgid "Donation pledge"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:262
+msgid ""
+"Amount and rhythm as cards; the address only appears when a donation receipt "
+"is wanted."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:268
+msgid "Amount"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:272
+msgid ""
+"At least 1.00. Enter the amount as a plain number, for example 25 or 12.50."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:277
+msgid "How often?"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:279
+msgid "One time"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:280
+msgid "Monthly"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:281
+msgid "Yearly"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:286
+msgid ""
+"This form records the pledge only. Recurring payments need a separate "
+"payment or direct debit integration."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:291
+msgid "What should the donation support?"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:293
+msgid "Where it is needed most"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:294
+msgid "Current projects"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:295
+msgid "Educational work"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:296
+msgid "Something else"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:301
+msgid "Your own purpose"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:308
+msgid "About you"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:330
+msgid "We send the confirmation of receipt to this address."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:333
+msgid "Do you need a donation receipt?"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:382
+#: src/WordPress/Forms/Templates/EventsTemplates.php:140
+#: src/WordPress/Forms/Templates/EventsTemplates.php:509
+msgid ""
+"Use Back to review your entries. After submitting you will see a summary of "
+"everything you entered."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:385
+msgid "How to pay"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:386
+msgid ""
+"This pledge does not transfer money. Replace this text with your bank "
+"details or a payment link before publishing."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:390
+msgid "Donation"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/CommunityTemplates.php:402
+msgid ""
+"We process your entries to run the club or the donation. Replace this text "
+"with your own privacy notice and add a link to it before publishing."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:31
+msgid "Event registration"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:32
+msgid ""
+"Attendee data, ticket cards with a conditional discount reason, participant "
+"count and a confirmation step."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:63
+#: src/WordPress/Forms/Templates/EventsTemplates.php:66
+msgid "Event"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:68
+msgid "First date"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:69
+msgid "Second date"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:70
+msgid "Online"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:77
+msgid "Ticket category"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:80
+msgid "Reduced"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:81
+msgid "Free"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:88
+msgid "Reason for the reduced ticket"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:90
+msgid "Student"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:91
+msgid "Pupil"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:92
+msgid "Volunteer card"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:105
+msgid "Number of participants"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:115
+msgid "Catering"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:117
+msgid "Without catering"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:118
+msgid "Standard menu"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:119
+#: src/WordPress/Forms/Templates/EventsTemplates.php:495
+msgid "Vegetarian"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:120
+#: src/WordPress/Forms/Templates/EventsTemplates.php:496
+msgid "Vegan"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:127
+msgid "Further participants"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:129
+msgid "Name of the further participant"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:134
+msgid ""
+"Add one row for every further person. Their data is stored inside this group."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:138
+msgid "Barriers, allergies, other remarks"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:145
+msgid "Terms and conditions"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:146
+msgid "I accept the terms and conditions of this event."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:173
+msgid "Workshop booking"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:174
+msgid ""
+"Workshop and session, participant data, and questions for the instructor."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:180
+msgid "Workshop"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:182
+msgid "Basics"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:183
+msgid "Advanced"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:184
+msgid "Special session"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:189
+msgid ""
+"Replace the options with the workshops you actually offer; session times are "
+"fixed in this starter."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:197
+msgid "Start"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:209
+msgid "Your experience"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:211
+msgid "Beginner"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:212
+msgid "Intermediate"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:213
+msgid "Expert"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:219
+msgid "Topic you want to go deeper into"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:223
+#: src/WordPress/Forms/Templates/EventsTemplates.php:520
+msgid "Participant"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:252
+msgid "Company or organisation"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:258
+msgid "Questions"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:259
+msgid "Questions for the instructor"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:263
+msgid "Workshop and session"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:276
+msgid "Volunteer sign-up"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:277
+msgid ""
+"Tasks and availability as cards, with a free-text field for the “other” task."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:307
+msgid "Deployment"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:310
+msgid "Tasks you can help with"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:312
+msgid "Set-up"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:313
+msgid "Take-down"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:314
+msgid "Kitchen"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:315
+msgid "Technology"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:316
+msgid "Supervision"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:324
+msgid "Which other task?"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:334
+msgid "Days you are available"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:341
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:127
+msgid "Preferred time of day"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:345
+msgid "Relevant experience"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:346
+msgid "Last things"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:347
+msgid "Anything else we should know?"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:364
+msgid "Camp sign-up (youth)"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:365
+msgid ""
+"Four steps: participant, contact, stay and confirmation. Minor participants "
+"unlock a contact person group."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:397
+msgid "Gender"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:399
+msgid "Female"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:400
+msgid "Male"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:444
+msgid "Will the participant still be under 18 at the start of the camp?"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:452
+msgid ""
+"Compare the date of birth with the first day of the camp, not with today."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:457
+msgid "Contact person for minors"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:459
+msgid "Name of the contact person"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:460
+msgid "Telephone of the contact person"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:461
+msgid "E-mail of the contact person"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:465
+msgid "These fields are grouped together and stored under their own key."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:469
+msgid "About the stay"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:472
+msgid "How do you want to travel?"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:474
+msgid "On my own"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:475
+msgid "I need a lift"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:476
+msgid "Together as a group"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:483
+msgid "Where should the lift start?"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:493
+msgid "Food preferences"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:503
+msgid "Please describe your dietary needs"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:507
+msgid "Anything else we should know about you?"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:510
+msgid "Terms of participation"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:510
+msgid "I accept the terms of participation and the cancellation policy."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:514
+msgid "Photos"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:515
+msgid ""
+"I agree that photos of me may be published. This is voluntary and you can "
+"withdraw it at any time."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:531
+msgid "Room preference"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:533
+msgid "Single room"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:534
+msgid "Two-bed room"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:535
+msgid "Shared room"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/EventsTemplates.php:548
+msgid ""
+"We process your entries to organise the event and may pass them to the "
+"people who need them (catering, transport, group leaders). Replace this text "
+"with your own privacy notice before publishing."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:35
+msgid "Contact form"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:36
+msgid "Salutation, name, e-mail, subject and message in two columns."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:72
+msgid "Subject"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:81
+msgid "Message"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:88
+msgid "Please describe your request in as much detail as possible."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:106
+msgid "Request a callback"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:107
+msgid ""
+"Name, number and a preferred slot; the time window only appears once a date "
+"is set."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:133
+msgid "What is it about?"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:149
+msgid "Feedback and rating"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:150
+msgid ""
+"Star rating, category and recommendation; the e-mail field only appears for "
+"people who want to be contacted."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:154
+msgid "Overall rating"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:159
+msgid "What is your feedback about?"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:162
+msgid "Service"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:169
+msgid "Would you recommend us?"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:172
+msgid "Maybe"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:179
+msgid "What did you like?"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:180
+msgid "What can we improve?"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:184
+msgid ""
+"Your rating tells us something went wrong. A concrete example helps us fix "
+"it – but you can also submit the form without it."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:189
+msgid "May we contact you about this?"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:221
+msgid "Newsletter sign-up"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:222
+msgid "E-mail first, optional name and topic selection as checkbox cards."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:228
+msgid "E-mail address"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:235
+msgid "You will receive a confirmation e-mail before the subscription starts."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:259
+msgid "Topics you are interested in"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:261
+msgid "News"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:263
+msgid "Offers"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:264
+msgid "Articles"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:283
+msgid "Appointment request"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:284
+msgid ""
+"Three steps: slot, contact data and confirmation. An inquiry, not a binding "
+"booking."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:294
+msgid "Introductory meeting"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:302
+msgid "Describe the service you need"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:316
+msgid "Alternative date"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:319
+msgid "Alternative time"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:324
 msgid "Contact details"
 msgstr ""
 
-#: src/WordPress/Forms/Templates.php:157
-msgid "Trip"
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:351
+msgid "Anything we should know?"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:355
+msgid ""
+"Please check your entries on the previous steps. After submitting you will "
+"see a summary of everything you entered."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:360
+msgid ""
+"This is a request. You will receive a written confirmation once the slot has "
+"actually been booked."
+msgstr ""
+
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:363
+msgid "Preferred slot"
+msgstr ""
+
+#: src/WordPress/Forms/Templates/GeneralTemplates.php:375
+msgid ""
+"We process your entries to handle your request. Replace this text with your "
+"own privacy notice and add a link to it before publishing."
 msgstr ""
 
 #: src/WordPress/Frontend/DesignGallery.php:42
@@ -1189,23 +2610,7 @@ msgid "Growing underlines, an animated button and success ticks."
 msgstr ""
 
 #: src/WordPress/Frontend/DesignGallery.php:93
-msgid "Ms"
-msgstr ""
-
-#: src/WordPress/Frontend/DesignGallery.php:93
-msgid "Mr"
-msgstr ""
-
-#: src/WordPress/Frontend/DesignGallery.php:93
 msgid "Not specified"
-msgstr ""
-
-#: src/WordPress/Frontend/DesignGallery.php:105
-msgid "First name"
-msgstr ""
-
-#: src/WordPress/Frontend/DesignGallery.php:110
-msgid "Last name"
 msgstr ""
 
 #: src/WordPress/Frontend/DesignGallery.php:114
@@ -1218,10 +2623,6 @@ msgstr ""
 
 #: src/WordPress/Frontend/DesignGallery.php:141
 msgid "All"
-msgstr ""
-
-#: src/WordPress/Frontend/DesignGallery.php:150
-msgid "Personal details"
 msgstr ""
 
 #: src/WordPress/Frontend/DesignGallery.php:155
@@ -1328,9 +2729,31 @@ msgstr ""
 msgid "You are not allowed to preview this form."
 msgstr ""
 
+#: src/WordPress/Frontend/TemplatePreview.php:43
+msgid "You are not allowed to preview this template."
+msgstr ""
+
+#: src/WordPress/Frontend/TemplatePreview.php:49
+msgid "This template does not exist."
+msgstr ""
+
+#: src/WordPress/Frontend/TemplatePreview.php:57
+msgid "Template preview"
+msgstr ""
+
+#: src/WordPress/Frontend/TemplatePreview.php:59
+msgid "Preview"
+msgstr ""
+
+#: src/WordPress/Frontend/TemplatePreview.php:59
+msgid ""
+"This is the real form. Try it out, including conditions and validation – "
+"nothing you enter is sent or stored."
+msgstr ""
+
 #: src/WordPress/Rest/EntriesController.php:122
 #: src/WordPress/Rest/ExportController.php:52
-#: src/WordPress/Rest/FormToolsController.php:123
+#: src/WordPress/Rest/FormToolsController.php:153
 #: src/WordPress/Rest/FormsController.php:296
 #: src/WordPress/Rest/WebhooksController.php:56
 msgid "Form not found."
@@ -1349,13 +2772,13 @@ msgstr ""
 msgid "Enter a note of at most 2000 characters."
 msgstr ""
 
-#: src/WordPress/Rest/FormToolsController.php:74
-#: src/WordPress/Rest/FormToolsController.php:78
+#: src/WordPress/Rest/FormToolsController.php:104
+#: src/WordPress/Rest/FormToolsController.php:108
 msgid "Choose a valid SW Forms JSON export (up to 1 MB)."
 msgstr ""
 
-#: src/WordPress/Rest/FormToolsController.php:84
-#: src/WordPress/Rest/FormToolsController.php:116
+#: src/WordPress/Rest/FormToolsController.php:114
+#: src/WordPress/Rest/FormToolsController.php:146
 #: src/WordPress/Rest/FormsController.php:160
 msgid "The form could not be saved. Please fix the marked problems."
 msgstr ""

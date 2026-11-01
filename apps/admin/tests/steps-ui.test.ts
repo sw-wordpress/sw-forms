@@ -7,10 +7,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { formsApi } from '@/api';
 import BuilderCanvas from '@/features/builder/BuilderCanvas.vue';
 import FormSettingsPanel from '@/features/builder/FormSettingsPanel.vue';
-import FormLibrary from '@/features/forms/FormLibrary.vue';
-import { templateSummary } from '@/features/forms/librarySummary';
 import { useBuilderStore } from '@/stores/builder';
-import type { FieldTypeDefinition, FormDetail, FormTemplate } from '@/types/api';
+import type { FieldTypeDefinition, FormDetail } from '@/types/api';
 import en from '@/i18n/en';
 
 const push = vi.fn();
@@ -46,8 +44,6 @@ const stubs = {
   MergeTagMenu: true,
   ConfirmDialog: { props: ['modelValue', 'title'], emits: ['confirm'], template: '<div v-if="modelValue" class="confirm"><button class="do-confirm" @click="$emit(\'confirm\')">{{ title }}</button></div>' },
 };
-/** jsdom's File lacks `text()`; the library only needs size and text. */
-const jsonFile = (text: string, size = text.length) => ({ size, text: async () => text }) as unknown as File;
 const i18n = () => createI18n({ legacy: false, locale: 'en', messages: { en } });
 const types: FieldTypeDefinition[] = [
   { type: 'input', label: 'Input', icon: '', category: 'basic', isData: true, container: '', supports: ['key', 'label'], settings: [], defaults: {} },
@@ -134,66 +130,3 @@ describe('step tabs on the canvas', () => {
   });
 });
 
-describe('template library', () => {
-  const travel: FormTemplate = { id: 'travel', title: 'Travel', description: 'Multi-step', icon: 'r_flight_takeoff', document: detail().document };
-  const contact: FormTemplate = { id: 'contact', title: 'Contact', document: { ...detail().document, fields: [{ id: 'g', type: 'group', children: [{ id: 'x', type: 'input' }], columns: [{ id: 'c', width: 12, children: [{ id: 'y', type: 'input' }] }] }], settings: { ...detail().document.settings, steps: { enabled: false, firstLabel: '', indicator: 'numbers' } } } };
-
-  it('summarizes fields and steps', () => {
-    expect(templateSummary(travel.document)).toEqual({ fields: 2, steps: 2 });
-    expect(templateSummary(contact.document)).toEqual({ fields: 3, steps: 1 });
-  });
-
-  it('lists templates as cards and imports a template or a dropped JSON file', async () => {
-    let resolve: (items: FormTemplate[]) => void = () => {};
-    vi.spyOn(formsApi, 'templates').mockReturnValue(new Promise((done) => { resolve = done; }));
-    const imported = vi.spyOn(formsApi, 'import').mockResolvedValue({ id: 42 });
-    const wrapper = mount(FormLibrary, { global: { plugins: [i18n()], stubs } });
-    await wrapper.find('button').trigger('click');
-    expect(wrapper.findAll('.skeleton')).toHaveLength(4);
-    resolve([travel, contact]);
-    await flushPromises();
-    const cards = wrapper.findAll('.swf-library__card');
-    expect(cards.map((c) => c.text().replace(/\s+/g, ' '))).toEqual(['TravelMulti-step2 fields · 2 steps', 'Contact3 fields']);
-    await cards[0]!.trigger('click');
-    await flushPromises();
-    expect(imported).toHaveBeenCalledWith({ format: 'swforms', formatVersion: 1, title: 'Travel', document: travel.document });
-    expect(push).toHaveBeenCalledWith('/forms/42');
-
-    await wrapper.find('button').trigger('click');
-    expect(formsApi.templates).toHaveBeenCalledTimes(1);
-    const drop = wrapper.find('.swf-library__drop');
-    await drop.trigger('dragenter');
-    expect(drop.classes()).toContain('swf-library__drop--active');
-    const file = jsonFile('{"format":"swforms"}');
-    await drop.trigger('drop', { dataTransfer: { files: [file] } });
-    await flushPromises();
-    expect(drop.classes()).not.toContain('swf-library__drop--active');
-    expect(imported).toHaveBeenLastCalledWith({ format: 'swforms' });
-  });
-
-  it('reports oversized files, failed requests and a failed template list', async () => {
-    const notify = await import('@/composables/useNotify');
-    const error = vi.fn();
-    vi.spyOn(notify, 'useNotify').mockReturnValue({ error } as unknown as ReturnType<typeof notify.useNotify>);
-    vi.spyOn(formsApi, 'templates').mockRejectedValue(new Error('offline'));
-    vi.spyOn(formsApi, 'import').mockRejectedValue(new Error('invalid'));
-    const wrapper = mount(FormLibrary, { global: { plugins: [i18n()], stubs } });
-    await wrapper.find('button').trigger('click');
-    await flushPromises();
-    expect(error).toHaveBeenCalledTimes(1);
-    const picker = wrapper.find<HTMLInputElement>('input[type="file"]');
-    const big = jsonFile('{}', 2 * 1048576);
-    Object.defineProperty(picker.element, 'files', { value: [big], configurable: true });
-    await picker.trigger('change');
-    await flushPromises();
-    expect(String(error.mock.calls[1]![0])).toContain('1 MB');
-    Object.defineProperty(picker.element, 'files', { value: [jsonFile('{}')], configurable: true });
-    await picker.trigger('change');
-    await flushPromises();
-    expect(String(error.mock.calls[2]![0])).toContain('invalid');
-    Object.defineProperty(picker.element, 'files', { value: [], configurable: true });
-    await picker.trigger('change');
-    await flushPromises();
-    expect(error).toHaveBeenCalledTimes(3);
-  });
-});

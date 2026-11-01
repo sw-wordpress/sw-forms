@@ -148,7 +148,8 @@ describe('api endpoints', () => {
   it('maps form endpoints to REST routes', async () => {
     const { formsApi } = await import('@/api');
     const document = { schemaVersion: 1, fields: [] } as never;
-    expect(await formsApi.templates()).toEqual([{ id: 1 }]);
+    expect(await formsApi.templates()).toEqual({ categories: [], items: [{ id: 1 }] });
+    await formsApi.template('contact');
     await formsApi.import({ a: 1 });
     await formsApi.export(3);
     expect(await formsApi.versions(3, 2)).toEqual([{ id: 1 }]);
@@ -169,6 +170,7 @@ describe('api endpoints', () => {
     const root = baseConfig.restRoot;
     expect(fetcher.mock.calls.map((_, i) => `${call(i).method} ${call(i).url.replace(root, '')}`)).toEqual([
       'GET form-templates',
+      'GET form-templates/contact',
       'POST forms/import',
       'GET forms/3/export',
       'GET forms/3/versions?page=2',
@@ -186,11 +188,11 @@ describe('api endpoints', () => {
       'GET field-types',
       'POST forms/3/webhooks/hook/test',
     ]);
-    expect(call(1).body).toEqual({ a: 1 });
-    expect(call(7).body).toEqual({ title: 'New' });
-    expect(call(9).body).toEqual({ title: 'T', document });
-    expect(call(10).body).toEqual({ document });
-    expect(call(12).body).toEqual({ status: 'inactive' });
+    expect(call(2).body).toEqual({ a: 1 });
+    expect(call(8).body).toEqual({ title: 'New' });
+    expect(call(10).body).toEqual({ title: 'T', document });
+    expect(call(11).body).toEqual({ document });
+    expect(call(13).body).toEqual({ status: 'inactive' });
   });
 
   it('maps entry and settings endpoints to REST routes', async () => {

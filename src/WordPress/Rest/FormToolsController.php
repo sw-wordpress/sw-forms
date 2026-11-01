@@ -13,6 +13,7 @@ use SWForms\WordPress\Forms\FormRepository;
 use SWForms\WordPress\Forms\FormService;
 use SWForms\WordPress\Forms\PortableDocument;
 use SWForms\WordPress\Forms\Templates;
+use SWForms\WordPress\Frontend\TemplatePreview;
 use SWForms\WordPress\Support\Capabilities;
 use SWForms\WordPress\Webhooks\WebhookSettings;
 
@@ -20,6 +21,7 @@ final class FormToolsController extends BaseController {
 	public function register_routes(): void {
 		foreach ( array(
 			array( '/form-templates', 'GET', 'templates' ),
+			array( '/form-templates/(?P<id>[a-z0-9-]+)', 'GET', 'template_item' ),
 			array( '/forms/import', 'POST', 'import_form' ),
 			array( '/forms/(?P<id>\d+)/export', 'GET', 'export_form' ),
 			array( '/forms/(?P<id>\d+)/versions', 'GET', 'versions' ),
@@ -47,8 +49,36 @@ final class FormToolsController extends BaseController {
 		);
 	}
 
+	/**
+	 * Gallery list: categories plus one card per template, without documents. The full document
+	 * and the preview URL come from {@see self::template_item()} so the list stays small.
+	 *
+	 * @since 0.5.0 documents removed from the list in 0.7.0
+	 */
 	public function templates(): \WP_REST_Response {
-		return new \WP_REST_Response( array( 'items' => Templates::all() ) );
+		$response = new \WP_REST_Response(
+			array(
+				'categories' => Templates::categories(),
+				'items'      => Templates::summaries(),
+			)
+		);
+		$response->header( 'Cache-Control', 'private, no-store' );
+		return $response;
+	}
+
+	/**
+	 * One template including its document, for the gallery detail view and the preview iframe.
+	 *
+	 * @since 0.7.0
+	 */
+	public function template_item( \WP_REST_Request $request ): \WP_REST_Response|\WP_Error {
+		$item = Templates::get( sanitize_text_field( (string) $request['id'] ) );
+		if ( null === $item ) {
+			return $this->missing();
+		}
+		$response = new \WP_REST_Response( array_replace( $item, array( 'previewUrl' => TemplatePreview::url( (string) $item['id'] ) ) ) );
+		$response->header( 'Cache-Control', 'private, no-store' );
+		return $response;
 	}
 
 	public function export_form( \WP_REST_Request $request ): \WP_REST_Response|\WP_Error {

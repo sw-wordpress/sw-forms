@@ -35,6 +35,8 @@ All hooks use the prefix `swf_`. Unless stated otherwise exceptions of callbacks
 | `swf_captcha_allowed_hostnames` | `list<string> $hosts, string $provider` | Hostnames accepted by CAPTCHA verification; defaults to the lowercase home URL hostname. | 0.3.0 |
 | `swf_client_ip` | `string $ip` | IP for rate limiting / hashing. Return the forwarded address behind a trusted proxy. | 0.1.0 |
 | `swf_webhook_allow_private_url` | `bool $allow, string $url` | Default false. Grant a trusted, exact URL exception for private destinations/nonstandard ports. HTTP(S) syntax restrictions remain. Shared transport for queued, test and resent requests. Never return true indiscriminately. | 0.2.0 |
+| `swf_form_templates` | `array<string, array<string, mixed>> $items` | Starter documents of the template gallery, keyed by template id. Add, replace or unset items; each needs `id` (`[a-z0-9-]{1,64}`), `title` and a schema version 1 `document`. `description`, `icon`, `category`, `tags`, `version` are display hints; `fields`, `steps`, `conditions`, `isMultiStep` are computed by the catalog. Items without a usable id/title are dropped. See [template catalog](extending.md#starter-template-catalog-070). | 0.7.0 |
+| `swf_form_template_categories` | `array<string, array{slug: string, title: string, icon: string, count: int}> $categories` | Groups of the gallery keyed by slug (listing order); append your own group when you add templates of a new `category`. Unknown or partial entries are normalised. | 0.7.0 |
 
 The `wpa_handle_spammers` action belongs to WP Armour, not SW Forms; see its [integration notes](extending.md#wp-armour-free-and-extended).
 

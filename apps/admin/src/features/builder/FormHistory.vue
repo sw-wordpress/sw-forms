@@ -38,12 +38,12 @@ async function restore(): Promise<void> {
     <p>{{ t('m5.historyNotice') }}</p>
     <div v-for="item in items" :key="item.version" class="swf-row">
       <span>#{{ item.version }} · {{ dateTime(item.createdAt) }}</span>
-      <q-btn flat no-caps :label="t('m5.view')" @click="view(item.version)" />
-      <q-btn flat no-caps :label="t('m5.restore')" :disable="store.dirty || busy" @click="selected = item.version" />
+      <q-btn flat no-caps class="swf-history__view" :label="t('m5.view')" @click="view(item.version)" />
+      <q-btn flat no-caps class="swf-history__restore" :label="t('m5.restore')" :disable="store.dirty || busy" @click="selected = item.version" />
     </div>
     <q-btn flat :disable="page === 1" icon="r_chevron_left" :aria-label="t('m5.previousVersions')" @click="page--" />
     <q-btn flat :disable="items.length < 50" icon="r_chevron_right" :aria-label="t('m5.nextVersions')" @click="page++" />
   </SwfCard>
-  <q-dialog :model-value="document !== ''" @update:model-value="document = ''"><q-card class="swf-dialog"><q-card-section><q-input :model-value="document" type="textarea" readonly autogrow :label="t('m5.versionDocument')" /></q-card-section><q-card-actions><q-btn v-close-popup flat :label="t('common.close')" /></q-card-actions></q-card></q-dialog>
-  <q-dialog :model-value="selected !== null" @update:model-value="selected = null"><q-card class="swf-dialog"><q-card-section>{{ t('m5.confirmRestore') }}</q-card-section><q-card-actions><q-btn v-close-popup flat :label="t('common.cancel')" /><q-btn :loading="busy" :label="t('m5.restore')" @click="restore" /></q-card-actions></q-card></q-dialog>
+  <q-dialog :model-value="document !== ''" @update:model-value="document = ''"><q-card class="swf-dialog"><q-card-section><q-input :model-value="document" type="textarea" readonly autogrow class="swf-history__document" :label="t('m5.versionDocument')" /></q-card-section><q-card-actions><q-btn v-close-popup flat :label="t('common.close')" /></q-card-actions></q-card></q-dialog>
+  <q-dialog :model-value="selected !== null" @update:model-value="selected = null"><q-card class="swf-dialog"><q-card-section>{{ t('m5.confirmRestore') }}</q-card-section><q-card-actions><q-btn v-close-popup flat :label="t('common.cancel')" /><q-btn :loading="busy" class="swf-history__confirm" :label="t('m5.restore')" @click="restore" /></q-card-actions></q-card></q-dialog>
 </template>

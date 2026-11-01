@@ -1,30 +1,48 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { formsApi } from '@/api';
 import { useNotify } from '@/composables/useNotify';
-import type { FormTemplate } from '@/types/api';
-import { templateSummary as summary } from './librarySummary';
+import type { FormTemplate, FormTemplateCard, TemplateCategory } from '@/types/api';
+import { groupTemplates } from './templateBrowser';
+import TemplateDetail from './TemplateDetail.vue';
 
+/**
+ * Template gallery and JSON import. Templates are grouped by category, searchable and open a
+ * detail view with the real rendered form plus the full field structure; creating a form always
+ * produces a new inactive instance that is never updated from the template again.
+ */
 const IMPORT_LIMIT = 1048576;
 const { t } = useI18n();
 const router = useRouter();
 const notify = useNotify();
 const open = ref(false);
+const tab = ref<'templates' | 'import'>('templates');
 const loading = ref(false);
-/** Template id or `file` while an import request runs. */
+/** Template id or `file` while a request runs. */
 const busy = ref<string | null>(null);
 const dragging = ref(false);
 const fileInput = ref<HTMLInputElement | null>(null);
-const templates = ref<FormTemplate[]>([]);
+const categories = ref<TemplateCategory[]>([]);
+const cards = ref<FormTemplateCard[]>([]);
+/** Quasar's clearable input sets the model to null, not ''. */
+const query = ref<string | null>('');
+const category = ref('');
+const detailId = ref('');
+const detailOpen = ref(false);
+
+const groups = computed(() => groupTemplates(cards.value, categories.value, query.value, category.value));
+const matches = computed(() => groups.value.reduce((total, group) => total + group.items.length, 0));
 
 async function show(): Promise<void> {
   open.value = true;
-  if (templates.value.length > 0) return;
+  if (cards.value.length > 0) return;
   loading.value = true;
   try {
-    templates.value = await formsApi.templates();
+    const list = await formsApi.templates();
+    categories.value = list.categories;
+    cards.value = list.items;
   } catch (error) {
     notify.error(error);
   } finally {
@@ -38,6 +56,8 @@ async function importData(data: unknown, source: string): Promise<void> {
   try {
     const result = await formsApi.import(data);
     open.value = false;
+    detailOpen.value = false;
+    detailId.value = '';
     await router.push(`/forms/${result.id}`);
   } catch (error) {
     notify.error(error);
@@ -46,8 +66,13 @@ async function importData(data: unknown, source: string): Promise<void> {
   }
 }
 
-function useTemplate(item: FormTemplate): void {
-  void importData({ format: 'swforms', formatVersion: 1, title: item.title, document: item.document }, item.id);
+function openDetail(card: FormTemplateCard): void {
+  detailId.value = card.id;
+  detailOpen.value = true;
+}
+
+function createFrom(template: FormTemplate): void {
+  void importData({ format: 'swforms', formatVersion: 1, title: template.title, document: template.document }, template.id);
 }
 
 async function importFile(selected: File | undefined): Promise<void> {
@@ -85,64 +110,137 @@ function onDrop(event: DragEvent): void {
         <q-btn v-close-popup flat round dense icon="r_close" :aria-label="t('common.close')" />
       </q-card-section>
 
-      <q-card-section class="swf-library__body">
-        <h3 class="swf-eyebrow">{{ t('library.templates') }}</h3>
-        <div class="swf-library__grid">
-          <template v-if="loading">
-            <q-skeleton v-for="n in 4" :key="n" type="rect" height="112px" class="swf-library__skeleton" />
-          </template>
-          <button
-            v-for="item in templates"
-            v-else
-            :key="item.id"
-            type="button"
-            class="swf-library__card"
-            :disabled="busy !== null"
-            :aria-busy="busy === item.id"
-            @click="useTemplate(item)"
-          >
-            <span class="swf-library__icon" aria-hidden="true">
-              <q-spinner v-if="busy === item.id" size="20px" />
-              <q-icon v-else :name="item.icon || 'r_description'" size="22px" />
-            </span>
-            <span class="swf-library__text">
-              <strong>{{ item.title }}</strong>
-              <span v-if="item.description" class="swf-library__desc">{{ item.description }}</span>
-              <span class="swf-library__meta">
-                {{ t('library.fields', summary(item.document).fields) }}
-                <template v-if="summary(item.document).steps > 1"> · {{ t('library.steps', { n: summary(item.document).steps }) }}</template>
-              </span>
-            </span>
-          </button>
-        </div>
+      <q-tabs v-model="tab" class="swf-library__tabs" dense align="left" active-color="primary" indicator-color="primary" narrow-indicator>
+        <q-tab name="templates" no-caps icon="r_grid_view" :label="t('library.templates')" />
+        <q-tab name="import" no-caps icon="r_upload_file" :label="t('m5.import')" />
+      </q-tabs>
 
-        <h3 class="swf-eyebrow">{{ t('m5.import') }}</h3>
-        <div
-          class="swf-library__drop"
-          :class="{ 'swf-library__drop--active': dragging }"
-          @dragenter.prevent="dragging = true"
-          @dragover.prevent="dragging = true"
-          @dragleave.self="dragging = false"
-          @drop.prevent="onDrop"
-        >
-          <q-icon name="r_upload_file" size="28px" aria-hidden="true" />
-          <div class="swf-library__drop-text">
-            <strong>{{ t('library.drop') }}</strong>
-            <span class="swf-muted">{{ t('library.dropHint') }}</span>
+      <q-tab-panels v-model="tab" animated>
+        <q-tab-panel name="templates" class="swf-library__body">
+          <div class="swf-library__tools">
+            <q-input
+              v-model="query"
+              type="search"
+              dense
+              outlined
+              clearable
+              bg-color="white"
+              class="swf-library__search"
+              :placeholder="t('library.search')"
+              :aria-label="t('library.search')"
+            >
+              <template #append><q-icon name="r_search" /></template>
+            </q-input>
+            <div class="swf-library__categories" role="group" :aria-label="t('library.categories')">
+              <button
+                type="button"
+                class="swf-library__chip"
+                :class="{ 'is-active': category === '' }"
+                :aria-pressed="category === ''"
+                @click="category = ''"
+              >
+                {{ t('library.allCategories') }}
+              </button>
+              <button
+                v-for="entry in categories"
+                :key="entry.slug"
+                type="button"
+                class="swf-library__chip"
+                :class="{ 'is-active': category === entry.slug }"
+                :aria-pressed="category === entry.slug"
+                @click="category = entry.slug"
+              >
+                <q-icon :name="entry.icon" size="15px" aria-hidden="true" />{{ entry.title }}
+              </button>
+            </div>
           </div>
-          <q-btn outline no-caps :loading="busy === 'file'" :disable="busy !== null" :label="t('library.choose')" @click="fileInput?.click()" />
-          <input ref="fileInput" type="file" accept="application/json,.json" class="swf-library__file" :aria-label="t('m5.import')" @change="onPick" />
-        </div>
 
-        <p class="swf-library__notice"><q-icon name="r_info" size="18px" aria-hidden="true" />{{ t('m5.importNotice') }}</p>
-      </q-card-section>
+          <template v-if="loading">
+            <div class="swf-library__grid">
+              <q-skeleton v-for="n in 6" :key="n" type="rect" height="104px" class="swf-library__skeleton" />
+            </div>
+          </template>
+          <template v-else>
+            <p v-if="matches === 0" class="swf-library__empty">{{ t('library.noResults', { query: query ?? '' }) }}</p>
+            <section v-for="group in groups" :key="group.slug" class="swf-library__section" :aria-labelledby="`swf-library-${group.slug}`">
+              <h3 :id="`swf-library-${group.slug}`" class="swf-eyebrow">
+                <q-icon :name="group.icon" size="16px" aria-hidden="true" />{{ group.title }}
+                <span class="swf-library__count">{{ t('library.count', group.items.length) }}</span>
+              </h3>
+              <div class="swf-library__grid">
+                <button
+                  v-for="item in group.items"
+                  :key="item.id"
+                  type="button"
+                  class="swf-library__card"
+                  :class="{ 'is-busy': busy === item.id }"
+                  :disabled="busy !== null"
+                  :aria-busy="busy === item.id"
+                  aria-haspopup="dialog"
+                  @click="openDetail(item)"
+                >
+                  <span class="swf-library__icon" aria-hidden="true">
+                    <q-spinner v-if="busy === item.id" size="20px" />
+                    <q-icon v-else :name="item.icon || 'r_description'" size="22px" />
+                  </span>
+                  <span class="swf-library__text">
+                    <strong>{{ item.title }}</strong>
+                    <span v-if="item.description" class="swf-library__desc">{{ item.description }}</span>
+                    <span class="swf-library__meta">
+                      {{ t('library.fields', item.fields) }}
+                      <template v-if="item.isMultiStep"> · {{ t('library.steps', { n: item.steps }) }}</template>
+                      <template v-if="item.conditions > 0"> · {{ t('library.conditions', item.conditions) }}</template>
+                    </span>
+                  </span>
+                  <q-icon name="r_chevron_right" size="18px" class="swf-library__go" aria-hidden="true" />
+                </button>
+              </div>
+            </section>
+          </template>
+
+          <p class="swf-library__notice">
+            <q-icon name="r_info" size="18px" aria-hidden="true" />
+            {{ t('library.templateNotice') }}
+          </p>
+        </q-tab-panel>
+
+        <q-tab-panel name="import" class="swf-library__body">
+          <div
+            class="swf-library__drop"
+            :class="{ 'swf-library__drop--active': dragging }"
+            @dragenter.prevent="dragging = true"
+            @dragover.prevent="dragging = true"
+            @dragleave.self="dragging = false"
+            @drop.prevent="onDrop"
+          >
+            <q-icon name="r_upload_file" size="28px" aria-hidden="true" />
+            <div class="swf-library__drop-text">
+              <strong>{{ t('library.drop') }}</strong>
+              <span class="swf-muted">{{ t('library.dropHint') }}</span>
+            </div>
+            <q-btn outline no-caps :loading="busy === 'file'" :disable="busy !== null" :label="t('library.choose')" @click="fileInput?.click()" />
+            <input ref="fileInput" type="file" accept="application/json,.json" class="swf-library__file" :aria-label="t('m5.import')" @change="onPick" />
+          </div>
+
+          <p class="swf-library__notice"><q-icon name="r_info" size="18px" aria-hidden="true" />{{ t('m5.importNotice') }}</p>
+        </q-tab-panel>
+      </q-tab-panels>
     </q-card>
   </q-dialog>
+
+  <TemplateDetail
+    :card-id="detailId"
+    :open="detailOpen"
+    :creating="busy !== null && busy !== 'file'"
+    @update:open="detailOpen = $event"
+    @back="detailOpen = false"
+    @create="createFrom"
+  />
 </template>
 
 <style scoped>
 .swf-library {
-  width: min(760px, calc(100vw - 24px));
+  width: min(900px, calc(100vw - 24px));
 }
 .swf-library__head {
   display: flex;
@@ -154,17 +252,73 @@ function onDrop(event: DragEvent): void {
 .swf-library__head p {
   margin: 4px 0 0;
 }
+.swf-library__tabs {
+  border-bottom: 1px solid var(--swf-border);
+}
 .swf-library__body {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
+  max-height: min(62vh, 560px);
+  overflow: auto;
 }
 .swf-library__body .swf-eyebrow {
+  display: flex;
+  gap: 6px;
+  align-items: center;
   margin: 8px 0 0;
+}
+.swf-library__tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+.swf-library__search {
+  flex: 1 1 220px;
+  min-width: 200px;
+}
+.swf-library__categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.swf-library__chip {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+  padding: 5px 10px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--swf-text);
+  cursor: pointer;
+  background: var(--swf-surface-2);
+  border: 1px solid var(--swf-border);
+  border-radius: 999px;
+}
+.swf-library__chip.is-active {
+  color: var(--swf-primary-text);
+  background: var(--swf-primary-bg);
+  border-color: var(--swf-primary);
+}
+.swf-library__chip:focus-visible {
+  outline: 2px solid var(--swf-focus);
+  outline-offset: 2px;
+}
+.swf-library__section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.swf-library__count {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--swf-muted);
 }
 .swf-library__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 12px;
 }
 .swf-library__skeleton {
@@ -197,6 +351,10 @@ function onDrop(event: DragEvent): void {
   cursor: progress;
   opacity: 0.7;
 }
+.swf-library__go {
+  margin-left: auto;
+  color: var(--swf-muted);
+}
 .swf-library__icon {
   display: inline-flex;
   align-items: center;
@@ -222,6 +380,15 @@ function onDrop(event: DragEvent): void {
 .swf-library__meta {
   font-size: 12px;
   color: var(--swf-muted);
+}
+.swf-library__empty {
+  margin: 0;
+  padding: 14px;
+  font-size: 13px;
+  color: var(--swf-muted);
+  text-align: center;
+  border: 1px dashed var(--swf-border);
+  border-radius: var(--swf-radius-sm);
 }
 .swf-library__drop {
   display: flex;
@@ -268,6 +435,9 @@ function onDrop(event: DragEvent): void {
 @media (max-width: 520px) {
   .swf-library__drop {
     flex-wrap: wrap;
+  }
+  .swf-library__grid {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 @media (prefers-reduced-motion: reduce) {

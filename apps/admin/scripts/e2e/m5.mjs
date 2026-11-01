@@ -22,6 +22,11 @@ const page = await context.newPage();
 const errors = [];
 page.on('pageerror', (error) => errors.push(error.message));
 const entries = () => php('m5-fixture.php', 'entries', String(fixture.form)).items;
+// Reads the plugin REST API inside the logged-in app, so nonces and locale match the browser.
+const rest = (path) => page.evaluate(async (apiPath) => {
+  const response = await fetch(window.swFormsConfig.restRoot + apiPath, { headers: { 'X-WP-Nonce': window.swFormsConfig.nonce } });
+  return response.json();
+}, path);
 try {
   const visitor = await browser.newPage(); visitor.setDefaultTimeout(15000);
   await visitor.goto(fixture.url, { waitUntil: 'domcontentloaded' });
@@ -49,34 +54,43 @@ try {
   const saved = page.waitForResponse((response) => response.request().method() === 'PUT' && (new URL(response.url()).searchParams.get('rest_route') ?? new URL(response.url()).pathname).endsWith(`/forms/${fixture.form}`));
   await page.keyboard.press('Control+s'); assert.equal((await saved).status(), 200);
   await page.goto(`${auth.admin}#/forms/${fixture.form}/settings`);
-  await page.getByRole('button', { name: 'Restore as draft', exact: true }).first().waitFor();
-  await page.getByRole('button', { name: 'View', exact: true }).last().click();
-  await page.getByLabel('Version document', { exact: true }).waitFor();
-  assert.ok((await page.getByLabel('Version document', { exact: true }).inputValue()).includes('Quantity'));
+  await page.locator('.swf-history__restore').first().waitFor();
+  await page.locator('.swf-history__view').last().click();
+  await page.locator('.swf-history__document textarea').waitFor();
+  assert.ok((await page.locator('.swf-history__document textarea').inputValue()).includes('Quantity'));
   await page.keyboard.press('Escape');
-  await page.getByRole('button', { name: 'Restore as draft', exact: true }).last().click();
-  await page.locator('.q-dialog').getByRole('button', { name: 'Restore as draft', exact: true }).click();
+  await page.locator('.swf-history__restore').last().click();
+  await page.locator('.q-dialog .swf-history__confirm').click();
   await page.locator('.swf-builder__state--dirty').waitFor();
   await page.goto(`${auth.admin}#/forms/${fixture.form}/build`);
   await page.locator('.swf-workspace').waitFor();
   assert.ok((await page.locator('.swf-el').first().textContent()).includes('Quantity'));
   await page.goto(`${auth.admin}#/`);
-  await page.getByRole('button', { name: 'Templates / import', exact: true }).click();
-  await page.getByRole('button', { name: 'Contact', exact: true }).click();
+  await page.locator('button.q-btn', { hasText: 'library_books' }).first().click();
+  await page.locator('.swf-library__card').first().waitFor();
+  const galleryCards = await page.locator('.swf-library__card').count();
+  assert.ok(galleryCards >= 16, `the gallery offers ${galleryCards} starter templates`);
+  await page.locator('.swf-library__card').first().click();
+  await page.locator('.swf-template-detail__preview iframe').contentFrame().locator('.swf-form').waitFor();
+  await page.locator('.swf-template-detail__actions button').click();
   await page.locator('.swf-workspace').waitFor();
   const imported = Number(/#\/forms\/(\d+)/.exec(page.url())[1]); created.push(imported);
-  assert.equal(await page.locator('.swf-list--root > .swf-el').count(), 3);
+  const starter = (await rest('form-templates')).items[0];
+  const starterDocument = (await rest(`form-templates/${starter.id}`)).document;
+  assert.equal(await page.locator('.swf-list--root > .swf-el').count(), starterDocument.fields.length, 'the builder shows the template structure');
   const exported = await page.evaluate(async (id) => {
     const root = window.swFormsConfig.restRoot;
     return (await fetch(root + `forms/${id}/export`, { headers: { 'X-WP-Nonce': window.swFormsConfig.nonce } })).json();
   }, imported);
   assert.equal(exported.format, 'swforms');
   await page.goto(`${auth.admin}#/`);
-  await page.getByRole('button', { name: 'Templates / import', exact: true }).click();
+  await page.locator('button.q-btn', { hasText: 'library_books' }).first().click();
+  await page.locator('.swf-library__tabs .q-tab').nth(1).click();
+  await page.locator('.swf-library__drop').waitFor();
   await page.locator('input[type="file"]').setInputFiles({ name: 'contact.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(exported)) });
   await page.locator('.swf-workspace').waitFor();
   created.push(Number(/#\/forms\/(\d+)/.exec(page.url())[1]));
-  assert.equal(await page.locator('.swf-list--root > .swf-el').count(), 3);
+  assert.equal(await page.locator('.swf-list--root > .swf-el').count(), exported.document.fields.length, 'the imported document keeps the structure');
 
   await page.goto(fixture.editPost, { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => window.wp?.blocks?.getBlockType('swforms/form'));
