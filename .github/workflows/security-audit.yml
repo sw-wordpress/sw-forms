@@ -50,13 +50,12 @@ jobs:
           composer audit --locked --no-interaction >> "$REPORT" 2>&1 || failed=1
           endsection
 
-          cd apps/admin
-          section 'npm, shipped dependencies (high and above)'
-          npm audit --omit=dev --audit-level=high >> "$REPORT" 2>&1 || failed=1
+          section 'npm apps/admin, shipped dependencies (high and above)'
+          (cd apps/admin && npm audit --omit=dev --audit-level=high) >> "$REPORT" 2>&1 || failed=1
           endsection
 
-          section 'npm, all dependencies including dev tooling (high and above)'
-          npm audit --audit-level=high >> "$REPORT" 2>&1 || failed=1
+          section 'npm apps/admin, all dependencies including dev tooling (high and above)'
+          (cd apps/admin && npm audit --audit-level=high) >> "$REPORT" 2>&1 || failed=1
           endsection
 
           echo "failed=$failed" >> "$GITHUB_OUTPUT"
