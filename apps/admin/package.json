@@ -20,7 +20,7 @@
     "test:coverage": "vitest run --coverage --reporter=default --reporter=json --outputFile=coverage/tests.json && node tools/coverage.mjs"
   },
   "dependencies": {
-    "@quasar/extras": "^1.17.0",
+    "@quasar/extras": "^2.1.0",
     "pinia": "^4.1.0",
     "quasar": "^2.18.0",
     "sortablejs": "^1.15.6",
