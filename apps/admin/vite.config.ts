@@ -1,32 +1,19 @@
-import { fileURLToPath, URL } from 'node:url';
 import { resolve } from 'node:path';
 import { defineConfig } from 'vitest/config';
 import vue from '@vitejs/plugin-vue';
 import { quasar, transformAssetUrls } from '@quasar/vite-plugin';
-import { swfScope } from './tools/postcssScope';
+import { swfScope } from './tools/postcssScope.ts';
 
-/** Ship only the woff2 icon font (all supported browsers); drops the legacy woff. */
-function woff2Only() {
-  return {
-    name: 'swf-woff2-only',
-    enforce: 'pre' as const,
-    transform(code: string, id: string) {
-      if (!id.includes('material-icons-round.css')) return null;
-      return code.replace(/,\s*url\([^)]*\.woff\d?\??[^)]*\)\s*format\((['"])woff\1\)/g, '');
-    },
-  };
-}
-
-const outDir = resolve(__dirname, '../../assets/admin');
+const outDir = resolve(import.meta.dirname, '../../assets/admin');
 
 /** Admin SPA build. The frontend runtime has its own config (vite.frontend.config.ts). */
 export default defineConfig({
   base: './',
-  plugins: [woff2Only(), vue({ template: { transformAssetUrls } }), quasar()],
+  plugins: [vue({ template: { transformAssetUrls } }), quasar()],
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url)),
-      '@shared': fileURLToPath(new URL('./shared', import.meta.url)),
+      '@': resolve(import.meta.dirname, 'src'),
+      '@shared': resolve(import.meta.dirname, 'shared'),
     },
   },
   css: { postcss: { plugins: [swfScope()] } },
@@ -40,12 +27,12 @@ export default defineConfig({
     target: 'es2020',
     modulePreload: { polyfill: false },
     chunkSizeWarningLimit: 900,
-    rollupOptions: {
-      input: { app: resolve(__dirname, 'src/main.ts') },
+    rolldownOptions: {
+      input: { app: resolve(import.meta.dirname, 'src/main.ts') },
       output: {
         // Keep side effects in the tiny entry only: WordPress versions app.js with a
         // query string, while lazy chunks import shared modules without that query.
-        manualChunks: (id) => id.endsWith('/src/bootstrap.ts') ? 'bootstrap' : undefined,
+        codeSplitting: { groups: [{ name: 'bootstrap', test: /[\\/]src[\\/]bootstrap\.ts$/ }] },
         entryFileNames: 'app.js',
         chunkFileNames: 'chunks/[name]-[hash].js',
         assetFileNames: (info) => {

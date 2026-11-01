@@ -10,6 +10,14 @@ const files = (...names: string[]) => names.map((name) => new File(['document'],
 const change = (element: HTMLInputElement) => element.dispatchEvent(new Event('change', { bubbles: true }));
 const submit = () => document.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
 const response = (data: unknown) => ({ json: async () => data }) as Response;
+/** Keeps the real URL constructor (the runtime and jsdom parse URLs) and fakes only object URLs. */
+const stubObjectUrls = (revoke: (url: string) => void = vi.fn()) => {
+  class PreviewURL extends URL {
+    static createObjectURL = (): string => 'blob:preview';
+    static revokeObjectURL = revoke;
+  }
+  vi.stubGlobal('URL', PreviewURL);
+};
 const drop = (target: Element, names?: string[], type = 'drop') => {
   const event = new Event(type, { bubbles: true, cancelable: true });
   if (names) Object.defineProperty(event, 'dataTransfer', { value: { files: files(...names) } });
@@ -166,7 +174,7 @@ describe('actual frontend form runtime', () => {
     expect(document.activeElement).toBe(document.querySelector('.swf-row .ts-control input'));
   });
   it('keeps submission blocked when another thumbnail is cancelled during a crop export', async () => {
-    vi.stubGlobal('URL', { createObjectURL: () => 'blob:preview', revokeObjectURL: vi.fn() });
+    stubObjectUrls();
     vi.stubGlobal('DataTransfer', class {
       files: File[] = [];
       items = { add: (file: File) => { this.files.push(file); } };
@@ -292,7 +300,7 @@ describe('actual frontend form runtime', () => {
   });
   it('releases actual image previews on reset and reevaluates visibility', async () => {
     const revoke = vi.fn();
-    vi.stubGlobal('URL', { createObjectURL: () => 'blob:preview', revokeObjectURL: revoke });
+    stubObjectUrls(revoke);
     await mountForm(true, { fields: [field('photo', 'image', 'list')], html: wrap('photo', '<div class="swf-upload"><input type="file" name="swf[photo][]" data-swf-image></div><div class="swf-image-previews" hidden></div>') });
     input().files = [new File(['png'], 'photo.png', { type: 'image/png' })] as unknown as FileList;
     change(input());
@@ -304,7 +312,7 @@ describe('actual frontend form runtime', () => {
   });
   it('releases image object URLs when a public form is replaced by its confirmation', async () => {
     const revoke = vi.fn();
-    vi.stubGlobal('URL', { createObjectURL: () => 'blob:preview', revokeObjectURL: revoke });
+    stubObjectUrls(revoke);
     await mountForm(false, { fields: [field('photo', 'image', 'list')], html: wrap('photo', '<div class="swf-upload"><input type="file" name="swf[photo][]" data-swf-image></div><div class="swf-image-previews" hidden></div>') });
     input().files = [new File(['png'], 'photo.png', { type: 'image/png' })] as unknown as FileList;
     change(input()); submit(); await flushPromises();

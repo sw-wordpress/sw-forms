@@ -135,6 +135,7 @@ Measured locally with PHP 8.2/PCOV and Vitest V8 during this change:
 | Complete frontend before new tests | 30.81% |
 | Complete frontend after media tests | 44.93% |
 | Complete frontend after view/shell component tests | 98.96% (6567/6636) |
+| Complete frontend, Vitest 5 (counts executable lines only) | 92.11% (2780/3018) |
 | Frontend form runtime | 88.74% |
 | Filename parser, REST client, entry-file component | 100% |
 | PHP upload field | 98.28% |
