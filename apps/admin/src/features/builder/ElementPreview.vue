@@ -25,7 +25,7 @@ const scores = computed(() => {
 const mode = computed(() => String(settings.value.mode ?? 'multiple'));
 const placeholder = computed(() => String(settings.value.placeholder ?? ''));
 const horizontal = computed(() => settings.value.layout === 'horizontal');
-const singleText = computed(() => String(settings.value.text ?? '').replace(/<[^>]*>/g, ''));
+const singleText = computed(() => String(settings.value.text ?? '').replace(/<[^<>]*>/g, ''));
 const defaults = computed(() => {
   const value = settings.value.defaultValues;
   return Array.isArray(value) ? (value as string[]) : [];
@@ -45,7 +45,7 @@ const defaults = computed(() => {
       <hr><p>{{ element.label || t('m5.pageBreak') }}</p><hr>
     </template>
     <template v-else-if="element.type === 'html'">
-      <p style="white-space: pre-line">{{ String(settings.content ?? '').replace(/<[^>]*>/g, '') }}</p>
+      <p style="white-space: pre-line">{{ String(settings.content ?? '').replace(/<[^<>]*>/g, '') }}</p>
     </template>
     <template v-else-if="element.type === 'calculation'">
       <label>{{ element.label }}<input readonly value="0.00"></label>

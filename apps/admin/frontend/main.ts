@@ -107,6 +107,7 @@ class SwForm {
     this.evaluator = new Evaluator(this.tree);
     this.nonce = this.config.nonce;
     this.captcha = new CaptchaControl(form, this.config.captcha);
+    this.captcha.mount();
 
     this.imagePreviews = new ImagePreviews(form);
     this.mediaInputs = new MediaInputs(form);
@@ -661,7 +662,7 @@ class SwForm {
       if (list) {
         const item = document.createElement('li');
         const link = document.createElement('a');
-        const label = wrapper?.querySelector(':scope > .swf-label, :scope > legend')?.textContent?.replace(/\*.*$/, '').trim();
+        const label = wrapper?.querySelector(':scope > .swf-label, :scope > legend')?.textContent?.split('*', 1)[0]?.trim();
         link.textContent = label ? `${label}: ${message}` : message;
         link.href = slot?.id ? `#${slot.id}` : '#';
         link.addEventListener('click', (e) => {
@@ -683,11 +684,13 @@ class SwForm {
   }
 }
 
+const instances: SwForm[] = [];
+
 function init(): void {
   document.querySelectorAll<HTMLFormElement>('form.swf-form[data-swf-form]').forEach((form) => {
     if (form.dataset.swfReady) return;
     form.dataset.swfReady = '1';
-    new SwForm(form);
+    instances.push(new SwForm(form));
   });
 }
 

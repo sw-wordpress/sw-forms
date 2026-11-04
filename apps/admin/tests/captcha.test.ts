@@ -11,6 +11,7 @@ async function setup(provider: 'turnstile' | 'hcaptcha') {
   const widget = { render: vi.fn((_container, options) => { callbacks = options; return 'widget-1'; }), reset: vi.fn(), remove: vi.fn() };
   vi.stubGlobal(provider, widget);
   const control = new CaptchaControl(form, { provider, siteKey: 'public-site-key' });
+  control.mount();
   const script = document.head.querySelector<HTMLScriptElement>('script')!;
   return { control, form, widget, script, callbacks: () => callbacks };
 }
@@ -39,7 +40,7 @@ describe('CAPTCHA widget lifecycle', () => {
   it('does not load any script when CAPTCHA is not configured', async () => {
     vi.resetModules(); const { CaptchaControl } = await import('../frontend/captcha');
     document.body.innerHTML = '<form></form>';
-    new CaptchaControl(document.querySelector('form')!);
+    new CaptchaControl(document.querySelector('form')!).mount();
     expect(document.head.querySelector('script')).toBeNull();
   });
 });

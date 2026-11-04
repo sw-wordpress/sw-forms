@@ -105,7 +105,7 @@ export function fieldLabels(document: FormDocument): Record<string, string> {
 
 function plainText(html: unknown): string {
   return String(html ?? '')
-    .replace(/<[^>]*>/g, ' ')
+    .replace(/<[^<>]*>/g, ' ')
     .replace(/&nbsp;/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();

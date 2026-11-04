@@ -29,7 +29,7 @@ async function searchPages(term: string, done: (fn: () => void) => void): Promis
     pages = [];
   }
   done(() => {
-    pageOptions.value = pages.map((p) => ({ value: p.id, label: p.title.rendered.replace(/<[^>]*>/g, '') || `#${p.id}` }));
+    pageOptions.value = pages.map((p) => ({ value: p.id, label: p.title.rendered.replace(/<[^<>]*>/g, '') || `#${p.id}` }));
   });
 }
 watch(
@@ -38,7 +38,7 @@ watch(
     if (!id || pageOptions.value.some((o) => o.value === id)) return;
     try {
       const page = await pagesApi.get(id);
-      pageOptions.value = [{ value: page.id, label: page.title.rendered.replace(/<[^>]*>/g, '') }, ...pageOptions.value];
+      pageOptions.value = [{ value: page.id, label: page.title.rendered.replace(/<[^<>]*>/g, '') }, ...pageOptions.value];
     } catch {
       /* page deleted: the select shows the id */
     }
