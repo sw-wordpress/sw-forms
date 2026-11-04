@@ -276,18 +276,18 @@ describe('BuilderView', () => {
       return event.defaultPrevented;
     };
     expect(unload()).toBe(false);
-    expect(await router.guard!({ params: { id: '4' } })).toBe(true);
+    expect(await router.guard!({ params: { id: '4' } })).toBeUndefined();
     expect(formsApi.saveDraft).not.toHaveBeenCalled();
 
     store.setTitle('Changed');
     expect(unload()).toBe(true);
-    expect(await router.guard!({ params: { id: '3' } })).toBe(true);
+    expect(await router.guard!({ params: { id: '3' } })).toBeUndefined();
     expect(formsApi.saveDraft).not.toHaveBeenCalled();
-    expect(await router.guard!({ params: { id: '4' } })).toBe(true);
+    expect(await router.guard!({ params: { id: '4' } })).toBeUndefined();
     expect(formsApi.saveDraft).toHaveBeenCalledTimes(1);
     expect(store.draftState).toBe('saved');
     expect(unload()).toBe(false);
-    expect(await router.guard!({ params: { id: '4' } })).toBe(true);
+    expect(await router.guard!({ params: { id: '4' } })).toBeUndefined();
     expect(formsApi.saveDraft).toHaveBeenCalledTimes(1);
   });
 });

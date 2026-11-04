@@ -39,7 +39,8 @@ export function slugKey(label: string): string {
     .normalize('NFKD')
     .replace(/[̀-ͯ]/g, '')
     .replace(/[^a-z0-9]+/g, '_')
-    .replace(/^_+|_+$/g, '')
+    .replace(/^_/, '')
+    .replace(/_$/, '')
     .slice(0, 40);
   if (key === '' || /^[0-9]/.test(key)) key = `field_${key}`.replace(/_$/, '');
   return key;

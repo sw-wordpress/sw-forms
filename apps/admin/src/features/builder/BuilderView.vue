@@ -150,10 +150,9 @@ onBeforeUnmount(() => {
 });
 
 onBeforeRouteLeave(async (to) => {
-  if (to.params.id === route.params.id || !store.dirty) return true;
+  if (to.params.id === route.params.id || !store.dirty) return;
   // Unsaved changes are kept as a draft; leaving is safe once the draft is stored.
   if (store.draftState !== 'saved') await store.saveDraft();
-  return true;
 });
 </script>
 

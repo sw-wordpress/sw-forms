@@ -8,7 +8,10 @@ export class CaptchaControl {
   private id: string | number | null = null;
   private api: WidgetApi | null = null;
   private disposed = false;
-  constructor(private readonly form: HTMLFormElement, config?: { provider: string; siteKey?: string }) {
+  constructor(private readonly form: HTMLFormElement, private readonly config?: { provider: string; siteKey?: string }) {}
+  /** Loads the provider script and renders the widget; kept out of the constructor. */
+  mount(): void {
+    const config = this.config;
     if (!config || !['turnstile', 'hcaptcha'].includes(config.provider) || !config.siteKey) return;
     const provider = config.provider;
     const url = provider === 'turnstile' ? 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit' : 'https://js.hcaptcha.com/1/api.js?render=explicit';
