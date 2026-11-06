@@ -8,7 +8,7 @@ import { useBuilderStore } from '@/stores/builder';
  * Condition editor for elements, columns and notifications.
  * `ownerId` null means form level (notifications): only fields outside repeaters can be used.
  */
-const props = defineProps<{ logic: Logic | null | undefined; ownerId: string | null; subject?: 'element' | 'notification' }>();
+const props = defineProps<{ logic: Logic | null | undefined; ownerId: string | null; subject?: 'element' | 'notification' | 'webhook' }>();
 const emit = defineEmits<{ (e: 'update', logic: Logic | null): void }>();
 const { t } = useI18n();
 const store = useBuilderStore();
@@ -44,6 +44,7 @@ const fields = computed<FieldChoice[]>(() => {
     .filter(
       (id) =>
         tree.isLeafData(id) &&
+        (!props.ownerId || tree.node(id)?.type !== 'calculation') &&
         id !== props.ownerId &&
         !(props.ownerId && tree.isDescendant(id, props.ownerId)) &&
         tree.scopeEncloses(tree.scopeOf(id), ownerScope),
@@ -120,7 +121,7 @@ function removeRule(index: number): void {
   <div class="swf-logic">
     <q-toggle
       :model-value="enabled"
-      :label="subject === 'notification' ? t('logic.enableNotification') : t('logic.enable')"
+      :label="subject === 'webhook' ? t('webhooks.enableLogic') : subject === 'notification' ? t('logic.enableNotification') : t('logic.enable')"
       :disable="!enabled && fields.length === 0"
       @update:model-value="toggle(!!$event)"
     />
@@ -129,7 +130,7 @@ function removeRule(index: number): void {
     <template v-if="enabled && logic">
       <div class="swf-logic__sentence">
         <q-select
-          v-if="subject !== 'notification'"
+          v-if="subject !== 'notification' && subject !== 'webhook'"
           :model-value="logic.action"
           dense
           outlined
@@ -138,6 +139,8 @@ function removeRule(index: number): void {
           :options="[
             { value: 'show', label: t('logic.show') },
             { value: 'hide', label: t('logic.hide') },
+            ...(ownerId && store.tree.isLeafData(ownerId) ? [{ value: 'require', label: t('m3.require') }] : []),
+            { value: 'disable', label: t('m3.disable') },
           ]"
           :aria-label="t('logic.action')"
           @update:model-value="emitLogic({ action: $event })"

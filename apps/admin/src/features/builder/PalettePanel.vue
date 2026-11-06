@@ -3,7 +3,7 @@ import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { ElementNode } from '@shared/types';
 import { useBuilderStore } from '@/stores/builder';
-import { ROOT } from './document';
+import { PAGE_BREAK, ROOT, stepElements, stepListId } from './document';
 import { useSortablePalette } from './sortable';
 
 const { t, te } = useI18n();
@@ -16,6 +16,8 @@ const groups = computed(() => {
   const q = search.value.trim().toLowerCase();
   const byCategory = new Map<string, typeof store.types>();
   for (const type of store.types) {
+    // Steps are managed through the step tabs (multi-step setting), not as palette items.
+    if (type.type === PAGE_BREAK) continue;
     if (q !== '' && !type.label.toLowerCase().includes(q)) continue;
     const list = byCategory.get(type.category) ?? [];
     list.push(type);
@@ -51,6 +53,10 @@ function add(type: string): void {
       return;
     }
     store.addElement(type, selected.listId, selected.index + 1);
+    return;
+  }
+  if (store.stepsEnabled) {
+    store.addElement(type, stepListId(store.activeStep), stepElements(document.fields, store.activeStep).length);
     return;
   }
   store.addElement(type, ROOT, document.fields.length);

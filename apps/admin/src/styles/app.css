@@ -217,6 +217,26 @@ body.swf-admin-page #wpfooter {
 body.swf-admin-page #wpbody-content {
   padding-bottom: 0;
 }
+/* The editor owns the viewport; WordPress' wrap margins belong to list pages. */
+body.swf-admin-page .swf-wrap:has(.swf-shell--editor) {
+  margin: 0;
+}
+body.swf-admin-page .swf-wrap:has(.swf-shell--editor) > .swf-fullbleed {
+  width: auto;
+  min-height: 0;
+}
+@media (min-width: 961px) {
+  html:has(.swf-shell--editor),
+  body.swf-admin-page:has(.swf-shell--editor) {
+    height: 100%;
+    overflow: hidden;
+  }
+  body.swf-admin-page:has(.swf-shell--editor) #wpwrap {
+    height: calc(100dvh - var(--wp-admin--admin-bar--height, 32px));
+    min-height: 0;
+    overflow: hidden;
+  }
+}
 /* Quasar locks scroll with a class on body when a dialog is open */
 body.q-body--prevent-scroll {
   overflow: hidden;

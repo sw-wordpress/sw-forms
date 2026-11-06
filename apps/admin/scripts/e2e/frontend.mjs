@@ -38,9 +38,19 @@ const browser = await chromium.launch({ executablePath: findChrome(), args: ['--
 try {
   // ---------- with JavaScript ----------
   const page = await browser.newPage();
+  // Exercise WP Armour's vanilla scripts without changing the site's settings.
+  if (process.env.SWF_WPA_VANILLA === '1') {
+    await page.route(/\/includes\/js\/wpae?\.js(?:\?|$)/, async (route) => {
+      const response = await route.fetch({ url: route.request().url().replace(/(wpae?)\.js/, '$1_vanilla.js') });
+      await route.fulfill({ response });
+    });
+  }
   const consoleErrors = [];
   page.on('pageerror', (e) => consoleErrors.push(e.message));
   await page.goto(url);
+  if (await page.locator('form.wpa_form').count() > 0) {
+    check('WP Armour: protection fields injected once', await page.locator('form.wpa_form .wpa_hidden_field').count() === 1);
+  }
   const company = page.locator('[data-swf-id="company"]');
   check('company hidden initially', await company.isHidden());
   await page.getByLabel('Firma', { exact: true }).check();
@@ -96,19 +106,25 @@ try {
   const noJs = await browser.newContext({ javaScriptEnabled: false });
   const p2 = await noJs.newPage();
   await p2.goto(url);
+  const armourEnabled = await p2.locator('form.wpa_form').count() > 0;
   await p2.waitForTimeout(2200);
   await p2.locator('input[name="swf[name]"]').fill('Max');
   await p2.locator('.swf-submit').press('Enter');
   await p2.waitForLoadState();
-  check('no-JS: server rendered errors', await p2.locator('.swf-summary li').count() > 0);
-  check('no-JS: value kept', (await p2.locator('input[name="swf[name]"]').inputValue()) === 'Max');
-  await p2.locator('input[name="swf[mail]"]').fill('max@example.org');
-  await p2.locator('input[name="swf[people][0][pname]"]').fill('Max');
-  await p2.locator('input[name="swf[ok]"]').press('Space');
-  await p2.waitForTimeout(2200);
-  await p2.locator('.swf-submit').press('Enter');
-  await p2.waitForLoadState();
-  check('no-JS: confirmation', (await p2.locator('.swf-confirmation').textContent())?.includes('Danke, Max!'));
+  if (armourEnabled) {
+    check('WP Armour: no-JS submission gets quiet confirmation', await p2.locator('.swf-confirmation').count() === 1);
+    check('WP Armour: no-JS submission stores no entry', php('count', String(fixture.form)).inbox === 1);
+  } else {
+    check('no-JS: server rendered errors', await p2.locator('.swf-summary li').count() > 0);
+    check('no-JS: value kept', (await p2.locator('input[name="swf[name]"]').inputValue()) === 'Max');
+    await p2.locator('input[name="swf[mail]"]').fill('max@example.org');
+    await p2.locator('input[name="swf[people][0][pname]"]').fill('Max');
+    await p2.locator('input[name="swf[ok]"]').press('Space');
+    await p2.waitForTimeout(2200);
+    await p2.locator('.swf-submit').press('Enter');
+    await p2.waitForLoadState();
+    check('no-JS: confirmation', (await p2.locator('.swf-confirmation').textContent())?.includes('Danke, Max!'));
+  }
 } finally {
   await browser.close();
   const count = execFileSync('php', ['-r', `define('WP_USE_THEMES',false);$_SERVER['HTTP_HOST']='localhost';require '${join(process.env.WP_ROOT ?? join(here, '../../../../../../..'), 'wp-load.php')}';echo json_encode((new \\SWForms\\WordPress\\Entries\\EntryRepository())->search(${fixture.form},'inbox','',1,10,'asc')['items'][0]['values'] ?? null);`], { encoding: 'utf8' });

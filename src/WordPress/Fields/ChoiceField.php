@@ -18,6 +18,7 @@ abstract class ChoiceField extends AbstractFieldType {
 	}
 
 	/**
+	 * @param array<string, mixed>|null $show_if Setting condition `{setting, equals: [...]}`.
 	 * @return array<string, mixed>
 	 */
 	protected function options_setting( ?array $show_if = null ): array {
@@ -41,6 +42,7 @@ abstract class ChoiceField extends AbstractFieldType {
 	}
 
 	/**
+	 * @param array<string, mixed>|null $show_if Setting condition `{setting, equals: [...]}`.
 	 * @return array<string, mixed>
 	 */
 	protected function layout_setting( ?array $show_if = null ): array {

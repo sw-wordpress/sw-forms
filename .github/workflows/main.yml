@@ -19,7 +19,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Determine repository name and version
         id: metadata
@@ -55,10 +55,17 @@ jobs:
             --optimize-autoloader
 
       - name: Smoke-test source checkout
-        run: php tests/bootstrap.php
+        run: |
+          php tests/bootstrap.php
+          php tests/uninstall-bootstrap.php
 
       - name: Isolate dependencies with Mozart
         run: |
+          # AS deliberately shares its global API/version negotiation across plugins.
+          mkdir -p libraries
+          cp -R vendor/woocommerce/action-scheduler libraries/action-scheduler
+          # AS archives omit composer.json; Mozart reads it even for excluded packages.
+          php -r 'foreach (json_decode(file_get_contents("composer.lock"), true)["packages"] as $package) { if ($package["name"] === "woocommerce/action-scheduler") { file_put_contents("vendor/woocommerce/action-scheduler/composer.json", json_encode($package)); } }'
           docker run --rm \
             --user "$(id -u):$(id -g)" \
             -v "$GITHUB_WORKSPACE:/project" \
@@ -69,7 +76,7 @@ jobs:
         run: test -f vendor-prefixed/autoload.php
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '22'
           cache: npm
@@ -122,6 +129,7 @@ jobs:
 
           # Prove that the plugin boots without the original vendor directory.
           php tests/bootstrap.php "$STAGING"
+          php tests/uninstall-bootstrap.php "$STAGING"
 
           # Keep the installed plugin slug stable, even if the repository is renamed.
           (
@@ -137,6 +145,7 @@ jobs:
           unzip -Z1 "$ZIP_FILE" > "$RUNNER_TEMP/zip-contents.txt"
           grep -Fx "$PLUGIN_SLUG/vendor-prefixed/autoload.php" "$RUNNER_TEMP/zip-contents.txt"
           grep -Fx "$PLUGIN_SLUG/sw-forms.php" "$RUNNER_TEMP/zip-contents.txt"
+          grep -Fx "$PLUGIN_SLUG/libraries/action-scheduler/action-scheduler.php" "$RUNNER_TEMP/zip-contents.txt"
           grep -q "^$PLUGIN_SLUG/assets/admin/" "$RUNNER_TEMP/zip-contents.txt"
           grep -q "^$PLUGIN_SLUG/assets/frontend/" "$RUNNER_TEMP/zip-contents.txt"
           if grep -Eq "^$PLUGIN_SLUG/(vendor|tests|apps|bin|node_modules|\.git|\.github)/" "$RUNNER_TEMP/zip-contents.txt"; then
@@ -145,7 +154,7 @@ jobs:
           fi
 
       - name: Create release and attach ZIP
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           name: ${{ steps.metadata.outputs.version }}
           files: ${{ steps.metadata.outputs.zip }}

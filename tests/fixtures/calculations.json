@@ -1,0 +1,14 @@
+[
+  {"operation":"sum","values":[2,3,4],"decimals":2,"expected":"9.00"},
+  {"operation":"product","values":[1.5,3],"decimals":2,"expected":"4.50"},
+  {"operation":"difference","values":[10,3,2],"decimals":0,"expected":"5"},
+  {"operation":"quotient","values":[10,2,2],"decimals":3,"expected":"2.500"},
+  {"operation":"quotient","values":[5,0],"decimals":2,"expected":null},
+  {"operation":"sum","values":[],"decimals":2,"expected":null},
+  {"operation":"eval","values":[2],"decimals":2,"expected":null},
+  {"operation":"sum","values":[1.005],"decimals":2,"expected":"1.01"},
+  {"operation":"sum","values":[-1.005],"decimals":2,"expected":"-1.01"},
+  {"operation":"sum","values":[-0.0001],"decimals":2,"expected":"0.00"},
+  {"operation":"sum","values":[0.0000001],"decimals":8,"expected":"0.00000010"},
+  {"operation":"product","values":[10000000,10000000],"decimals":2,"expected":null}
+]

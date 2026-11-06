@@ -1,0 +1,5 @@
+Tom Select 2.6.2: https://github.com/orchidjs/tom-select
+Copyright Josh Schmidt and contributors. Derived from Selectize.js by Brian Reavis.
+Bundled with @orchidjs/sifter 1.1.0 and @orchidjs/unicode-variants 1.2.2.
+All distributed under the Apache License, Version 2.0 (see tom-select-Apache-2.0.txt).
+JavaScript and CSS are bundled into the plugin assets at build time; no CDN requests.

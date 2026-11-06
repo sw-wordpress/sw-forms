@@ -11,8 +11,10 @@ final class Visibility
 {
     /**
      * @param array<string, bool> $paths
+     * @param array<string, bool> $enabled
+     * @param array<string, bool> $required
      */
-    public function __construct(private readonly array $paths)
+    public function __construct(private readonly array $paths, private readonly array $enabled = [], private readonly array $required = [])
     {
     }
 
@@ -24,9 +26,22 @@ final class Visibility
         return $this->paths[$prefix . $id] ?? false;
     }
 
-    /**
-     * @return array<string, bool>
-     */
+    public function isEnabled(string $id, string $prefix = ''): bool
+    {
+        return $this->enabled[$prefix . $id] ?? true;
+    }
+
+    public function isActive(string $id, string $prefix = ''): bool
+    {
+        return $this->isVisible($id, $prefix) && $this->isEnabled($id, $prefix);
+    }
+
+    public function isRequired(string $id, string $prefix = ''): bool
+    {
+        return $this->required[$prefix . $id] ?? false;
+    }
+
+    /** @return array<string, bool> */
     public function toArray(): array
     {
         return $this->paths;

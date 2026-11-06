@@ -11,6 +11,8 @@ if (!$key || !hash_equals($key, (string) ($_SERVER['HTTP_X_SWF_TEST_KEY'] ?? '')
 }
 require __DIR__ . '/../coverage/bootstrap.php';
 require getenv('WP_ROOT') . '/wp-load.php';
+// Match the PHPUnit fixture locale without changing the site's language setting.
+switch_to_locale('en_US');
 $uploadRoot = getenv('SWF_TEST_UPLOAD_ROOT');
 add_filter('upload_dir', static function (array $directory) use ($uploadRoot): array {
     $directory['basedir'] = $uploadRoot;

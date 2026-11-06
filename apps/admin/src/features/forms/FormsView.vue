@@ -3,6 +3,7 @@ import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { formsApi } from '@/api';
+import FormLibrary from './FormLibrary.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import EmptyState from '@/components/ui/EmptyState.vue';
 import PageHeader from '@/components/ui/PageHeader.vue';
@@ -54,6 +55,15 @@ async function toggleStatus(form: FormSummary): Promise<void> {
   }
 }
 
+async function exportForm(form: FormSummary): Promise<void> {
+  try {
+    const data = await formsApi.export(form.id);
+    const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
+    const link = document.createElement('a'); link.href = url; link.download = `sw-forms-${form.id}.json`; link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  } catch (error) { notify.error(error); }
+}
+
 async function duplicate(form: FormSummary): Promise<void> {
   try {
     await formsApi.duplicate(form.id);
@@ -97,6 +107,7 @@ function openCreate(): void {
   <div class="swf-stack">
     <PageHeader :title="t('forms.title')" :subtitle="t('forms.subtitle')">
       <q-btn v-if="canManage" unelevated no-caps color="primary" icon="r_add" :label="t('forms.create')" @click="openCreate" />
+      <FormLibrary v-if="canManage" />
     </PageHeader>
 
     <SwfCard :padding="false">
@@ -131,6 +142,7 @@ function openCreate(): void {
               <router-link :to="`/forms/${form.id}`" class="swf-forms__title">{{ form.title }}</router-link>
               <span v-if="form.hasDraft" class="swf-chip swf-chip--warning">{{ t('forms.unsaved') }}</span>
               <span v-if="form.currentVersion === 0" class="swf-chip">{{ t('forms.neverSaved') }}</span>
+              <router-link v-if="form.webhookFailures" :to="`/forms/${form.id}/entries`" class="swf-chip swf-chip--danger">{{ t('webhooks.failureCount', { n: form.webhookFailures }) }}</router-link>
             </td>
             <td :data-label="t('forms.col.status')">
               <q-toggle
@@ -166,6 +178,7 @@ function openCreate(): void {
                       <q-item-section avatar><q-icon name="r_content_copy" /></q-item-section>
                       <q-item-section>{{ t('common.duplicate') }}</q-item-section>
                     </q-item>
+                    <q-item v-if="canManage" v-close-popup clickable @click="exportForm(form)"><q-item-section avatar><q-icon name="r_download" /></q-item-section><q-item-section>{{ t('m5.export') }}</q-item-section></q-item>
                     <q-separator v-if="canManage" />
                     <q-item v-if="canManage" v-close-popup clickable class="text-negative" @click="toDelete = form">
                       <q-item-section avatar><q-icon name="r_delete" /></q-item-section>

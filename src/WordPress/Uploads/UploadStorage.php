@@ -29,16 +29,33 @@ final class UploadStorage {
 	}
 
 	/**
-	 * @param list<string> $names Only generated basenames, never paths from entry data or URLs.
+	 * @param array<mixed> $names Only generated basenames, never paths from entry data or URLs; anything else is ignored.
 	 */
 	public static function delete( array $names ): void {
 		$uploads = wp_upload_dir();
 		$dir     = $uploads['basedir'] . '/swforms';
 		foreach ( $names as $name ) {
-			if ( is_string( $name ) && 1 === preg_match( '/^swf-[a-f0-9]{32}\.(pdf|txt|csv|jpe?g|png|gif|webp|zip)$/D', $name ) ) {
+			if ( is_string( $name ) && 1 === preg_match( '/^swf-[a-f0-9]{32}\.(pdf|txt|csv|jpe?g|png|gif|webp|zip|webm|ogg|m4a|mp3|wav|mp4)$/D', $name ) ) {
 				wp_delete_file_from_directory( $dir . '/' . $name, $dir );
 			}
 		}
+	}
+
+	/** Resolve only server-owned generated basenames for local mail attachments.
+	 *
+	 * @since 0.5.0
+	 * @param array<mixed> $names Upload manifest from a stored entry; anything else is ignored.
+	 * @return list<string>
+	 */
+	public static function attachments( array $names ): array {
+		$dir = wp_upload_dir()['basedir'] . '/swforms';
+		$out = array();
+		foreach ( $names as $name ) {
+			if ( is_string( $name ) && preg_match( '/^swf-[a-f0-9]{32}\.(pdf|txt|csv|jpe?g|png|gif|webp|zip|webm|ogg|m4a|mp3|wav|mp4)$/D', $name ) && is_file( $dir . '/' . $name ) && ! is_link( $dir . '/' . $name ) ) {
+				$out[] = $dir . '/' . $name;
+			}
+		}
+		return $out;
 	}
 
 	/**
@@ -53,7 +70,7 @@ final class UploadStorage {
 		require_once ABSPATH . 'wp-admin/includes/file.php';
 		$walk = function ( array $ids, array $scope, array $input, string $prefix ) use ( &$walk, $tree, $registry, $visibility ): array {
 			foreach ( $ids as $id ) {
-				if ( ! $visibility->isVisible( $id, $prefix ) ) {
+				if ( ! $visibility->isActive( $id, $prefix ) ) {
 					continue;
 				}
 				if ( $tree->isRepeater( $id ) ) {
@@ -100,11 +117,15 @@ final class UploadStorage {
 			if ( ! empty( $dir['error'] ) || ( ! file_exists( $index ) && false === file_put_contents( $index, '' ) ) ) { // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- empty generated index prevents directory listings on ordinary web servers.
 				throw new \RuntimeException( 'Upload directory could not be prepared.' );
 			}
+			$size = is_file( $file->temporary ) ? filesize( $file->temporary ) : false;
+			if ( false === $size ) {
+				throw new \RuntimeException( 'Upload could not be stored.' );
+			}
 			$upload = array(
 				'name'     => $name,
 				'tmp_name' => $file->temporary,
 				'error'    => $file->error,
-				'size'     => filesize( $file->temporary ),
+				'size'     => $size,
 				'type'     => '',
 			);
 			$result = wp_handle_upload(

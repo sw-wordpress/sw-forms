@@ -11,6 +11,8 @@ export interface SwfConfig {
   adminUrl: string;
   capabilities: string[];
   siteUrl: string;
+  /** Design gallery for form managers (nonce URL), empty otherwise. */
+  galleryUrl: string;
 }
 
 export type Capability = 'swf_manage_forms' | 'swf_view_entries' | 'swf_manage_entries' | 'swf_settings';

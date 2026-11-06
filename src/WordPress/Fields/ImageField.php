@@ -11,7 +11,7 @@ namespace SWForms\WordPress\Fields;
 
 use SWForms\WordPress\Uploads\IncomingFile;
 
-final class ImageField extends FileField {
+class ImageField extends FileField {
 	private const EXTENSIONS = array( 'jpg', 'jpeg', 'png', 'gif', 'webp' );
 
 	public function type(): string {
@@ -42,6 +42,14 @@ final class ImageField extends FileField {
 			'label'   => __( 'Show image previews', 'sw-forms' ),
 			'default' => true,
 			'help'    => __( 'Previews stay in the browser. Images are uploaded only when the form is submitted.', 'sw-forms' ),
+		);
+		$schema[] = array(
+			'name'    => 'crop',
+			'type'    => 'toggle',
+			'tab'     => 'general',
+			'label'   => __( 'Allow image cropping', 'sw-forms' ),
+			'default' => false,
+			'help'    => __( 'Requires previews and PNG uploads. Applying a crop replaces that selection with a PNG, up to 4096 pixels per side. Animation and metadata are not preserved.', 'sw-forms' ),
 		);
 		$schema[] = array(
 			'name'    => 'capture',
@@ -101,6 +109,19 @@ final class ImageField extends FileField {
 			'data-swf-image'         => (bool) $this->setting( $element, 'preview', true ),
 			'data-swf-preview-limit' => $this->max_files( $element ),
 			'data-swf-preview-error' => __( 'Preview unavailable. The image will be checked when you submit the form.', 'sw-forms' ),
+			'data-swf-crop'          => (bool) $this->setting( $element, 'crop', false ) && isset( $this->mimes( $element )['png'] ),
+			'data-swf-crop-labels'   => wp_json_encode(
+				array(
+					'crop'   => __( 'Crop image', 'sw-forms' ),
+					'x'      => __( 'Left (%)', 'sw-forms' ),
+					'y'      => __( 'Top (%)', 'sw-forms' ),
+					'width'  => __( 'Width (%)', 'sw-forms' ),
+					'height' => __( 'Height (%)', 'sw-forms' ),
+					'apply'  => __( 'Apply crop', 'sw-forms' ),
+					'cancel' => __( 'Cancel crop', 'sw-forms' ),
+					'error'  => __( 'The crop could not be applied. The selected file is unchanged.', 'sw-forms' ),
+				)
+			),
 		);
 	}
 

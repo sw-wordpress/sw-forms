@@ -2,6 +2,9 @@
 /**
  * A validated submission as handed to actions (`ActionInterface::run()`) and hooks.
  *
+ * Public extension API; stable from 0.4.0.
+ *
+ * @since 0.1.0
  * @package SWForms
  */
 
@@ -32,6 +35,7 @@ final class Submission {
 		public readonly array $data,
 		public readonly int $entry_id,
 		private readonly EntryRepository $entries,
+		public readonly string $source_url = '',
 	) {}
 
 	public function form_id(): int {

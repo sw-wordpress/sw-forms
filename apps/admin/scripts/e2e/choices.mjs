@@ -21,7 +21,11 @@ try {
     const errors = [];
     page.on('pageerror', (error) => errors.push(error.message));
     await page.goto(fixture.url);
-    const search = page.locator('[data-swf-id="search"] .swf-select-search');
+    if (javaScriptEnabled) {
+      await page.locator('.swf-submit').click(); await page.locator('.swf-summary a[href$="search-err"]').click();
+      assert.equal(await page.locator('[data-swf-id=search] .ts-control input').evaluate((input) => input === document.activeElement), true);
+    }
+    const search = page.locator('[data-swf-id="search"] .ts-control input');
     assert.equal(await search.isVisible(), javaScriptEnabled);
     const toggle = page.getByRole('switch', { name: /Consent switch/ });
     await toggle.focus();
@@ -36,23 +40,36 @@ try {
     await page.locator('[data-swf-id="images"] label').filter({ hasText: 'Alpha' }).click();
     assert.equal(await page.locator('.swf-option-image').count(), 1);
     const select = page.locator('[data-swf-id="search"] select');
-    await select.selectOption(['a']);
+    if (javaScriptEnabled) {
+      await search.fill('Alpha');
+      await page.locator('[data-swf-id=search] .ts-dropdown [data-value="b"]').waitFor({ state: 'detached' });
+      await page.locator('[data-swf-id=search] .ts-dropdown [data-value="a"]').waitFor({ state: 'visible' });
+      await search.press('Enter');
+    } else await select.selectOption(['a']);
     if (javaScriptEnabled) {
       await search.fill('Beta');
-      assert.equal(await select.locator('option[value="c"]').evaluate((option) => option.hidden), true);
+      await page.locator('[data-swf-id=search] .ts-dropdown [data-value="c"]').waitFor({ state: 'detached' });
+      await page.locator('[data-swf-id=search] .ts-dropdown [data-value="b"]').waitFor({ state: 'visible' });
+      assert.equal(await page.locator('[data-swf-id=search] .ts-dropdown [data-value="c"]').count(), 0);
       assert.deepEqual(await select.evaluate((el) => Array.from(el.selectedOptions).map((option) => option.value)), ['a']);
-      await select.selectOption(['a', 'b']);
+      await search.press('Enter');
       await search.fill('missing');
-      assert.match(await page.locator('[data-swf-id="search"] .swf-search-status').textContent(), /No matching/);
+      assert.match(await page.locator('[data-swf-id="search"] .no-results').textContent(), /No matching/);
       await search.fill('');
-      assert.equal(await select.locator('option[value="c"]').evaluate((option) => option.hidden), false);
+      await search.focus(); await search.press('ArrowDown');
+      assert.equal(await select.evaluate((el) => Array.from(el.selectedOptions).map((option) => option.value).join(',')), 'a,b');
       await page.locator('[data-swf-id="rows"] .swf-row-add').click();
       const row = page.locator('[data-swf-id="rows"] .swf-rows > .swf-row').last();
-      const nestedSearch = row.locator('.swf-select-search');
+      const nestedSearch = row.locator('.ts-control input');
+      assert.equal(await nestedSearch.evaluate((input) => input === document.activeElement), true);
       assert.equal(await nestedSearch.isVisible(), true);
-      assert.equal(await nestedSearch.getAttribute('aria-controls'), await row.locator('select').getAttribute('id'));
+      assert.equal(await nestedSearch.getAttribute('aria-controls'), await row.locator('.ts-dropdown-content').getAttribute('id'));
       await nestedSearch.fill('Gamma');
-      assert.equal(await row.locator('option[value="a"]').evaluate((option) => option.hidden), true);
+      await row.locator('.ts-dropdown [data-value="a"]').waitFor({ state: 'detached' });
+      await row.locator('.ts-dropdown [data-value="c"]').waitFor({ state: 'visible' });
+      assert.equal(await row.locator('.ts-dropdown [data-value="a"]').count(), 0);
+      await nestedSearch.press('Enter');
+      assert.equal(await row.locator('select').inputValue(), 'c');
     }
     await page.locator('.swf-submit').click();
     await page.locator('.swf-confirmation').waitFor({ state: 'visible' });

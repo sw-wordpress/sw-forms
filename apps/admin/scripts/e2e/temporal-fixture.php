@@ -25,7 +25,10 @@ $fields = array(
     array( 'id' => 'dates', 'type' => 'date-interval', 'key' => 'dates', 'label' => 'Dates', 'required' => true, 'settings' => array( 'min' => 'today', 'max' => 'today + 30 days', 'allowEqual' => false ) ),
     array( 'id' => 'times', 'type' => 'time-interval', 'key' => 'times', 'label' => 'Times', 'required' => true, 'settings' => array( 'min' => '09:00', 'max' => '17:00', 'step' => 900 ) ),
     array( 'id' => 'note', 'type' => 'input', 'key' => 'note', 'label' => 'Interval note', 'required' => true, 'logic' => array( 'action' => 'show', 'match' => 'all', 'rules' => array( array( 'field' => 'dates', 'op' => 'contains', 'value' => $from ) ) ) ),
-    array( 'id' => 'rows', 'type' => 'group', 'key' => 'rows', 'label' => 'Rows', 'settings' => array( 'repeatable' => true, 'minRows' => 1, 'maxRows' => 2 ), 'children' => array( array( 'id' => 'nested', 'type' => 'time-interval', 'key' => 'nested', 'label' => 'Nested time' ) ) ),
+    array( 'id' => 'rows', 'type' => 'group', 'key' => 'rows', 'label' => 'Rows', 'settings' => array( 'repeatable' => true, 'minRows' => 1, 'maxRows' => 2 ), 'children' => array(
+        array( 'id' => 'nested', 'type' => 'time-interval', 'key' => 'nested', 'label' => 'Nested time' ),
+        array( 'id' => 'nested_choice', 'type' => 'select', 'key' => 'nested_choice', 'label' => 'Nested choice', 'settings' => array( 'searchable' => true, 'options' => array( array( 'value' => 'a', 'label' => 'Alpha' ), array( 'value' => 'b', 'label' => 'Beta' ) ) ) ),
+    ) ),
 );
 $service = \SWForms\WordPress\Forms\FormService::create_default();
 $id = $service->create('E2E temporal fields');

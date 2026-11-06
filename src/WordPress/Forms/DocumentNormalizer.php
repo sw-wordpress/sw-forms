@@ -27,10 +27,16 @@ final class DocumentNormalizer {
 	 * @return array{schemaVersion: int, fields: list<array<string, mixed>>, settings: array<string, mixed>}
 	 */
 	public function normalize( array $document ): array {
+		$fields   = $this->elements( $document['fields'] ?? array() );
+		$settings = is_array( $document['settings'] ?? null ) ? $document['settings'] : array();
+		// Documents from before `settings.steps` used page breaks as the only switch.
+		if ( ! array_key_exists( 'steps', $settings ) && in_array( 'page-break', array_column( $fields, 'type' ), true ) ) {
+			$settings['steps'] = array( 'enabled' => true );
+		}
 		return array(
 			'schemaVersion' => self::SCHEMA_VERSION,
-			'fields'        => $this->elements( $document['fields'] ?? array() ),
-			'settings'      => FormSettings::normalize( is_array( $document['settings'] ?? null ) ? $document['settings'] : array() ),
+			'fields'        => $fields,
+			'settings'      => FormSettings::normalize( $settings ),
 		);
 	}
 
@@ -154,7 +160,7 @@ final class DocumentNormalizer {
 			);
 		}
 		return array(
-			'action' => 'hide' === ( $logic['action'] ?? '' ) ? 'hide' : 'show',
+			'action' => in_array( $logic['action'] ?? '', array( 'show', 'hide', 'require', 'disable' ), true ) ? $logic['action'] : 'show',
 			'match'  => 'any' === ( $logic['match'] ?? '' ) ? 'any' : 'all',
 			'rules'  => $rules,
 		);

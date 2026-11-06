@@ -56,5 +56,10 @@ final class ImageFieldTest extends TestCase
         self::assertStringNotContainsString(' capture=', $html);
         self::assertStringNotContainsString('data-swf-image', $html);
         self::assertStringNotContainsString('swf-image-previews', $html);
+        $element['settings']['preview'] = true;
+        $element['settings']['crop'] = true;
+        self::assertStringContainsString('data-swf-crop ', $type->render($element, $context));
+        $element['settings']['extensions'] = 'jpg';
+        self::assertStringNotContainsString('data-swf-crop ', $type->render($element, $context));
     }
 }

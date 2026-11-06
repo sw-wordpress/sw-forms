@@ -16,6 +16,8 @@ final class Messages {
 	 */
 	public static function validation( string $code, array $params = array() ): string {
 		$message = match ( $code ) {
+			'calculation_result' => __( 'The calculation has no valid result. Please check the source values.', 'sw-forms' ),
+			'media_stream' => __( 'Please choose a valid recording with the required audio or video stream.', 'sw-forms' ),
 			'file_upload' => __( 'The file could not be uploaded. Please select it again.', 'sw-forms' ),
 			'image' => __( 'Please upload a valid JPEG, PNG, GIF or WebP image.', 'sw-forms' ),
 			'file_type' => __( 'This file type is not allowed or does not match its extension.', 'sw-forms' ),
@@ -23,6 +25,7 @@ final class Messages {
 			'file_storage' => __( 'File uploads require entry storage to be enabled for this form.', 'sw-forms' ),
 			/* translators: %d: maximum number of files */
 			'max_files' => sprintf( __( 'Please upload at most %d file(s).', 'sw-forms' ), (int) ( $params['max'] ?? 1 ) ),
+			'matrix_complete' => __( 'Please answer every question in this matrix.', 'sw-forms' ),
 			'required'     => __( 'This field is required.', 'sw-forms' ),
 			'email_confirmation' => __( 'The email addresses do not match.', 'sw-forms' ),
 			/* translators: %d: minimum number of characters */

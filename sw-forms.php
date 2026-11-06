@@ -2,8 +2,8 @@
 /**
  * Plugin Name:       SW Forms
  * Description:       Drag and drop form builder with conditional logic, entries, notifications and an extension API.
- * Version:           0.1.0
- * Requires at least: 6.4
+ * Version:           0.5.0
+ * Requires at least: 6.8
  * Requires PHP:      8.2
  * Author:            Stefan Warnat
  * License:           GPL-2.0-or-later
@@ -16,7 +16,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'SWF_VERSION', '0.1.0' );
+define( 'SWF_VERSION', '0.5.0' );
 define( 'SWF_FILE', __FILE__ );
 define( 'SWF_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SWF_URL', plugin_dir_url( __FILE__ ) );
@@ -63,6 +63,15 @@ $swf_loader = require $swf_autoload;
 // Mozart's generated loader knows the dependencies; add the plugin's own code too.
 $swf_loader->addPsr4( 'SWForms\\', SWF_DIR . 'src/' );
 unset( $swf_autoload, $swf_loader );
+
+// AS coordinates versions across plugins and must load before plugins_loaded.
+// Keep its global API intact; release builds bundle this library separately.
+$swf_scheduler = SWF_DIR . 'libraries/action-scheduler/action-scheduler.php';
+if ( ! is_readable( $swf_scheduler ) ) {
+	$swf_scheduler = SWF_DIR . 'vendor/woocommerce/action-scheduler/action-scheduler.php';
+}
+require_once $swf_scheduler;
+unset( $swf_scheduler );
 
 require_once SWF_DIR . 'includes/functions.php';
 

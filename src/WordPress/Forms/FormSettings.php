@@ -9,9 +9,14 @@ declare(strict_types=1);
 
 namespace SWForms\WordPress\Forms;
 
+use SWForms\Core\Design\Design;
+
 final class FormSettings {
 
 	public const MAX_NOTIFICATIONS = 20;
+
+	/** Progress display of multi-step forms. */
+	public const STEP_INDICATORS = array( 'numbers', 'dots', 'text' );
 
 	/**
 	 * @param array<string, mixed> $input
@@ -44,11 +49,31 @@ final class FormSettings {
 			'storeEntries'  => (bool) ( $input['storeEntries'] ?? true ),
 			'retentionDays' => min( 3650, absint( $input['retentionDays'] ?? 0 ) ),
 			'spam'          => array(
+				'provider'   => is_string( $spam['provider'] ?? null ) ? sanitize_key( $spam['provider'] ) : '',
 				'honeypot'   => (bool) ( $spam['honeypot'] ?? true ),
 				'minSeconds' => min( 60, absint( $spam['minSeconds'] ?? 2 ) ),
 				'rateLimit'  => min( 1000, absint( $spam['rateLimit'] ?? 10 ) ),
 			),
 			'notifications' => $notifications,
+			'webhooks'      => \SWForms\WordPress\Webhooks\WebhookSettings::normalize( $input['webhooks'] ?? array() ),
+			'steps'         => self::steps( $input['steps'] ?? null ),
+			'design'        => Design::normalize( $input['design'] ?? null ),
+		);
+	}
+
+	/**
+	 * Multi-step mode. Page breaks only split a form while `enabled` is true.
+	 *
+	 * @since 0.5.0
+	 * @return array{enabled: bool, firstLabel: string, indicator: string}
+	 */
+	public static function steps( mixed $input ): array {
+		$input     = is_array( $input ) ? $input : array();
+		$indicator = $input['indicator'] ?? 'numbers';
+		return array(
+			'enabled'    => ! empty( $input['enabled'] ),
+			'firstLabel' => self::text( $input['firstLabel'] ?? null, '' ),
+			'indicator'  => in_array( $indicator, self::STEP_INDICATORS, true ) ? $indicator : 'numbers',
 		);
 	}
 
@@ -75,16 +100,17 @@ final class FormSettings {
 	private static function notification( array $input ): array {
 		$id = is_string( $input['id'] ?? null ) && 1 === preg_match( '/^[A-Za-z0-9_-]{1,64}$/', $input['id'] ) ? $input['id'] : wp_generate_uuid4();
 		return array(
-			'id'       => $id,
-			'name'     => self::text( $input['name'] ?? null, __( 'Notification', 'sw-forms' ) ),
-			'enabled'  => (bool) ( $input['enabled'] ?? true ),
+			'id'          => $id,
+			'name'        => self::text( $input['name'] ?? null, __( 'Notification', 'sw-forms' ) ),
+			'enabled'     => (bool) ( $input['enabled'] ?? true ),
 			// Recipients may contain merge tags ({field:email}); addresses are validated when sending.
-			'to'       => self::text( $input['to'] ?? null, '' ),
-			'subject'  => self::text( $input['subject'] ?? null, '' ),
-			'message'  => wp_kses_post( (string) ( is_scalar( $input['message'] ?? null ) ? $input['message'] : '' ) ),
-			'replyTo'  => self::text( $input['replyTo'] ?? null, '' ),
-			'fromName' => self::text( $input['fromName'] ?? null, '' ),
-			'logic'    => DocumentNormalizer::logic( $input['logic'] ?? null ),
+			'to'          => self::text( $input['to'] ?? null, '' ),
+			'subject'     => self::text( $input['subject'] ?? null, '' ),
+			'message'     => wp_kses_post( (string) ( is_scalar( $input['message'] ?? null ) ? $input['message'] : '' ) ),
+			'replyTo'     => self::text( $input['replyTo'] ?? null, '' ),
+			'attachFiles' => ! empty( $input['attachFiles'] ),
+			'fromName'    => self::text( $input['fromName'] ?? null, '' ),
+			'logic'       => DocumentNormalizer::logic( $input['logic'] ?? null ),
 		);
 	}
 

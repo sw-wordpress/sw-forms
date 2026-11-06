@@ -16,6 +16,12 @@
   --swf-radius: 6px;
   --swf-gap: 1.1rem;
   --swf-input-padding: 0.6em 0.75em;
+  /* Design tokens of the variants (designs.css); inline overrides come from settings.design. */
+  --swf-surface: transparent;
+  --swf-button-bg: var(--swf-accent);
+  --swf-accent-contrast: #fff;
+  --swf-duration: 220ms;
+  --swf-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   /*
    * A size container reports no content width. In shrink-to-fit theme layouts (flex items,
    * floats) it would collapse; the viewport based minimum keeps it usable there.
@@ -26,6 +32,7 @@
   min-width: min(20rem, 100vw - 2rem);
   container-type: inline-size;
   color: var(--swf-text);
+  background: var(--swf-surface);
 }
 
 .swf *,
@@ -36,6 +43,7 @@
 
 .swf-form,
 .swf-fields,
+.swf-step,
 .swf-group__body,
 .swf-row__fields,
 .swf-col {
@@ -281,7 +289,8 @@
 }
 
 /* ---------- buttons and confirmation ---------- */
-.swf-actions {
+.swf-actions,
+.swf-step-nav {
   display: flex;
   gap: 0.75rem;
 }
@@ -289,8 +298,8 @@
   padding: 0.7em 1.4em;
   font: inherit;
   font-weight: 600;
-  color: #fff;
-  background: var(--swf-accent);
+  color: var(--swf-accent-contrast);
+  background: var(--swf-button-bg);
   border: 0;
   border-radius: var(--swf-radius);
   cursor: pointer;
@@ -324,8 +333,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .swf * {
+  .swf *,
+  .swf *::before,
+  .swf *::after {
     transition: none !important;
+    animation: none !important;
   }
 }
 
@@ -394,13 +406,9 @@
   height: 6rem;
   object-fit: contain;
 }
-.swf-select-search {
-  margin-bottom: 0.5em;
-}
-.swf-search-status {
-  display: block;
-  color: var(--swf-muted);
-}
+.swf .ts-wrapper { width: 100%; }
+.swf .ts-wrapper .ts-control, .swf .ts-dropdown { background: var(--swf-bg); color: var(--swf-text); border-color: var(--swf-border); font: inherit; }
+.swf .ts-wrapper .ts-control > input { padding: 0 !important; min-height: 0; box-shadow: none; }
 
 .swf-range { width: 100%; accent-color: var(--swf-accent); }
 .swf-range-value { display: block; font-variant-numeric: tabular-nums; }
@@ -412,6 +420,8 @@
 
 .swf-interval { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--swf-gap); }
 .swf-interval label { display: block; margin-bottom: 0.35em; }
+.swf-time-picker { display: flex; gap: .4rem; }
+.swf-time-picker > label { flex: 1; min-width: 0; font-size: .85em; }
 @container (max-width: 479px) { .swf-interval { grid-template-columns: minmax(0, 1fr); } }
 
 /* File selection and dropping use the same native accessible control. */
@@ -447,4 +457,148 @@
 }
 .swf-image-previews figcaption {
   font-size: 0.85em;
+}
+.swf .swf-signature canvas { display: block; width: 100%; max-width: 800px; height: auto; border: 1px solid #777; touch-action: none; background: #fff; }
+.swf .swf-signature button, .swf .swf-recorder button, .swf .swf-image-crop button { margin: .5rem .5rem .5rem 0; }
+.swf .swf-recorder video, .swf .swf-recorder audio { display: block; max-width: 100%; }
+.swf .swf-image-crop { max-width: 22rem; }
+.swf .swf-image-crop label { display: inline-flex; flex-direction: column; width: 48%; padding: .25rem; }
+.swf .swf-image-crop input { width: 100%; }
+
+/* Keep matrix headers and native radio groups together on narrow screens. */
+.swf-matrix-scroll { max-width: 100%; overflow-x: auto; }
+.swf-matrix { width: 100%; border-collapse: collapse; }
+.swf-matrix th, .swf-matrix td { padding: .75rem; border-bottom: 1px solid var(--swf-border, #d1d5db); text-align: center; min-width: 5rem; }
+.swf-matrix th[scope="row"] { text-align: start; min-width: 9rem; }
+.swf-matrix input[type="radio"] { width: 1.25rem; height: 1.25rem; cursor: pointer; }
+.swf-field--matrix { min-width: 0; }
+
+/* ---------- multi-step progress ---------- */
+.swf-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.swf-steps {
+  display: flex;
+  margin: 0 0 0.25rem;
+  padding: 0;
+  list-style: none;
+}
+.swf-steps[hidden] {
+  display: none;
+}
+.swf-steps__item {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* Themes often number list items via markers or ::before counters. */
+.swf-steps__item::marker {
+  content: '';
+}
+/* Connector from the previous marker to this one. */
+.swf-steps__item + .swf-steps__item::before {
+  content: '';
+  position: absolute;
+  top: calc(var(--swf-step-marker) / 2 - 1px);
+  right: calc(50% + var(--swf-step-marker) / 2 + 0.35rem);
+  left: calc(-50% + var(--swf-step-marker) / 2 + 0.35rem);
+  height: 2px;
+  border-radius: 2px;
+  background: var(--swf-border);
+}
+.swf-steps__item.is-done + .swf-steps__item::before,
+.swf-steps__item.is-done + .swf-steps__item.is-current::before {
+  background: var(--swf-accent);
+}
+.swf-steps__button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  padding: 0;
+  font: inherit;
+  color: var(--swf-muted);
+  background: none;
+  border: 0;
+  cursor: default;
+}
+.swf-steps__button:not(:disabled) {
+  cursor: pointer;
+}
+.swf-steps__button:focus-visible {
+  outline: 2px solid var(--swf-accent);
+  outline-offset: 3px;
+  border-radius: var(--swf-radius);
+}
+.swf-steps__marker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--swf-step-marker);
+  height: var(--swf-step-marker);
+  font-size: 0.85em;
+  font-weight: 650;
+  line-height: 1;
+  color: var(--swf-muted);
+  background: var(--swf-bg);
+  border: 2px solid var(--swf-border);
+  border-radius: 50%;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+}
+.swf-steps__label {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 0.875em;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.swf-steps__item.is-done .swf-steps__marker {
+  color: #fff;
+  background: var(--swf-accent);
+  border-color: var(--swf-accent);
+}
+.swf-steps__item.is-done .swf-steps__button:hover .swf-steps__label {
+  text-decoration: underline;
+}
+.swf-steps__item.is-current .swf-steps__marker {
+  color: var(--swf-accent);
+  border-color: var(--swf-accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--swf-accent) 18%, transparent);
+}
+.swf-steps__item.is-current .swf-steps__label {
+  font-weight: 650;
+  color: var(--swf-text);
+}
+.swf-steps {
+  --swf-step-marker: 2rem;
+}
+.swf-steps--dots {
+  --swf-step-marker: 0.85rem;
+}
+.swf-steps--dots .swf-steps__marker {
+  font-size: 0;
+}
+.swf-steps--dots .swf-steps__item.is-current .swf-steps__marker {
+  background: var(--swf-accent);
+}
+/* Narrow forms: only the current label stays visible. */
+@container (max-width: 480px) {
+  .swf-steps__item:not(.is-current) .swf-steps__label {
+    visibility: hidden;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .swf-steps__marker {
+    transition: none;
+  }
 }

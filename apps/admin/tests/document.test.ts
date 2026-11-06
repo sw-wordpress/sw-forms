@@ -127,3 +127,87 @@ describe('columns', () => {
     expect(cols.columns!.map((c) => c.width)).toEqual([4, 4, 4]);
   });
 });
+
+describe('webhook references', () => {
+  it('warns before deletion and keeps mappings and conditions invalid until explicitly repaired', () => {
+    const form = sample();
+    form.settings.webhooks = [{
+      id: 'hook', name: 'Receiver', enabled: true, url: 'https://example.org/', method: 'POST', format: 'json', headers: [],
+      mapping: [{ field: 'a', target: 'receiver_name' }],
+      logic: { action: 'show', match: 'all', rules: [{ field: 'a', op: 'notempty' }] },
+    }];
+    expect(doc.dependents(form, new Set(['a']))).toContain('webhook:hook');
+    doc.remove(form, 'a');
+    expect(form.settings.webhooks[0]!.mapping).toEqual([{ field: 'a', target: 'receiver_name' }]);
+    expect(form.settings.webhooks[0]!.logic?.rules).toEqual([{ field: 'a', op: 'notempty' }]);
+  });
+});
+
+describe('steps', () => {
+  const pb = (id: string, label = ''): ElementNode => ({ id, type: 'page-break', label });
+  const field = (id: string): ElementNode => ({ id, type: 'input', key: id, label: id });
+  const ids = (form: FormDocument) => form.fields.map((n) => n.id);
+  function steps(): FormDocument {
+    const form = document([field('a'), field('b'), pb('p1', 'Second'), { id: 'g', type: 'group', key: 'g', children: [field('x')] }, pb('p2', 'Third'), field('c')]);
+    form.settings.steps = { enabled: true, firstLabel: 'First', indicator: 'numbers' };
+    return form;
+  }
+
+  it('splits root elements at page breaks and resolves step list positions', () => {
+    const form = steps();
+    expect(doc.stepSegments(form.fields).map((s) => [s.breakNode?.id ?? null, s.start, s.end])).toEqual([[null, 0, 2], ['p1', 3, 4], ['p2', 5, 6]]);
+    expect(doc.stepLabels(form)).toEqual(['First', 'Second', 'Third']);
+    expect(doc.stepElements(form.fields, 1).map((n) => n.id)).toEqual(['g']);
+    expect(doc.stepElements(form.fields, 9)).toEqual([]);
+    expect(doc.isStepList(doc.stepListId(2))).toBe(true);
+    expect(doc.resolveList(form, 'step:1', 5)).toEqual({ listId: 'root', index: 4 });
+    expect(doc.resolveList(form, 'step:9', 0)).toEqual({ listId: 'root', index: 6 });
+    expect(doc.resolveList(form, 'g', 1)).toEqual({ listId: 'g', index: 1 });
+    expect(doc.stepOf(form.fields, 'x')).toBe(1);
+    expect(doc.stepOf(form.fields, 'p2')).toBe(2);
+    expect(doc.stepOf(form.fields, 'a')).toBe(0);
+    expect(doc.stepOf(form.fields, 'missing')).toBe(-1);
+    expect(doc.dataOwner(form, 'step:1')).toBe('root');
+    expect(doc.isInside(form, 'step:1', 'g')).toBe(false);
+  });
+
+  it('inserts and moves within, between and out of steps', () => {
+    const form = steps();
+    expect(doc.insert(form, 'step:1', 0, field('n'))).toBe(true);
+    expect(ids(form)).toEqual(['a', 'b', 'p1', 'n', 'g', 'p2', 'c']);
+    expect(doc.move(form, 'step:0', 0, 'step:0', 1)).toBe(true);
+    expect(ids(form)).toEqual(['b', 'a', 'p1', 'n', 'g', 'p2', 'c']);
+    // Forward between steps: index counted in the target step before removal.
+    expect(doc.move(form, 'step:0', 0, 'step:2', 1)).toBe(true);
+    expect(ids(form)).toEqual(['a', 'p1', 'n', 'g', 'p2', 'c', 'b']);
+    expect(doc.move(form, 'step:2', 1, 'step:0', 0)).toBe(true);
+    expect(ids(form)).toEqual(['b', 'a', 'p1', 'n', 'g', 'p2', 'c']);
+    expect(doc.move(form, 'step:1', 0, 'g', 0)).toBe(true);
+    expect(form.fields[3]!.children!.map((n) => n.id)).toEqual(['n', 'x']);
+  });
+
+  it('renames, reorders and removes steps without losing elements', () => {
+    const form = steps();
+    doc.setStepLabel(form, 0, 'Start');
+    doc.setStepLabel(form, 2, 'End');
+    expect(doc.stepLabels(form)).toEqual(['Start', 'Second', 'End']);
+    expect(doc.moveStep(form, 0, 1)).toBe(true);
+    expect(ids(form)).toEqual(['g', 'p1', 'a', 'b', 'p2', 'c']);
+    expect(doc.stepLabels(form)).toEqual(['Second', 'Start', 'End']);
+    expect(doc.moveStep(form, 2, 1)).toBe(false);
+    expect(doc.removeStep(form, 0)).toBe(true);
+    expect(ids(form)).toEqual(['g', 'a', 'b', 'p2', 'c']);
+    expect(doc.stepLabels(form)).toEqual(['Start', 'End']);
+    expect(doc.removeStep(form, 1)).toBe(true);
+    expect(ids(form)).toEqual(['g', 'a', 'b', 'c']);
+    expect(doc.removeStep(form, 0)).toBe(false);
+    const again = steps();
+    doc.removePageBreaks(again);
+    expect(ids(again)).toEqual(['a', 'b', 'g', 'c']);
+    const plain = document([]);
+    doc.setStepLabel(plain, 0, 'Only');
+    expect(plain.settings.steps).toEqual({ enabled: false, firstLabel: 'Only', indicator: 'numbers' });
+    doc.setStepLabel(plain, 4, 'ignored');
+    expect(doc.stepLabels(plain)).toEqual(['Only']);
+  });
+});

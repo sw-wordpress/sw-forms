@@ -43,10 +43,11 @@ final class SubmissionValidator {
 	 */
 	private function walk( array $ids, array $values, Visibility $visibility, string $prefix, array &$errors, array $raw, bool $store_files ): void {
 		foreach ( $ids as $id ) {
-			if ( ! $visibility->isVisible( $id, $prefix ) ) {
+			if ( ! $visibility->isActive( $id, $prefix ) ) {
 				continue;
 			}
 			$element = $this->tree->node( $id );
+			$element['required'] = ! empty( $element['required'] ) || $visibility->isRequired( $id, $prefix );
 			if ( $this->tree->isRepeater( $id ) ) {
 				$rows        = is_array( $values[ $id ] ?? null ) ? $values[ $id ] : array();
 				list( $min ) = GroupField::row_limits( $element );
@@ -69,7 +70,7 @@ final class SubmissionValidator {
 			}
 			$value = $values[ $id ] ?? null;
 			if ( $type->is_empty( $value, $element ) ) {
-				if ( ! empty( $element['required'] ) ) {
+				if ( ( ! empty( $element['required'] ) || $visibility->isRequired( $id, $prefix ) ) ) {
 					$errors[ $prefix . $id ] = Messages::validation( 'required' );
 				}
 				continue;
@@ -81,8 +82,11 @@ final class SubmissionValidator {
 			if ( array() === $problems && $type instanceof FileField ) {
 				$problems = $store_files ? $type->validate_uploads( $raw, $element ) : array( array( 'code' => 'file_storage' ) );
 			}
+			if ( array() === $problems ) {
+				$problems = \SWForms\WordPress\Validation\ValidatorRegistry::instance()->validate( $value, $element );
+			}
 			if ( array() !== $problems ) {
-				$errors[ $prefix . $id ] = Messages::validation( $problems[0]['code'], $problems[0]['params'] ?? array() );
+				$errors[ $prefix . $id ] = isset( $problems[0]['message'] ) ? (string) $problems[0]['message'] : Messages::validation( $problems[0]['code'], $problems[0]['params'] ?? array() );
 			}
 		}
 	}

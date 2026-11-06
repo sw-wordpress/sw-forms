@@ -326,4 +326,58 @@ final class UploadHttpTest extends TestCase
         self::assertStringContainsString('valid JPEG', $result['errors']['upload']);
         self::assertSame([], $this->entries());
     }
+
+    /** @return list<array{string, string}> */
+    public static function mediaFiles(): array
+    {
+        return [['audio', 'audio.webm'], ['audio', 'audio.ogg'], ['audio', 'audio.mp3'], ['audio', 'audio.wav'], ['audio', 'audio.m4a'], ['audio', 'audio.mp4'], ['video', 'video.webm'], ['video', 'video.mp4']];
+    }
+
+    #[DataProvider('mediaFiles')]
+    public function testRealMediaStreamsAreStoredAndDeleted(string $type, string $file): void
+    {
+        $this->document['fields'][0]['type'] = $type;
+        $this->document['fields'][0]['settings'] = [];
+        self::assertSame([], $this->forms->save($this->formId, 'Media test', $this->document)['errors']);
+        $bytes = file_get_contents(dirname(__DIR__) . '/fixtures/media/' . $file);
+        $result = $this->submit([['name' => $file, 'content' => $bytes]]);
+        self::assertSame('success', $result['status'], json_encode($result));
+        self::assertCount(1, $this->storedFiles());
+        self::assertSame($bytes, file_get_contents($this->storedFiles()[0]));
+        $entry = (new EntryRepository())->find($this->entries()[0]['id']);
+        self::assertSame($file, $entry['data']['documents'][0]['name']);
+        self::assertSame(strlen($bytes), $entry['data']['documents'][0]['size']);
+    }
+
+    /** @return list<array{string, string}> */
+    public static function mismatchedStreams(): array
+    {
+        return [['audio', 'video.webm'], ['audio', 'video.mp4'], ['video', 'audio.webm'], ['video', 'audio.mp4']];
+    }
+
+    #[DataProvider('mismatchedStreams')]
+    public function testWrongStreamKindIsRejectedEvenInAnAllowedContainer(string $type, string $file): void
+    {
+        $this->document['fields'][0]['type'] = $type;
+        $this->document['fields'][0]['settings'] = [];
+        $this->forms->save($this->formId, 'Media test', $this->document);
+        $result = $this->submit([['name' => $file, 'content' => file_get_contents(dirname(__DIR__) . '/fixtures/media/' . $file)]]);
+        self::assertSame('invalid', $result['status'], json_encode($result));
+        self::assertStringContainsString('stream', $result['errors']['upload']);
+        self::assertSame([], $this->entries());
+        self::assertSame([], $this->storedFiles());
+    }
+
+    public function testSignatureAcceptsOnlyAPngAndPreservesTheExistingStorageContract(): void
+    {
+        $this->document['fields'][0]['type'] = 'signature';
+        $this->document['fields'][0]['settings'] = ['extensions' => 'txt,png', 'multiple' => true];
+        $this->forms->save($this->formId, 'Signature test', $this->document);
+        $result = $this->submit([['name' => 'fake.png', 'content' => 'not a signature']]);
+        self::assertSame('invalid', $result['status']);
+        $png = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6zQAAAABJRU5ErkJggg==');
+        $result = $this->submit([['name' => 'signature.png', 'content' => $png]]);
+        self::assertSame('success', $result['status'], json_encode($result));
+        self::assertSame($png, file_get_contents($this->storedFiles()[0]));
+    }
 }

@@ -5,7 +5,9 @@ import type { ElementNode } from '@shared/types';
 import { useBuilderStore } from '@/stores/builder';
 import CanvasList from './CanvasList.vue';
 import ColumnsCanvas from './ColumnsCanvas.vue';
+import { fieldUI } from '@/extensions/builder';
 import ElementPreview from './ElementPreview.vue';
+import { isStepList } from './document';
 
 const props = defineProps<{ element: ElementNode; index: number; listId: string; count: number }>();
 const { t } = useI18n();
@@ -21,6 +23,9 @@ const repeatable = computed(() => props.element.settings?.repeatable === true);
 const title = computed(
   () => props.element.adminLabel || props.element.label || definition.value?.label || props.element.type,
 );
+
+/** Root elements of a step can be sent to another step. */
+const otherSteps = computed(() => (isStepList(props.listId) ? store.steps.filter((s) => s.index !== store.activeStep) : []));
 
 function select(): void {
   store.select(props.element.id);
@@ -77,6 +82,16 @@ function onKey(e: KeyboardEvent): void {
       <span class="swf-el__tools swf-no-drag">
         <q-btn flat round dense size="sm" icon="r_arrow_upward" :disable="index === 0" :aria-label="t('canvas.moveUp')" @click.stop="move(-1)" />
         <q-btn flat round dense size="sm" icon="r_arrow_downward" :disable="index === count - 1" :aria-label="t('canvas.moveDown')" @click.stop="move(1)" />
+        <q-btn v-if="otherSteps.length > 0" flat round dense size="sm" icon="r_drive_file_move" :aria-label="t('steps.moveTo')" @click.stop>
+          <q-menu>
+            <q-list dense>
+              <q-item-label header>{{ t('steps.moveTo') }}</q-item-label>
+              <q-item v-for="step in otherSteps" :key="step.index" v-close-popup clickable @click="store.moveToStep(element.id, step.index)">
+                <q-item-section>{{ step.index + 1 }}. {{ step.label || t('steps.fallback', { n: step.index + 1 }) }}</q-item-section>
+              </q-item>
+            </q-list>
+          </q-menu>
+        </q-btn>
         <q-btn flat round dense size="sm" icon="r_content_copy" :aria-label="t('common.duplicate')" @click.stop="store.duplicateElement(element.id)" />
         <q-btn flat round dense size="sm" icon="r_delete" :aria-label="t('common.delete')" @click.stop="store.removeElement(element.id)" />
       </span>
@@ -90,6 +105,9 @@ function onKey(e: KeyboardEvent): void {
       </span>
     </div>
     <ColumnsCanvas v-else-if="isColumns" :element="element" />
+    <div v-else-if="fieldUI(element.type)?.canvas" inert>
+      <component :is="fieldUI(element.type)?.canvas" :element="element" :settings="element.settings ?? {}" />
+    </div>
     <ElementPreview v-else :element="element" :known="!!definition" />
   </div>
 </template>

@@ -46,7 +46,7 @@ echo 'render bytes: ', strlen( $html ), ' company hidden: ', preg_match( '/data-
 
 $sub = \SWForms\WordPress\Submission\SubmissionService::create_default();
 $guard = new \SWForms\WordPress\Submission\SpamGuard();
-$meta = fn() => array( 'token' => $guard->issue_token( $id ), 'ip' => '10.0.0.' . wp_rand( 1, 250 ), 'honeypot' => '' );
+$meta = fn() => array( 'token' => $guard->issue_token( $id ), 'ip' => '10.0.0.' . wp_rand( 1, 250 ), 'honeypot' => '', 'wp_armour' => \SWForms\WordPress\Spam\WpArmour::request_data( function_exists( 'wpa_field_info' ) ? array( $GLOBALS['wpa_field_name'] => (string) wpa_field_info()['wpa_field_value'], 'alt_s' => '' ) : array() ) );
 
 // 1. invalid: company required when visible, email invalid, consent missing, repeater name missing
 $r = $sub->submit( $id, array( 'f_name' => 'Max', 'f_mail' => 'nope', 'f_type' => 'company', 'rep' => array( array( 'p_name' => '' ) ) ), $meta() );

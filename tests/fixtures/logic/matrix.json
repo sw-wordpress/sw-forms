@@ -1,0 +1,121 @@
+{
+  "description": "Matrix maps compare their answer values; row keys are stable data keys.",
+  "fields": [
+    {
+      "id": "matrix",
+      "type": "matrix",
+      "key": "matrix"
+    },
+    {
+      "id": "note",
+      "type": "input",
+      "key": "note",
+      "logic": {
+        "action": "show",
+        "match": "all",
+        "rules": [
+          {
+            "field": "matrix",
+            "op": "is",
+            "value": "5"
+          }
+        ]
+      }
+    },
+    {
+      "id": "any",
+      "type": "input",
+      "key": "any",
+      "logic": {
+        "action": "show",
+        "match": "all",
+        "rules": [
+          {
+            "field": "matrix",
+            "op": "notempty"
+          }
+        ]
+      }
+    },
+    {
+      "id": "rows",
+      "type": "group",
+      "key": "rows",
+      "settings": {
+        "repeatable": true
+      },
+      "children": [
+        {
+          "id": "nested",
+          "type": "matrix",
+          "key": "nested"
+        },
+        {
+          "id": "why",
+          "type": "input",
+          "key": "why",
+          "logic": {
+            "action": "show",
+            "match": "all",
+            "rules": [
+              {
+                "field": "nested",
+                "op": "contains",
+                "value": "1"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "cases": [
+    {
+      "name": "empty answers",
+      "values": {
+        "matrix": {},
+        "rows": [
+          {
+            "nested": {}
+          },
+          {
+            "nested": {
+              "service": "1"
+            }
+          }
+        ]
+      },
+      "expected": {
+        "note": false,
+        "any": false,
+        "rows[0].why": false,
+        "rows[1].why": true
+      }
+    },
+    {
+      "name": "answers are compared as option values",
+      "values": {
+        "matrix": {
+          "service": "5",
+          "quality": "2"
+        }
+      },
+      "expected": {
+        "note": true,
+        "any": true
+      }
+    },
+    {
+      "name": "row keys are not answers",
+      "values": {
+        "matrix": {
+          "5": "2"
+        }
+      },
+      "expected": {
+        "note": false,
+        "any": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "description": "Signatures and recordings use the same filename list conditions, including repeater scope.",
+  "fields": [
+    {"id":"signature","type":"signature","key":"signature"},
+    {"id":"audio","type":"audio","key":"audio","logic":{"action":"show","match":"all","rules":[{"field":"signature","op":"notempty"}]}},
+    {"id":"rows","type":"group","key":"rows","settings":{"repeatable":true},"children":[
+      {"id":"video","type":"video","key":"video"},
+      {"id":"note","type":"input","key":"note","logic":{"action":"show","match":"all","rules":[{"field":"video","op":"contains","value":".webm"}]}}
+    ]}
+  ],
+  "cases": [
+    {"name":"signed and recorded","values":{"signature":["signature.png"],"audio":["recording.webm"],"rows":[{"video":["recording.webm"]},{"video":[]}]},"expected":{"audio":true,"rows[0].note":true,"rows[1].note":false}},
+    {"name":"unsigned and other container","values":{"signature":[],"rows":[{"video":["recording.mp4"]}]},"expected":{"audio":false,"rows[0].note":false}}
+  ]
+}

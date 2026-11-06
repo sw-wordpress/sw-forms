@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import type { ColumnNode, ElementNode } from '@shared/types';
 import { useBuilderStore } from '@/stores/builder';
 import type { SettingDefinition } from '@/types/api';
+import { fieldUI } from '@/extensions/builder';
 import ColumnsInspector from './ColumnsInspector.vue';
 import LogicEditor from './LogicEditor.vue';
 import SettingControl from './SettingControl.vue';
@@ -22,6 +23,14 @@ const column = computed(() => (location.value?.isColumn ? (location.value.node a
 const definition = computed(() => (element.value ? store.definition(element.value.type) : undefined));
 const supports = computed(() => new Set(definition.value?.supports ?? []));
 const settings = computed(() => element.value?.settings ?? {});
+const fieldChoices = computed(() => store.tree.ids().filter((id) => store.tree.isData(id)).map((id) => {
+  const node = store.tree.node(id)!;
+  return { value: id, label: node.label || node.key || id, type: node.type };
+}));
+function updateAddonSettings(value: Record<string, unknown>): void {
+  if (!element.value || !value || typeof value !== 'object' || Array.isArray(value)) return;
+  store.updateElement(element.value.id, { settings: { ...settings.value, ...value } });
+}
 const errors = computed(() => (location.value ? store.errorsById.get(location.value.node.id) ?? [] : []));
 
 watch(
@@ -183,6 +192,7 @@ function update(patch: Partial<ElementNode>): void {
               @update:model-value="update({ description: String($event ?? '') })"
             />
             <q-toggle v-if="supports.has('required')" :model-value="element.required === true" :label="t('inspector.required')" @update:model-value="update({ required: !!$event })" />
+            <component :is="fieldUI(element.type)?.inspector" v-if="fieldUI(element.type)?.inspector" :element="element" :model-value="settings" @update:model-value="updateAddonSettings" />
             <ColumnsInspector v-if="definition?.container === 'columns'" :element="element" />
             <SettingControl
               v-for="setting in settingsFor('general')"
@@ -190,6 +200,7 @@ function update(patch: Partial<ElementNode>): void {
               :setting="setting"
               :value="settings[setting.name]"
               :settings="settings"
+              :fields="fieldChoices"
               @update="store.updateSetting(element!.id, setting.name, $event)"
             />
           </div>
@@ -201,6 +212,7 @@ function update(patch: Partial<ElementNode>): void {
               :setting="setting"
               :value="settings[setting.name]"
               :settings="settings"
+              :fields="fieldChoices"
               @update="store.updateSetting(element!.id, setting.name, $event)"
             />
           </div>
@@ -214,6 +226,7 @@ function update(patch: Partial<ElementNode>): void {
               :setting="setting"
               :value="settings[setting.name]"
               :settings="settings"
+              :fields="fieldChoices"
               @update="store.updateSetting(element!.id, setting.name, $event)"
             />
             <q-input

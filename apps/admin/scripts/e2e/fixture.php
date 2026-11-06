@@ -14,6 +14,11 @@ if ( 'teardown' === ( $argv[1] ?? '' ) ) {
 	exit;
 }
 
+if ( 'count' === ( $argv[1] ?? '' ) ) {
+	echo wp_json_encode( ( new \SWForms\WordPress\Entries\EntryRepository() )->counts( (int) $argv[2] ) );
+	exit;
+}
+
 $options = static fn ( array $pairs ): array => array_map( static fn ( $v, $l ) => array( 'label' => $l, 'value' => $v ), array_keys( $pairs ), $pairs );
 $service = \SWForms\WordPress\Forms\FormService::create_default();
 $form_id = $service->create( 'E2E' );

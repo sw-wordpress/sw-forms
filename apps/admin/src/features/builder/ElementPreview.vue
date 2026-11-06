@@ -15,6 +15,7 @@ const options = computed(() => {
   const list = settings.value.options;
   return Array.isArray(list) ? (list as { label: string; value: string; image?: string }[]) : [];
 });
+const matrixRows = computed(() => Array.isArray(settings.value.rows) ? settings.value.rows as { label: string; value: string }[] : []);
 const inputType = computed(() => String(settings.value.inputType ?? 'text'));
 const scores = computed(() => {
   const min = props.element.type === 'rating' ? 1 : Math.max(0, Number(settings.value.min ?? 1));
@@ -24,7 +25,7 @@ const scores = computed(() => {
 const mode = computed(() => String(settings.value.mode ?? 'multiple'));
 const placeholder = computed(() => String(settings.value.placeholder ?? ''));
 const horizontal = computed(() => settings.value.layout === 'horizontal');
-const singleText = computed(() => String(settings.value.text ?? '').replace(/<[^>]*>/g, ''));
+const singleText = computed(() => String(settings.value.text ?? '').replace(/<[^<>]*>/g, ''));
 const defaults = computed(() => {
   const value = settings.value.defaultValues;
   return Array.isArray(value) ? (value as string[]) : [];
@@ -40,6 +41,15 @@ const defaults = computed(() => {
       </div>
     </template>
 
+    <template v-else-if="element.type === 'page-break'">
+      <hr><p>{{ element.label || t('m5.pageBreak') }}</p><hr>
+    </template>
+    <template v-else-if="element.type === 'html'">
+      <p style="white-space: pre-line">{{ String(settings.content ?? '').replace(/<[^<>]*>/g, '') }}</p>
+    </template>
+    <template v-else-if="element.type === 'calculation'">
+      <label>{{ element.label }}<input readonly value="0.00"></label>
+    </template>
     <template v-else-if="element.type === 'checkbox' && mode === 'single'">
       <label class="swf-preview__choice">
         <span class="swf-preview__box" :class="{ 'swf-preview__box--on': settings.checked === true, 'swf-preview__switch': settings.switch === true }" />
@@ -59,8 +69,8 @@ const defaults = computed(() => {
         <q-icon v-if="inputType === 'date'" name="r_calendar_today" size="16px" />
         <q-icon v-else-if="inputType === 'email'" name="r_alternate_email" size="16px" />
       </div>
-      <div v-else-if="element.type === 'file' || element.type === 'image'" class="swf-preview__input">
-        <q-icon :name="element.type === 'image' ? 'r_add_photo_alternate' : 'r_upload_file'" size="18px" />
+      <div v-else-if="['file', 'image', 'signature', 'audio', 'video'].includes(element.type)" class="swf-preview__input">
+        <q-icon :name="({ image: 'r_add_photo_alternate', signature: 'r_draw', audio: 'r_mic', video: 'r_videocam' } as Record<string, string>)[element.type] ?? 'r_upload_file'" size="18px" />
         <span class="swf-preview__placeholder">{{ settings.extensions }}</span>
       </div>
       <div v-else-if="element.type === 'textarea' || element.type === 'tags'" class="swf-preview__input swf-preview__input--area" :style="{ minHeight: `${Math.max(2, Number(settings.rows ?? 4)) * 14}px` }">
@@ -88,6 +98,11 @@ const defaults = computed(() => {
           <span class="swf-preview__radio" />{{ settings.otherLabel }} <span class="swf-preview__input swf-preview__input--inline" />
         </label>
         <span v-if="options.length === 0" class="swf-muted">{{ t('canvas.noOptions') }}</span>
+      </div>
+      <div v-else-if="element.type === 'matrix'" class="swf-preview__matrix-scroll">
+        <table class="swf-preview__matrix"><thead><tr><td></td><th v-for="option in options" :key="option.value" scope="col">{{ option.label }}</th></tr></thead>
+          <tbody><tr v-for="row in matrixRows" :key="row.value"><th scope="row">{{ row.label }}</th><td v-for="option in options" :key="option.value"><span class="swf-preview__radio" /></td></tr></tbody>
+        </table>
       </div>
       <input v-else-if="element.type === 'birthdate'" type="date" disabled />
       <div v-else-if="element.type === 'date-interval' || element.type === 'time-interval'" class="swf-preview__interval">

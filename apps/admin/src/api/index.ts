@@ -1,3 +1,4 @@
+import type { ElementNode } from '@shared/types';
 import { getConfig } from '@/config';
 import type {
   BulkAction,
@@ -10,9 +11,13 @@ import type {
   FormDetail,
   FormDocument,
   FormStatus,
+  FormTemplate,
+  FormTemplateCard,
   FormSummary,
   GlobalSettings,
+  TemplateCategory,
   WpPage,
+  WebhookTestResult,
 } from '@/types/api';
 import { ApiClient } from './client';
 
@@ -41,6 +46,17 @@ export function setApiForTests(value: ApiClient | null): void {
 }
 
 export const formsApi = {
+  /** Category list plus card summaries; the documents themselves come per template. */
+  templates: () =>
+    api()
+      .get<{ categories?: TemplateCategory[]; items?: FormTemplateCard[] }>('form-templates')
+      .then((r) => ({ categories: r.categories ?? [], items: r.items ?? [] })),
+  template: (id: string) => api().get<FormTemplate>(`form-templates/${encodeURIComponent(id)}`),
+  import: (data: unknown) => api().post<{ id: number }>('forms/import', data),
+  export: (id: number) => api().get<Record<string, unknown>>(`forms/${id}/export`),
+  versions: (id: number, page = 1) => api().get<{ items: { version: number; createdAt: string; createdBy: number }[] }>(`forms/${id}/versions`, { page }).then((r) => r.items),
+  version: (id: number, version: number) => api().get<{ document: FormDocument }>(`forms/${id}/versions/${version}`),
+  restoreVersion: (id: number, version: number) => api().post<{ restored: boolean }>(`forms/${id}/versions/${version}/restore`),
   list: () => api().get<{ items: FormSummary[] }>('forms').then((r) => r.items),
   create: (title: string) => api().post<FormDetail>('forms', { title }),
   get: (id: number) => api().get<FormDetail>(`forms/${id}`),
@@ -54,9 +70,14 @@ export const formsApi = {
   duplicate: (id: number) => api().post<FormDetail>(`forms/${id}/duplicate`),
   remove: (id: number) => api().delete<{ deleted: boolean }>(`forms/${id}`),
   fieldTypes: () => api().get<{ items: FieldTypeDefinition[] }>('field-types').then((r) => r.items),
+  testWebhook: (id: number, webhook: string) => api().post<WebhookTestResult>(`forms/${id}/webhooks/${webhook}/test`),
 };
 
 export const entriesApi = {
+  editValues: (id: number) => api().get<{ fields: ElementNode[]; values: Record<string, unknown>; revision: string }>(`entries/${id}/values`),
+  saveValues: (id: number, values: Record<string, unknown>, revision: string) => api().put<EntrySummary>(`entries/${id}/values`, { values, revision }),
+  addNote: (id: number, note: string) => api().post<{ saved: boolean }>(`entries/${id}/notes`, { note }),
+  exportUrl: (formId: number, query: { filter: EntryFilter; search: string; order: 'asc' | 'desc' }) => api().authenticatedUrl(`forms/${formId}/entries/export`, query),
   list: (formId: number, query: { filter: EntryFilter; search: string; page: number; per_page: number; order: 'asc' | 'desc' }) =>
     api().get<EntryList>(`forms/${formId}/entries`, query),
   get: (id: number) => api().get<EntryDetail>(`entries/${id}`),
@@ -64,6 +85,7 @@ export const entriesApi = {
     api().request<EntrySummary>('PATCH', `entries/${id}`, { body: changes }),
   remove: (id: number) => api().delete<{ deleted: boolean }>(`entries/${id}`),
   bulk: (ids: number[], action: BulkAction) => api().post<{ affected: number }>('entries/bulk', { ids, action }),
+  resendWebhook: (id: number, delivery: number) => api().post<{ queued: boolean }>(`entries/${id}/webhooks/${delivery}/resend`),
 };
 
 export const settingsApi = {

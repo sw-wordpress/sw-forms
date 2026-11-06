@@ -41,6 +41,11 @@ const auth = php();
 const host = 'localhost';
 const browser = await chromium.launch({ executablePath: findChrome(), args: ['--no-sandbox'] });
 const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: 'de-DE' });
+// Keep unrelated theme fonts/avatars out of an explicitly offline application test.
+if (process.env.SWF_E2E_OFFLINE === '1') {
+  await context.route('**/*', (route) => new URL(route.request().url()).origin === new URL(auth.admin).origin
+    ? route.continue() : route.fulfill({ status: 204, body: '' }));
+}
 await context.addCookies(auth.cookies.map((c) => ({ ...c, domain: host, path: '/' })));
 const page = await context.newPage();
 const errors = [];
@@ -107,7 +112,8 @@ try {
   check('column resize via keyboard', await eventually(async () => (await columns.locator('.swf-col-box__head .swf-num').first().textContent()) === '8/12'));
 
   // undo / redo
-  await page.locator('.swf-canvas').click({ position: { x: 5, y: 5 } });
+  // The resize separator is already focused; its non-editable target accepts shortcuts.
+  // The canvas's top edge may be covered by the sticky builder toolbar after scrolling.
   await page.keyboard.press('Control+z');
   check('undo', await eventually(async () => (await columns.locator('.swf-col-box__head .swf-num').first().textContent()) === '7/12'));
   await page.keyboard.press('Control+Shift+z');

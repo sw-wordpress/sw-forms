@@ -24,7 +24,7 @@ jobs:
       XDEBUG_MODE: coverage
       WP_ROOT: /tmp/swf-wordpress
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
     - uses: shivammathur/setup-php@v2
       with:
         php-version: '8.2'
@@ -33,6 +33,8 @@ jobs:
         coverage: xdebug
     - run: composer install --prefer-dist --no-interaction --no-progress
     - run: composer validate --strict
+    - name: Audit Composer dependencies for known vulnerabilities
+      run: composer audit --locked --no-dev
     - run: composer cs && composer cs:wp && composer stan
     - name: Install disposable WordPress
       run: |
@@ -56,7 +58,7 @@ jobs:
     - name: Verify adapter coverage was imported
       run: php tests/coverage/check.php
     - name: Upload Clover coverage
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: php-coverage
         path: |
@@ -70,16 +72,18 @@ jobs:
       run:
         working-directory: apps/admin
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
+    - uses: actions/checkout@v7
+    - uses: actions/setup-node@v7
       with:
         node-version: '22'
         cache: npm
         cache-dependency-path: apps/admin/package-lock.json
     - run: npm ci
+    - name: Audit shipped npm dependencies for known vulnerabilities
+      run: npm audit --omit=dev --audit-level=high
     - run: npm run lint && npm run typecheck && npm run test:coverage && npm run build
     - name: Upload frontend coverage
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: frontend-coverage
         path: |
@@ -94,19 +98,20 @@ jobs:
     - frontend
     if: |-
       (github.event_name == 'pull_request' &&
-       github.event.pull_request.head.repo.full_name == github.repository) ||
+       github.event.pull_request.head.repo.full_name == github.repository &&
+       github.event.pull_request.user.login != 'dependabot[bot]') ||
       (github.event_name == 'push' &&
        github.ref_name == github.event.repository.default_branch)
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
       with:
         fetch-depth: 0
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v8
       with:
         name: php-coverage
         path: coverage
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v8
       with:
         name: frontend-coverage
         path: apps/admin/coverage
@@ -128,7 +133,7 @@ jobs:
         test -s coverage/junit.xml
         test -s apps/admin/coverage/test-execution.xml
     - name: Analyze code and import coverage
-      uses: SonarSource/sonarqube-scan-action@d209202bc7d53ff1cc128f7f907dac145c9d6ae9
+      uses: SonarSource/sonarqube-scan-action@4d1dc0c91ee400dcf8a6dddf2f705ac36542e304
       with:
         args: -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }}
       env:

@@ -73,7 +73,10 @@ export function useSortablePalette(el: Ref<HTMLElement | null>, onAdd: AddHandle
         if (target === evt.from) return;
         const type = (evt.item as HTMLElement).dataset.type ?? '';
         const toList = target.dataset.listId ?? '';
-        const toIndex = evt.newDraggableIndex ?? 0;
+        // Palette and canvas use different draggable selectors. Count destination cards
+        // before the dropped item rather than Sortable's source-selector-based index.
+        const siblings = Array.from(target.children);
+        const toIndex = siblings.slice(0, siblings.indexOf(evt.item)).filter((item) => item.matches('.swf-el')).length;
         // Put the original palette item back where Vue expects it and drop the clone.
         evt.item.remove();
         evt.clone.replaceWith(evt.item);

@@ -42,7 +42,7 @@ final class LogicFixturesTest extends TestCase
     public static function visibilityCases(): array
     {
         $cases = [];
-        foreach (['basic.json', 'cascade.json', 'containers.json', 'repeater.json', 'contact-groups.json', 'files.json'] as $file) {
+        foreach (['basic.json', 'cascade.json', 'containers.json', 'repeater.json', 'contact-groups.json', 'files.json', 'media.json', 'matrix.json'] as $file) {
             $data = self::load($file);
             foreach ($data['cases'] as $case) {
                 $cases[$file . ': ' . $case['name']] = [$data['fields'], $case['values'], $case['expected']];
@@ -74,5 +74,18 @@ final class LogicFixturesTest extends TestCase
         $data = json_decode((string) file_get_contents(self::DIR . $file), true, 512, JSON_THROW_ON_ERROR);
         self::assertIsArray($data);
         return $data;
+    }
+
+    public function testConditionalEffectsUseSharedFixtures(): void
+    {
+        $data = self::load('effects.json');
+        foreach ($data['cases'] as $case) {
+            $state = (new Evaluator(Tree::build($data['fields'], StaticTypeCatalog::builtIn())))->evaluate($case['values']);
+            foreach (['visible' => 'isVisible', 'enabled' => 'isEnabled', 'required' => 'isRequired'] as $key => $method) {
+                foreach ($case[$key] as $path => $expected) {
+                    self::assertSame($expected, $state->$method($path), $case['name'] . ': ' . $key . ':' . $path);
+                }
+            }
+        }
     }
 }

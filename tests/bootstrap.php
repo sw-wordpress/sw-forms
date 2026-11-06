@@ -11,6 +11,11 @@ declare(strict_types=1);
 
 define('ABSPATH', '/test/wordpress/');
 
+function did_action(string $hook): int
+{
+    return 0;
+}
+
 function plugin_dir_path(string $file): string
 {
     return dirname($file) . '/';
@@ -62,6 +67,14 @@ foreach (array( 'test_activation', 'test_deactivation' ) as $swf_test_callback) 
 
 if (! class_exists(\SWForms\Core\Logic\Evaluator::class)) {
     throw new RuntimeException('Core classes could not be loaded.');
+}
+
+if (!class_exists('ActionScheduler_Versions', false)) {
+    throw new RuntimeException('Bundled Action Scheduler was not loaded.');
+}
+
+if (!isset($GLOBALS['test_actions']['plugins_loaded'])) {
+    throw new RuntimeException('Action Scheduler version negotiation was not registered.');
 }
 
 if (! is_callable($GLOBALS['test_shortcodes']['sw_form'] ?? null)) {

@@ -100,7 +100,7 @@ class FileField extends AbstractFieldType {
 		$settings               = parent::normalize_settings( $settings );
 		$parts                  = preg_split( '/[\s,;]+/', strtolower( (string) $settings['extensions'] ) ) ?: array();
 		$parts                  = array_map( static fn ( string $part ): string => ltrim( $part, '.' ), $parts );
-		$settings['extensions'] = implode( ',', array_values( array_unique( array_intersect( $parts, array_keys( self::MIMES ) ) ) ) );
+		$settings['extensions'] = implode( ',', array_values( array_unique( array_intersect( $parts, array_keys( $this->allowed_mimes() ) ) ) ) );
 		return $settings;
 	}
 
@@ -109,14 +109,29 @@ class FileField extends AbstractFieldType {
 	 * @return array<string, string>
 	 */
 	public function mimes( array $element ): array {
-		$out = array();
-		foreach ( explode( ',', (string) $this->setting( $element, 'extensions', 'pdf,jpg,jpeg,png,txt' ) ) as $ext ) {
+		$out     = array();
+		$allowed = $this->allowed_mimes();
+		foreach ( explode( ',', (string) $this->setting( $element, 'extensions', $this->default_settings()['extensions'] ) ) as $ext ) {
 			$wp = wp_check_filetype( 'file.' . $ext, get_allowed_mime_types() );
-			if ( isset( self::MIMES[ $ext ] ) && self::MIMES[ $ext ] === $wp['type'] ) {
-				$out[ $ext ] = self::MIMES[ $ext ];
+			if ( isset( $allowed[ $ext ] ) && $allowed[ $ext ] === $wp['type'] ) {
+				$out[ $ext ] = $allowed[ $ext ];
 			}
 		}
 		return $out;
+	}
+
+	/** @return array<string, string> */
+	protected function allowed_mimes(): array {
+		return self::MIMES;
+	}
+
+	/** @return list<string> */
+	protected function detected_mimes( string $ext, string $mime ): array {
+		return match ( $ext ) {
+			'csv' => array( $mime, 'text/plain' ),
+			'zip' => array( $mime, 'application/x-zip', 'application/x-zip-compressed' ),
+			default => array( $mime ),
+		};
 	}
 
 	/** @param array<string, mixed> $element */
@@ -162,15 +177,7 @@ class FileField extends AbstractFieldType {
 			$ext      = strtolower( pathinfo( $file->name, PATHINFO_EXTENSION ) );
 			$mime     = $this->mimes( $element )[ $ext ] ?? '';
 			$actual   = ( new \finfo( FILEINFO_MIME_TYPE ) )->file( $file->temporary );
-			$accepted = array( $mime );
-			if ( 'csv' === $ext ) {
-				$accepted[] = 'text/plain';
-			}
-
-			if ( 'zip' === $ext ) {
-				$accepted[] = 'application/x-zip';
-				$accepted[] = 'application/x-zip-compressed';
-			}
+			$accepted = $this->detected_mimes( $ext, $mime );
 
 			if ( '' === $mime || ! in_array( $actual, $accepted, true ) ) {
 				return array( array( 'code' => 'file_type' ) );
@@ -210,12 +217,13 @@ class FileField extends AbstractFieldType {
 			array_merge(
 				$aria,
 				array(
-					'type'     => 'file',
-					'id'       => $context->dom_id( $id ),
-					'name'     => $context->name( $id ) . '[]',
-					'multiple' => (bool) $this->setting( $element, 'multiple', false ),
-					'accept'   => implode( ',', array_map( static fn ( string $ext ): string => '.' . $ext, array_keys( $this->mimes( $element ) ) ) ),
-					'class'    => 'swf-input swf-file',
+					'type'                  => 'file',
+					'id'                    => $context->dom_id( $id ),
+					'name'                  => $context->name( $id ) . '[]',
+					'multiple'              => (bool) $this->setting( $element, 'multiple', false ),
+					'accept'                => implode( ',', array_map( static fn ( string $ext ): string => '.' . $ext, array_keys( $this->mimes( $element ) ) ) ),
+					'class'                 => 'swf-input swf-file',
+					'data-swf-busy-message' => __( 'Please finish recording or processing the selected file before submitting.', 'sw-forms' ),
 				),
 				$this->upload_attributes( $element )
 			)

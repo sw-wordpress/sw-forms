@@ -40,17 +40,17 @@ of a 12 column grid (rendered as `fr` tracks). Columns are layout only.
 ### Logic
 
 ```json
-{ "action": "show|hide", "match": "all|any", "rules": [ { "field": "<element id>", "op": "is", "value": "x" } ] }
+{ "action": "show|hide|require|disable", "match": "all|any", "rules": [ { "field": "<element id>", "op": "is", "value": "x" } ] }
 ```
 
 Operators: `is`, `isnot`, `contains`, `gt`, `lt`, `empty`, `notempty`. Comparisons trim and ignore
 case; lists (checkbox list, multi select) match per item; numbers accept `1.5` and `1,5`.
 
 * A node is hidden when its parent is hidden or its own logic says so.
-* A rule that references a hidden field sees an empty value (cascade).
+* A rule that references a hidden or disabled field sees an empty value (cascade).
 * Inside a repeater row rules see the same row and all enclosing scopes; a rule can never look
   into repeater rows from outside.
-* Cycles are rejected on save. Hidden fields are neither validated nor stored nor sent.
+* Cycles are rejected on save. Hidden and disabled fields are neither validated nor stored nor sent.
 
 The PHP (`src/Core/Logic/Evaluator.php`) and TypeScript (`apps/admin/shared/logic.ts`)
 evaluators are tested against the same fixtures in `tests/fixtures/logic/`.
@@ -86,9 +86,131 @@ Yes/No) and the row path (`people[0].`) for fields inside repeaters.
   "notifications": [
     { "id": "admin", "name": "", "enabled": true, "to": "{admin_email}", "subject": "", "message": "{all_fields}",
       "replyTo": "{field:email}", "fromName": "", "logic": null }
-  ]
+  ],
+  "steps": { "enabled": false, "firstLabel": "", "indicator": "numbers|dots|text" },
+  "design": { "variant": "classic", "scheme": "light|dark|auto", "tokens": {} }
 }
 ```
+
+### Design (0.6.0)
+
+Presentation only; fields, names, validation and data never depend on it.
+`variant`: `classic` (default, the original look), `floating`, `minimal`, `dark-focus` (always
+dark), `guided-card`, `animated-float`, `surprise-motion`. Unknown values become `classic`.
+`tokens` optionally override `accent`, `text`, `background` (fields), `surface` (form) and
+`border` (hex colours only) and `radius` (0–32 px). They are emitted as inline CSS custom
+properties; a readable button text colour is derived from `accent`. The builder warns below
+WCAG AA contrast. Normalisation: `Core\Design\Design`.
+
+Per embed the stored variant can be overridden: `[sw_form id="3" variant="animated-float"]`,
+`swf_render_form( 3, false, 'minimal' )`; the `swf_form_design` filter runs last.
+
+## Webhook configuration (Milestone 2)
+
+`settings.webhooks` defaults to `[]`, with at most 20 definitions:
+
+```json
+{
+  "id": "receiver", "name": "CRM", "enabled": false,
+  "url": "https://example.org/receive", "method": "POST", "format": "json",
+  "headers": [{"name": "Authorization", "value": "Bearer example"}],
+  "mapping": [{"field": "immutable_element_id", "target": "receiver_name"}],
+  "logic": null
+}
+```
+
+Methods are `POST`/`PUT`, formats `json`/`form`. Header names must be unique ignoring case;
+line breaks and reserved transport/signature headers are rejected on publication. Enabled
+webhooks require an HTTP(S) URL without credentials or a fragment. The delivery service checks destinations again before every attempt; URL syntax validation
+alone is not authorization to send.
+
+No mapping means all final visible data. A nonempty mapping selects only those values, with
+flat receiver keys matching the normal field-key pattern. Sources use immutable element ids,
+so renaming a source key does not break selection. Nonrepeatable nested fields and whole
+groups/repeaters can be selected; individual fields within repeater rows cannot. Hidden or
+missing sources are omitted, never replaced with all data. Deleted sources invalidate the
+webhook until the mapping or condition is explicitly repaired. Conditions use the shared
+logic model and form-level leaf fields outside repeaters.
+
+REST accepts a write-only `secret` for replacement; absent/empty input preserves the stored
+secret of the same form and webhook id. New webhooks without a secret get a random 256-bit
+secret. To verify signatures at the receiver, enter a secret known to that receiver.
+Documents in the database use authenticated AES-256-GCM `secretEncrypted` envelopes keyed
+from WordPress salts. REST returns only `hasSecret`; both plaintext and ciphertext are
+removed by `WebhookSettings::redact()` (also use this for future exports). Other header
+values are ordinary configuration, visible only to form managers. Entry-only viewers do
+not receive webhook configuration. Duplicated forms get independent signing secrets.
+Draft rotation does not affect the published version; discarding restores the original.
+Changing WordPress salts makes old encrypted secrets unreadable; replace them afterwards.
+
+### Delivery and lifecycle
+
+A valid non-preview submission queues its enabled webhooks whose conditions match. Submission
+HTTP requests never wait for the receiver. `DeliveryService` stores the exact signed URL,
+method, body and headers as an authenticated encrypted snapshot in `swf_webhook_deliveries`;
+Action Scheduler receives only the delivery id in group `swf_background`. Form edits, secret
+rotation and retries do not change an already queued snapshot. Delete its entry/form to
+cancel pending delivery. Turning a webhook off affects future submissions.
+
+Every non-2xx response or transport failure is retried after 1 minute, 5 minutes, 30 minutes,
+2 hours and 12 hours (six attempts total). Each attempt has a 15-second timeout, no redirects,
+TLS verification, no cookies and a 2048-byte response limit. Logs retain HTTP code, elapsed
+milliseconds and at most 1000 response characters, with request header values redacted.
+Delivery metadata is shown on entries; pending status refreshes while the entry is open.
+Final failures notify the site administrator, show a form-list badge and fire
+`swf_webhook_failed`. Success fires `swf_webhook_sent`. Manual resend of a terminal delivery
+reuses the original event id/body and resets the attempt budget; pending/running deliveries
+cannot be resent concurrently. Receivers must deduplicate event ids: recovery and retries
+provide at-least-once delivery, not exactly-once execution at the remote service.
+
+Destination policy accepts HTTP(S) only, ports 80/443, with no credentials or fragments.
+It rejects private, loopback, link-local, reserved, multicast and mixed public/private DNS
+answers, including IPv4-mapped IPv6 addresses. WordPress additionally validates the request
+through `wp_safe_remote_request`. Hosts resolving only to IPv6 literals remain subject to
+WordPress's own URL restrictions. The `swf_webhook_allow_private_url` filter can grant a
+trusted per-URL exception; it cannot permit other schemes or credentials. Its temporary
+WordPress host/port exceptions apply only to that request and are always removed afterwards.
+Use HTTPS for sensitive data; HTTP destinations do not provide transport encryption.
+
+A two-minute delivery lease prevents concurrent processing; stale workers cannot overwrite
+newer attempts. A five-minute WP-Cron recovery task repairs expired leases and missing queue
+jobs, including after reactivation. WordPress cron/loopback processing must run for timely
+background delivery. Queue outages preserve pending snapshots for recovery. Retention or
+permanent deletion of a stored entry cancels and erases its pending requests.
+
+With `storeEntries=false`, matching webhooks require a temporary entry. It is excluded from
+entry lists, counters and direct REST access (including update/delete/bulk), and visitors
+still receive entry id 0. It survives until every delivery is terminal. Then the temporary
+entry, search index, logs, encrypted requests and response excerpts are deleted. Only
+delivery counters/status remain detached for up to 30 days (event ids are also erased) to support
+failure badges; no manual resend is available after that erasure. Recovery also removes old
+orphan temporary entries left by interrupted submissions. No temporary entry is needed when
+all webhooks are disabled or their conditions do not match.
+
+The builder's **Send test** saves the draft and sends synthetic example values immediately,
+with event `webhook.test` and entry id 0. It ignores the webhook's enabled flag/condition;
+field visibility and mapping still apply. No real entry or upload is used. It reports the
+HTTP code, duration and sanitized response. This uses the same destination policy, signing
+and transport limits, with no automatic retries and no stored entry. Test-send requires
+form management; manual resend requires both form and entry management capabilities.
+
+### Prepared request contract
+
+`RequestBuilder` prepares `{event, eventId, form, entry, data}`. The event is `entry.created`;
+`form` contains `id`, `title`, `version`, and `entry` contains `id`, `date` (UTC). The delivery
+service generates one event id and persists it with the filtered request for all retries.
+The `data` value is an object even when empty. The `swf_webhook_payload` filter runs after
+mapping and before serialization/signing. It receives no signing secret.
+
+`X-SWForms-Signature: sha256=<hex HMAC-SHA256>` signs the exact raw request body bytes using
+the configured secret. JSON uses UTF-8 with unescaped Unicode/slashes; form-encoded data
+uses RFC 3986 bracket notation, including nested groups/lists. Standard PHP form encoding
+omits empty arrays/objects. Receivers verify the raw bytes before parsing, using a constant
+time comparison. Do not reserialize the parsed body to verify a signature. The signature
+alone provides integrity/authentication, not replay prevention: retain processed event ids.
+
+Checks: `tests/Unit/WebhookTest.php`, `tests/WordPress/WebhookSettingsTest.php`,
+`node apps/admin/scripts/e2e/webhooks.mjs`, `node apps/admin/scripts/e2e/webhook-delivery.mjs`.
 
 ## Merge tags
 
@@ -115,10 +237,12 @@ URLs are rendered; images do not alter the stored option values. Standard presen
 ignore images. Bulk editing preserves images for options whose values are retained.
 
 Required checks, allowed-option validation and existing checkbox min/max selection settings
-continue to apply to every presentation. Search changes only option visibility; it never
-removes selections or changes the submitted values. No matching results are announced by
-a status region. Without JavaScript the search input stays hidden and all native options
-remain available. Button and image presentations work without JavaScript as well.
+continue to apply to every presentation. Searchable selects use a combined Tom Select control,
+bundled locally into the plugin JavaScript/CSS (no CDN), with keyboard search and removable
+multiple selections. The original select remains the submitted value source. Reset,
+conditional disabling, validation descriptions and dynamically added/removed repeater rows
+are synchronized. Without JavaScript all native options remain available. Button and image
+presentations work without JavaScript as well. Third-party licenses are in `licenses/`.
 
 Checks: `php tests/wp-choice-fields.php`, and with local WordPress and Playwright Chromium,
 `node apps/admin/scripts/e2e/choices.mjs` (honors `WP_ROOT` for the WordPress installation).
@@ -210,6 +334,19 @@ field documents and the `swf_register_field_types` extension action remain uncha
 
 Checks: `php tests/wp-temporal-fields.php`, `node apps/admin/scripts/e2e/temporal.mjs`.
 PHP/TypeScript interval collection shares `tests/fixtures/interval-values.json`.
+
+### Time interval picker
+
+Validated `time-interval` endpoints progressively use linked hour/minute/second selectors.
+Every offered combination lies on the configured seconds grid, starting at `min` (or
+midnight), and stays within `min`/`max`. For example, `step=900` offers quarter-hours;
+`min=09:07` shifts that grid to 09:07, 09:22, etc. Seconds appear only when needed.
+Even `step=1` uses at most 24 hour and 60 minute/second options per selector rather than
+an 86,400-item dropdown. Native names and `[from,to]` values stay unchanged. Reset,
+repeater rows, conditions, keyboard labels and validation errors are synchronized.
+Without JavaScript native time inputs remain available with the existing server validation.
+With `validate=false` the original unrestricted text inputs remain. Shared
+`tests/fixtures/time-options.json` cases verify that browser choices pass server checks.
 
 ## Name and address presets
 
@@ -307,9 +444,6 @@ of filtered public data. Trash retains files; permanent entry/form deletion, ret
 and opted-in uninstall remove them. Backups, offloaded storage and external copies require
 their own lifecycle handling; this implementation owns local files in `/swforms/` only.
 
-Image cropping, signatures and audio/video recording remain subsequent issue #2 work.
-Likert scales are excluded from #2 and tracked with matrices in issue #1.
-
 Checks: `php tests/wp-file-uploads.php`, `node apps/admin/scripts/e2e/uploads.mjs`.
 Shared PHP/TypeScript visibility fixture: `tests/fixtures/logic/files.json`.
 
@@ -326,6 +460,7 @@ list permits no uploads. Validated HTTP files additionally need positive image d
 | Additional setting | Default | Behavior |
 |--------------------|---------|----------|
 | `preview` | `true` | Local image thumbnails when JavaScript/object URLs are available. |
+| `crop` | `false` | Explicit client-side cropping when previews and PNG uploads are enabled. |
 | `capture` | `""` | `""` (file picker), `environment` (rear camera) or `user` (front camera). |
 
 Camera preference emits the native `capture` attribute on the image file control, with
@@ -336,8 +471,8 @@ hints and server validation also work without JavaScript.
 
 Previews use local `blob:` URLs, plain-text filenames and image elements, without sending bytes
 to a server or changing the selected files. Failed or unsupported previews leave native upload
-and server validation available. The selected original bytes are stored; there is no crop,
-resize, conversion or metadata stripping. Preview count is limited by the configured file
+and server validation available. The selected original bytes are stored unless the visitor
+explicitly applies a crop. Preview count is limited by the configured file
 count (at most 20 per control). Changing/clearing selections, hiding controls, removing repeater
 rows, resetting or completing a form releases their local object URLs. Visible selections
 restore their previews when a hidden field becomes visible again. A native postback error
@@ -353,5 +488,167 @@ Coverage includes real multipart image acceptance/rejection/dimensions in the Wo
 preview lifecycle/escaping/fallbacks in Vitest and
 `node apps/admin/scripts/e2e/images.mjs` for actual decoded pixels, camera attributes,
 repeater controls, unchanged downloaded bytes and palette/settings save/reload. These browser
-checks do not claim to exercise physical phone cameras. Image cropping, signatures and
-audio/video recording remain open in #2; Likert remains tracked with matrix issue #1.
+checks do not claim to exercise physical phone cameras. Likert remains tracked with matrix issue #1.
+
+## Image cropping, signatures and recordings
+
+With `image.settings.crop=true`, preview thumbnails offer percentage inputs for left, top,
+width and height, plus Apply/Cancel. These native number controls work with keyboard and touch.
+Cropping is optional and enabled only when `preview=true` and PNG is permitted. Cancel leaves
+the selection unchanged. Apply replaces just that file with `<stem>-cropped.png`, then updates
+conditions and the thumbnail. The resulting PNG is scaled down to at most 4096 pixels per side;
+animation and metadata are not preserved. PNG transparency is preserved. There is no upload
+before submission. Original files are not modified on disk. Invalid coordinates, decode/export
+failures and stale async results preserve the selection. The server validates the resulting
+multipart file exactly like any other PNG; it does not trust crop coordinates or client claims.
+
+Three further built-in types use the same list value, request layout, entry links, conditions,
+repeater handling, ownership manifest, rollback and deletion as `file`/`image`:
+
+| Type | Settings | Accepted content |
+|------|----------|------------------|
+| `signature` | `maxSize=10` MiB | Exactly one PNG with positive image dimensions. |
+| `audio` | `maxSize=10`, `extensions=webm,ogg,m4a,mp3,wav,mp4`, `maxSeconds=60` | Exactly one audio recording, with an audio stream and no video stream. |
+| `video` | `maxSize=10`, `extensions=webm,mp4`, `maxSeconds=60` | Exactly one video recording with positive video dimensions; audio is optional. |
+
+The builder can narrow recording extensions. WordPress MIME restrictions apply too. General
+`file` fields retain their previous allowlist and do not implicitly accept media extensions.
+Server checks include actual HTTP provenance, extension, detected MIME/container, stream kind
+using WordPress's bundled media reader, actual bytes, required and file count. The transport
+MIME sent by the browser is not trusted. `maxSize` is further limited by the host upload limit.
+`maxSeconds` is an integer 1–600 and limits **browser recording only**, not uploaded duration:
+streaming WebM output may lack duration metadata. The server always enforces bytes and stream
+kind. No transcoding or antivirus scanning is performed.
+
+The signature canvas accepts mouse, pen or touch. A blank canvas does not select a file.
+Visitors explicitly choose **Use signature** to produce a white-background 800×300 PNG;
+**Clear signature** removes the drawing and selection. A PNG file can be chosen instead,
+including with keyboard alone or without JavaScript. This is an image of a signature, without
+identity verification or a cryptographic signing protocol. Client drawing history is not stored.
+
+Audio/video uses `getUserMedia` and `MediaRecorder` only after **Start recording**, on HTTPS
+(or a browser-trusted localhost origin), with browser permission. The supported recorder MIME
+must match an allowed extension; unsupported APIs/formats leave the native selector available.
+Stop finalizes a local file; time limit/device disconnect also stop. Size overflow discards the
+new recording and retains any prior selection. Visitors can play or discard the selected clip
+before submitting. No autoplay or background upload occurs. Submission waits until recording
+and async image processing are finished. Denied permissions leave file upload usable.
+
+Microphone/camera tracks, timers and local playback URLs are released on stop/error,
+discard, replacement, condition hiding, row removal, reset, successful submission, tab hiding
+and page exit. Pending permission/export results cannot attach a file after cancellation.
+Native no-JS multipart submission remains available for all types; a postback error requires
+reselection. Entry storage is required and the existing **public random URL** contract applies
+to signatures and recordings as well. Own types still register via `swf_register_field_types`.
+
+Checks: WordPress PHPUnit real media fixtures, shared PHP/TypeScript `logic/media.json`,
+Vitest lifecycle tests and `node apps/admin/scripts/e2e/media.mjs`. The browser check uses
+real canvas pixels and MediaRecorder encoders with synthetic Chromium devices, plus no-JS
+fallback and builder save/reload; physical devices and other browser implementations need
+deployment testing.
+
+## Matrix and Likert scales
+
+`matrix` is a leaf field in the choice palette. It starts with two questions and a five-point
+Likert scale from strongly disagree (`"1"`) to strongly agree (`"5"`), with no answer selected.
+Both `settings.rows` and `settings.options` use editable `{label, value}` lists. A visitor
+chooses exactly one option per answered row; every row has its own native radio group.
+Setting `required: true` requires all rows. Optional matrices allow unanswered or partial rows.
+
+Row values are stable answer keys, limited to 64 ASCII letters/digits/underscores/hyphens,
+starting with a letter. Invalid/duplicate rows are removed on save. Matrices have at most
+50 rows and 20 answer columns; empty lists restore the defaults so the field remains usable.
+The editor supports bulk text entry and explicitly edited values stay fixed on label changes.
+Use “Show values” to set stable row keys before publishing; changing row values changes the
+data contract. Option values are stored as strings, including numeric Likert scores.
+
+For example:
+
+```json
+{
+  "id": "survey", "type": "matrix", "key": "feedback", "label": "Experience",
+  "required": true,
+  "settings": {
+    "rows": [{"label": "Service", "value": "service"}, {"label": "Quality", "value": "quality"}],
+    "options": [{"label": "Disagree", "value": "1"}, {"label": "Agree", "value": "5"}]
+  }
+}
+```
+
+Posts use `swf[survey][service]=5`. Stored entry/webhook data is
+`{"feedback":{"service":"5","quality":"1"}}`; unanswered rows are omitted and a completely
+unanswered matrix is `[]`. Unknown row keys are ignored and nonempty invalid option values or
+malformed answers are rejected. Repeater/group nesting follows the ordinary data shape.
+Entry views, search text and `{all_fields}` pair each question label with its answer label.
+
+The runtime uses the `matrix` value kind to collect checked answers into a map. Conditions
+compare its answer values, as PHP already does for associative arrays: `is`/`contains` match
+any answer and `empty`/`notempty` check the entire matrix. Row keys are not compared, and
+numeric `gt`/`lt` comparisons on a matrix are false. Individual row conditions are not exposed.
+PHP and TypeScript share `tests/fixtures/logic/matrix.json`.
+
+A fieldset/legend and a semantic table connect each radio to its question and column header.
+Descriptions and errors are linked to all radios. The grid scrolls horizontally on narrow
+screens. Native keyboard navigation, server validation and postback work without JavaScript.
+Browser checks: `node apps/admin/scripts/e2e/matrix.mjs`.
+
+
+## Milestone 3: conditions, tags and CAPTCHA
+
+`require` adds required validation when its condition matches; a statically required field
+stays required. It is available for leaf data fields. `disable` keeps a field visible but
+makes its controls inactive; on a container it propagates to descendants. These actions do
+not toggle visibility. PHP enforces both effects independently of browser controls, including
+forged submissions. Each repeater row has its own state. An element has one logic action.
+
+`{field:key:raw}` returns stored scalar/boolean values, or JSON for lists/objects, instead of
+option labels. Existing HTML/URL escaping still applies. `{form:url}` returns the submitted
+source URL, including when entry storage is disabled. `{entry:ip}` resolves to an empty string:
+SW Forms currently supports only hashed or omitted IP storage; a hash is never exposed as an IP.
+
+`settings.spam.provider` defaults to `""` (disabled); built-in values are `"turnstile"` and
+`"hcaptcha"`. Configure site keys and secret keys in global settings before publishing an
+enabled form. Secret keys are encrypted at rest and write-only. CAPTCHA-enabled public pages
+load that provider's external JavaScript and require JavaScript to submit. Preview and trusted
+`swf_submit()` calls bypass verification. Public requests supply `swf_captcha`; tokens are
+verified server-side, never stored in entries, and no visitor IP is sent to the verification
+API. Missing/invalid tokens and provider failures reject submission. Verification requires
+an allowed hostname and, for Turnstile, action `swforms`.
+
+The searchable select already uses the Tom Select combobox with keyboard navigation; it
+retains its native select for submission and the no-JavaScript fallback.
+
+## Expansion fields and steps (0.5.0)
+
+* `html` is informational, produces no entry value and supports `settings.content` with
+  the existing safe inline HTML allowlist (`a`, `strong`, `em`, `br`); paragraphs are
+  generated from line breaks. Scripts, event handlers and form controls are not allowed.
+* `page-break` separates non-empty root-level steps. Its label titles the following step;
+  `settings.steps.firstLabel` titles the first one (empty labels render as "Step n").
+  Breaks require `settings.steps.enabled` (error `steps_disabled`) and cannot be nested or
+  placed first/last/consecutively. Documents without `settings.steps` that contain root
+  breaks normalize to `enabled: true`; stored ones render as before. The builder edits steps
+  as tabs and hides `page-break` from the palette; turning multi-step off removes all breaks.
+  `indicator` selects the progress display: numbered steps, dots (both an `<ol class="swf-steps">`
+  whose done steps navigate back without validation) or `text` ("Step 1 of 3: …" only). With JavaScript, Back/Next
+  navigation and live progress are enabled; Next validates the current step on the server
+  without consuming the token, storing uploads/entries or running actions. Final submission
+  validates the entire document again. Earlier step controls retain their values. Without
+  JavaScript, all sections remain visible and the normal full postback applies (subject to
+  separately configured CAPTCHA/WP Armour JavaScript requirements).
+* `calculation` produces a read-only string, recomputed on submission and entry editing.
+  Settings: `operation: sum|product|difference|quotient`, ordered
+  `sources: [{field: element_id}]` (1–20) and `decimals` (0–8, default 2).
+  Sources must be numeric inputs (`inputType: number`), ranges, ratings or scales outside
+  repeaters. Empty/inactive sources contribute zero. Calculations cannot source other
+  calculations or drive field visibility/required/disabled conditions; this prevents cycles.
+  Division by zero, non-finite results and magnitudes above 10^12 are invalid. Formatting
+  uses a dot and fixed decimal places with half-up rounding. PHP and TypeScript share
+  arithmetic fixtures. No formulas or JavaScript/PHP expressions are executed.
+
+Notifications may set `attachFiles: true` (default false). Only the stored entry's generated
+upload manifest resolves to local attachments; arbitrary paths and URLs are rejected.
+Attachments total at most 20 MB; exceeding that limit logs a failed notification without
+sending it. Entry storage is required for uploads. Upload URLs retain the existing public,
+unguessable URL contract: the separate directory/index guard prevents listing but is not
+an authenticated private-file service. Do not treat an upload URL as an access-control policy.

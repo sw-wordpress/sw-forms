@@ -3,24 +3,33 @@
  * Without this script forms still work (server side postback).
  */
 import './form.css';
+import './designs.css';
+import { clearValid, markValid, syncFilled } from './fieldState';
+import { calculate } from '../shared/arithmetic';
+import { CaptchaControl } from './captcha';
+import { TimePickers } from './timePicker';
 import { ImagePreviews } from './imagePreviews';
+import { MediaInputs } from './mediaInputs';
 import { fileNames } from './fileValues';
 import { parseInterval } from './intervalValues';
 import { parseTags } from './tagValues';
 import { phoneValue } from './inputValues';
-import { filterSelect, initSelectSearch } from './selectSearch';
+import { SelectSearch } from './selectSearch';
 import { Evaluator } from '../shared/logic';
 import { Tree } from '../shared/tree';
 import type { ElementNode, FieldValue, TypeCatalog, Values } from '../shared/types';
 
 interface Config {
+  captcha?: { provider: string; siteKey?: string };
   formId: number;
   rest: string;
   ajax: string;
   preview: boolean;
+  /** Design gallery: required fields are checked locally and nothing is sent. */
+  demo?: boolean;
   nonce: string;
   fields: ElementNode[];
-  i18n: { sending: string; networkError: string; summary: string };
+  i18n: { progress?: string; sending: string; networkError: string; summary: string; required?: string; demoComplete?: string };
 }
 
 interface SubmitResponse {
@@ -32,7 +41,7 @@ interface SubmitResponse {
 }
 
 const INDEX = '__INDEX__';
-const ROW_ATTRIBUTES = ['name', 'id', 'for', 'aria-describedby', 'aria-controls', 'data-swf-path', 'data-swf-row', 'href'];
+const ROW_ATTRIBUTES = ['name', 'id', 'for', 'aria-describedby', 'aria-labelledby', 'aria-controls', 'data-swf-path', 'data-swf-row', 'href'];
 
 /**
  * Replaces the first `__INDEX__` (the one of the row being added) in all row specific attributes,
@@ -42,7 +51,13 @@ function replacePlaceholder(root: ParentNode, token: string): void {
   root.querySelectorAll<HTMLElement>('*').forEach((el) => {
     for (const attribute of ROW_ATTRIBUTES) {
       const value = el.getAttribute(attribute);
-      if (value && value.includes(INDEX)) el.setAttribute(attribute, value.replace(INDEX, token));
+      if (value && value.includes(INDEX)) {
+        // ARIA IDREF lists can mention several controls in the same row.
+        const resolved = attribute.startsWith('aria-')
+          ? value.split(/\s+/).map((reference) => reference.replace(INDEX, token)).join(' ')
+          : value.replace(INDEX, token);
+        el.setAttribute(attribute, resolved);
+      }
     }
     if (el instanceof HTMLTemplateElement) replacePlaceholder(el.content, token);
   });
@@ -72,13 +87,18 @@ function cssEscape(value: string): string {
 
 class SwForm {
   private readonly config: Config;
+  private readonly captcha: CaptchaControl;
+  private readonly timePickers: TimePickers;
   private readonly imagePreviews: ImagePreviews;
+  private readonly mediaInputs: MediaInputs;
+  private readonly selects: SelectSearch;
   private readonly tree: Tree;
   private readonly evaluator: Evaluator;
   private nonce: string;
   private rowCounter = 1000;
   private scheduled = false;
   private busy = false;
+  private currentStep = 0;
 
   constructor(private readonly form: HTMLFormElement) {
     const raw = form.querySelector('script.swf-config')?.textContent ?? '{}';
@@ -86,18 +106,27 @@ class SwForm {
     this.tree = new Tree(this.config.fields, catalogFrom(this.config.fields));
     this.evaluator = new Evaluator(this.tree);
     this.nonce = this.config.nonce;
+    this.captcha = new CaptchaControl(form, this.config.captcha);
+    this.captcha.mount();
 
     this.imagePreviews = new ImagePreviews(form);
-    initSelectSearch(form);
+    this.mediaInputs = new MediaInputs(form);
+    this.selects = new SelectSearch(form);
     this.updateRangeOutputs(form);
     form.addEventListener('reset', () => {
       setTimeout(() => {
-        form.querySelectorAll<HTMLInputElement>('.swf-select-search').forEach(filterSelect);
+        this.captcha.reset();
+        this.selects.reset();
         this.updateRangeOutputs(form);
         this.imagePreviews.clear();
+        this.mediaInputs.clear();
         this.apply();
+        form.querySelectorAll('.swf-field--valid').forEach((field) => clearValid(field));
+        this.showStep(0, false);
       }, 0);
     });
+    // Back/forward cache and form restoration change values without events.
+    window.addEventListener('pageshow', () => syncFilled(form));
     form.addEventListener('dragover', (event) => {
       const upload = (event.target as Element | null)?.closest('.swf-upload');
       if (upload && !upload.querySelector<HTMLInputElement>('input')?.disabled) event.preventDefault();
@@ -114,10 +143,14 @@ class SwForm {
     form.addEventListener('click', (e) => this.onClick(e));
     form.addEventListener('submit', (e) => {
       e.preventDefault();
-      void this.submit(true);
+      const steps = this.form.querySelectorAll('.swf-step');
+      void this.submit(true, steps.length > 1 && this.currentStep < steps.length - 1 ? this.currentStep : null);
     });
     this.form.querySelectorAll<HTMLElement>('.swf-repeater').forEach((r) => this.updateRowButtons(r));
+    this.timePickers = new TimePickers(form);
     this.apply();
+    this.showStep(0, false);
+    this.revealError(this.form.querySelector<HTMLElement>('.swf-field--error'));
     this.watchForToken();
   }
 
@@ -150,6 +183,10 @@ class SwForm {
           .filter((el) => el.checked)
           .map((el) => el.value);
       }
+      case 'matrix':
+        return Object.fromEntries(Array.from(scope.querySelectorAll<HTMLInputElement>('input[data-swf-matrix-row]'))
+          .filter((input) => input.name === `${name}[${input.dataset.swfMatrixRow}]` && input.checked)
+          .map((input) => [input.dataset.swfMatrixRow!, input.value]));
       case 'radio': {
         const checked = this.control(scope, name).find((el) => el.checked);
         if (!checked) return '';
@@ -207,16 +244,15 @@ class SwForm {
   private onChange(event: Event): void {
     const target = event.target as HTMLElement | null;
     if (event.type === 'change' && target instanceof HTMLInputElement && target.matches('[data-swf-image]')) this.imagePreviews.update(target);
-    if (target instanceof HTMLInputElement && target.classList.contains('swf-select-search')) {
-      filterSelect(target);
-      return;
-    }
     if (target instanceof HTMLInputElement && target.type === 'range') {
       const output = target.parentElement?.querySelector('output.swf-range-value');
       if (output) output.textContent = target.value;
     }
     const wrapper = target?.closest<HTMLElement>('[data-swf-path]');
     if (wrapper?.classList.contains('swf-field--error')) this.clearError(wrapper);
+    clearValid(wrapper);
+    const floatable = target?.closest('.swf-field--floatable');
+    if (floatable) syncFilled(floatable);
     if (target instanceof HTMLInputElement && target.classList.contains('swf-other-text') && target.value !== '') {
       const radio = target.parentElement?.querySelector<HTMLInputElement>('input[type="radio"]');
       if (radio) radio.checked = true;
@@ -231,30 +267,63 @@ class SwForm {
 
   /** Evaluates the logic and shows/hides elements; hidden controls are disabled (not submitted). */
   private apply(): void {
-    const visibility = this.evaluator.evaluate(this.collect(this.tree.rootIds, this.form, 'swf'));
-    this.applyTo(this.tree.rootIds, this.form, '', visibility);
+    const values = this.collect(this.tree.rootIds, this.form, 'swf');
+    const states = this.evaluator.states(values);
+    for (const id of this.tree.ids()) {
+      const node = this.tree.node(id);
+      if (node?.type !== 'calculation') continue;
+      const sources = Array.isArray(node.settings?.sources) ? node.settings.sources as { field: string }[] : [];
+      const numbers = sources.map((source) => states.visible.get(source.field) === false || states.enabled.get(source.field) === false ? 0 : Number(String(values[source.field] ?? '').trim().replace(',', '.')));
+      const result = calculate(String(node.settings?.operation ?? 'sum'), numbers, Number(node.settings?.decimals ?? 2)) ?? '';
+      const input = this.element(this.form, id)?.querySelector<HTMLInputElement>('input');
+      if (input) input.value = result;
+    }
+    const visibility = states.visible;
+    this.applyTo(this.tree.rootIds, this.form, '', visibility, states.enabled, states.required);
     this.imagePreviews.sync();
+    this.timePickers.sync();
+    this.mediaInputs.sync();
+    this.selects.sync();
+    syncFilled(this.form);
   }
 
-  private applyTo(ids: string[], scope: ParentNode, prefix: string, visibility: Map<string, boolean>): void {
+  private applyTo(ids: string[], scope: ParentNode, prefix: string, visibility: Map<string, boolean>, enabled: Map<string, boolean>, required: Map<string, boolean>): void {
     for (const id of ids) {
       const el = this.element(scope, id);
       const visible = visibility.get(prefix + id) ?? true;
-      if (el && (!visible || el.hidden)) {
-        // Hidden: always (re)disable, a visible parent may just have enabled everything inside.
+      const active = visible && (enabled.get(prefix + id) ?? true);
+      if (el) {
         el.hidden = !visible;
-        el.querySelectorAll<HTMLInputElement>('input, select, textarea, button').forEach((control) => {
-          control.disabled = !visible;
+        el.setAttribute('aria-disabled', active ? 'false' : 'true');
+        el.querySelectorAll<HTMLInputElement>('input, select, textarea, button, fieldset').forEach((control) => {
+          if (!active) {
+            if (!control.disabled) control.dataset.swfLogicDisabled = '1';
+            control.disabled = true;
+          } else if (control.dataset.swfLogicDisabled) {
+            control.disabled = false;
+            delete control.dataset.swfLogicDisabled;
+          }
         });
+        if (this.tree.isLeafData(id)) {
+          const needed = required.get(prefix + id) ?? false;
+          el.querySelectorAll('input, select, textarea').forEach((control) => control.setAttribute('aria-required', needed ? 'true' : 'false'));
+          const label = el.querySelector('.swf-label');
+          let marker = label?.querySelector<HTMLElement>('.swf-required');
+          if (needed && label && !marker) {
+            marker = document.createElement('span'); marker.className = 'swf-required'; marker.setAttribute('aria-hidden', 'true'); marker.textContent = '*'; label.append(marker);
+          }
+          if (marker) marker.hidden = !needed;
+          label?.querySelectorAll<HTMLElement>('.swf-sr').forEach((sr) => { sr.hidden = !needed; });
+        }
       }
       if (!visible) continue;
       if (this.tree.isRepeater(id)) {
         this.rows(el).forEach((row, index) =>
-          this.applyTo(this.tree.childIds(id), row, `${prefix}${id}[${index}].`, visibility),
+          this.applyTo(this.tree.childIds(id), row, `${prefix}${id}[${index}].`, visibility, enabled, required),
         );
         if (el) this.updateRowButtons(el);
       } else {
-        this.applyTo(this.tree.childIds(id), scope, prefix, visibility);
+        this.applyTo(this.tree.childIds(id), scope, prefix, visibility, enabled, required);
       }
     }
   }
@@ -264,6 +333,13 @@ class SwForm {
   private onClick(event: Event): void {
     const button = (event.target as HTMLElement | null)?.closest('button');
     if (!button) return;
+    if (button.classList.contains('swf-step-next')) { void this.submit(true, this.currentStep); return; }
+    if (button.classList.contains('swf-steps__button')) {
+      const target = Number(button.closest<HTMLElement>('[data-swf-step-indicator]')?.dataset.swfStepIndicator);
+      if (!this.busy && target < this.currentStep) this.showStep(target);
+      return;
+    }
+    if (button.classList.contains('swf-step-back')) { if (this.busy) return; this.showStep(this.currentStep - 1); return; }
     const repeater = button.closest<HTMLElement>('.swf-repeater');
     if (!repeater) return;
     if (button.classList.contains('swf-row-add')) {
@@ -280,13 +356,12 @@ class SwForm {
     const token = String(this.rowCounter++);
     const fragment = template.content.cloneNode(true) as DocumentFragment;
     replacePlaceholder(fragment, token);
-    initSelectSearch(fragment);
     container.appendChild(fragment);
     this.updateRangeOutputs(container);
     this.updateRowButtons(repeater);
     this.apply();
     const rows = this.rows(repeater);
-    rows[rows.length - 1]?.querySelector<HTMLElement>('input:not([type="hidden"]), select, textarea')?.focus();
+    this.selects.focus(rows[rows.length - 1]?.querySelector<HTMLElement>('input:not([type="hidden"]):not([hidden]), select, textarea'));
   }
 
   private removeRow(repeater: HTMLElement, row: HTMLElement | null): void {
@@ -298,9 +373,9 @@ class SwForm {
     this.apply();
     const remaining = this.rows(repeater);
     const focusTarget =
-      remaining[Math.max(0, index - 1)]?.querySelector<HTMLElement>('input, select, textarea') ??
+      remaining[Math.max(0, index - 1)]?.querySelector<HTMLElement>('input:not([type="hidden"]):not([hidden]), select, textarea') ??
       repeater.querySelector<HTMLElement>(':scope > .swf-row-add');
-    focusTarget?.focus();
+    this.selects.focus(focusTarget);
   }
 
   private updateRowButtons(repeater: HTMLElement): void {
@@ -350,8 +425,88 @@ class SwForm {
 
   // ---------- submit ----------
 
-  private async submit(allowRetry: boolean): Promise<void> {
+  private showStep(index: number, focus = true): void {
+    const steps = [...this.form.querySelectorAll<HTMLElement>('.swf-step')];
+    if (steps.length < 2) return;
+    this.currentStep = Math.max(0, Math.min(steps.length - 1, index));
+    steps.forEach((step, i) => { step.hidden = i !== this.currentStep; });
+    const nav = this.form.querySelector<HTMLElement>('.swf-step-nav');
+    if (nav) nav.hidden = false;
+    const back = this.form.querySelector<HTMLElement>('.swf-step-back');
+    const next = this.form.querySelector<HTMLElement>('.swf-step-next');
+    if (back) back.hidden = this.currentStep === 0;
+    if (next) next.hidden = this.currentStep === steps.length - 1;
+    for (const el of this.form.querySelectorAll<HTMLElement>('.swf-actions, .swf-captcha')) el.hidden = this.currentStep !== steps.length - 1;
+    const label = steps[this.currentStep]?.querySelector('h3')?.textContent ?? '';
+    const progress = this.form.querySelector<HTMLElement>('.swf-step-progress');
+    if (progress) { progress.hidden = false; progress.textContent = (this.config.i18n.progress ?? '{current}/{total}').replace('{current}', String(this.currentStep + 1)).replace('{total}', String(steps.length)).replace('{label}', label); }
+    this.updateIndicator();
+    if (focus) steps[this.currentStep]?.querySelector<HTMLElement>('h3')?.focus();
+  }
+
+  /** Marks done/current steps; done steps are buttons that go back without validation. */
+  private updateIndicator(): void {
+    const list = this.form.querySelector<HTMLElement>('.swf-steps');
+    if (!list) return;
+    list.hidden = false;
+    for (const item of list.querySelectorAll<HTMLElement>('[data-swf-step-indicator]')) {
+      const index = Number(item.dataset.swfStepIndicator);
+      const button = item.querySelector<HTMLButtonElement>('button');
+      item.classList.toggle('is-done', index < this.currentStep);
+      item.classList.toggle('is-current', index === this.currentStep);
+      if (index === this.currentStep) item.setAttribute('aria-current', 'step');
+      else item.removeAttribute('aria-current');
+      if (button) button.disabled = index >= this.currentStep;
+    }
+  }
+
+  private revealError(wrapper: HTMLElement | null): void {
+    const step = wrapper?.closest<HTMLElement>('.swf-step');
+    if (step) this.showStep(Number(step.dataset.swfStep), false);
+  }
+
+  /** Section that a step validation covers, or the whole form. */
+  private validationScope(validateStep: number | null): ParentNode {
+    return (validateStep !== null ? this.form.querySelector<HTMLElement>(`.swf-step[data-swf-step="${validateStep}"]`) : null) ?? this.form;
+  }
+
+  /** Gallery forms: required check with the shared evaluator; never any network request. */
+  private demoSubmit(validateStep: number | null): void {
+    const values = this.collect(this.tree.rootIds, this.form, 'swf');
+    const states = this.evaluator.states(values);
+    const scope = this.validationScope(validateStep);
+    const errors: Record<string, string> = {};
+    for (const id of this.tree.ids()) {
+      if (!this.tree.isLeafData(id) || !(id in values) || !this.element(scope, id)) continue;
+      const active = states.visible.get(id) !== false && states.enabled.get(id) !== false;
+      const value = values[id];
+      const empty = value === '' || value === false || (Array.isArray(value) && value.length === 0);
+      if (active && states.required.get(id) === true && empty) errors[id] = this.config.i18n.required ?? '';
+    }
+    this.showErrors('', errors);
+    markValid(scope);
+    if (Object.keys(errors).length > 0) return;
+    if (validateStep !== null) {
+      this.showStep(validateStep + 1);
+      return;
+    }
+    const summary = this.form.querySelector<HTMLElement>('.swf-summary');
+    const title = summary?.querySelector('.swf-summary__title');
+    if (!summary || !title) return;
+    summary.hidden = false;
+    summary.classList.add('swf-summary--ok');
+    title.textContent = this.config.i18n.demoComplete ?? '';
+    summary.focus();
+  }
+
+  private async submit(allowRetry: boolean, validateStep: number | null = null): Promise<void> {
     if (this.busy) return;
+    if (this.config.demo) {
+      this.demoSubmit(validateStep);
+      return;
+    }
+    const pending = this.form.querySelector<HTMLInputElement>('input[data-swf-media-busy]:not(:disabled)');
+    if (pending) { this.showErrors(pending.dataset.swfBusyMessage ?? this.config.i18n.networkError, {}); return; }
     this.busy = true;
     const button = this.form.querySelector<HTMLButtonElement>('.swf-submit');
     const label = button?.textContent ?? '';
@@ -364,6 +519,7 @@ class SwForm {
     let retry: 'token' | 'wait' | null = null;
     try {
       const body = new FormData(this.form);
+      if (validateStep !== null) body.set('swf_step', String(validateStep));
       body.set('swf_source', window.location.href);
       if (this.config.preview) body.set('swf_preview', '1');
       const headers: Record<string, string> = { Accept: 'application/json' };
@@ -376,11 +532,18 @@ class SwForm {
       });
       const result = (await response.json()) as SubmitResponse;
       if (result.status === 'success') {
+        if (validateStep !== null && result.code === 'step') {
+          this.showErrors('', {});
+          markValid(this.validationScope(validateStep));
+          this.showStep(validateStep + 1);
+          return;
+        }
         this.success(result);
         return;
       }
       if (result.status === 'invalid') {
         this.showErrors(result.message, result.errors ?? {});
+        markValid(this.validationScope(validateStep));
       } else if (allowRetry && (result.code === 'expired' || result.code === 'invalid_token')) {
         retry = 'token';
       } else if (allowRetry && result.code === 'too_fast') {
@@ -391,6 +554,7 @@ class SwForm {
     } catch {
       this.showErrors(this.config.i18n.networkError, {});
     } finally {
+      if (retry === null) this.captcha.reset();
       this.busy = false;
       this.form.removeAttribute('aria-busy');
       if (button) {
@@ -400,15 +564,21 @@ class SwForm {
     }
     if (retry === 'token') {
       await this.refreshToken();
-      await this.submit(false);
+      await this.submit(false, validateStep);
     } else if (retry === 'wait') {
       await new Promise((resolve) => setTimeout(resolve, 2500));
-      await this.submit(false);
+      await this.submit(false, validateStep);
     }
   }
 
   private success(result: SubmitResponse): void {
+    if (!this.config.preview) this.captcha.destroy();
+    if (!this.config.preview || result.redirect) this.timePickers.destroy();
+    this.mediaInputs.clear();
     if (result.redirect) {
+      this.selects.destroy();
+      this.mediaInputs.destroy();
+      this.imagePreviews.clear();
       window.location.assign(result.redirect);
       return;
     }
@@ -420,6 +590,7 @@ class SwForm {
     // Server side wp_kses_post() output of the configured confirmation message.
     confirmation.innerHTML = result.message;
     if (this.config.preview) {
+      this.mediaInputs.sync();
       this.showErrors('', {});
       const summary = this.form.querySelector<HTMLElement>('.swf-summary');
       if (summary) {
@@ -432,6 +603,8 @@ class SwForm {
       return;
     }
     this.imagePreviews.clear();
+    this.mediaInputs.destroy();
+    this.selects.destroy();
     wrapper.replaceWith(confirmation);
     confirmation.focus();
   }
@@ -473,8 +646,10 @@ class SwForm {
     list?.replaceChildren();
     summary?.classList.remove('swf-summary--ok');
 
+    let firstError = true;
     for (const [path, message] of Object.entries(errors)) {
       const wrapper = this.byPath(path);
+      if (firstError) { this.revealError(wrapper); firstError = false; }
       const slot = wrapper?.querySelector<HTMLElement>(':scope > .swf-error-message');
       if (wrapper && slot) {
         wrapper.classList.add('swf-field--error');
@@ -487,12 +662,13 @@ class SwForm {
       if (list) {
         const item = document.createElement('li');
         const link = document.createElement('a');
-        const label = wrapper?.querySelector(':scope > .swf-label, :scope > legend')?.textContent?.replace(/\*.*$/, '').trim();
+        const label = wrapper?.querySelector(':scope > .swf-label, :scope > legend')?.textContent?.split('*', 1)[0]?.trim();
         link.textContent = label ? `${label}: ${message}` : message;
         link.href = slot?.id ? `#${slot.id}` : '#';
         link.addEventListener('click', (e) => {
           e.preventDefault();
-          wrapper?.querySelector<HTMLElement>('input:not([type="hidden"]), select, textarea')?.focus();
+          this.revealError(wrapper);
+          this.selects.focus(wrapper?.querySelector<HTMLElement>('input:not([type="hidden"]):not([hidden]), select, textarea'));
         });
         item.appendChild(link);
         list.appendChild(item);
@@ -503,14 +679,18 @@ class SwForm {
     if (titleEl) titleEl.textContent = Object.keys(errors).length > 0 ? this.config.i18n.summary : title;
     summary.hidden = title === '' && Object.keys(errors).length === 0;
     if (!summary.hidden) summary.focus();
+    this.timePickers.sync();
+    this.selects.sync();
   }
 }
+
+const instances: SwForm[] = [];
 
 function init(): void {
   document.querySelectorAll<HTMLFormElement>('form.swf-form[data-swf-form]').forEach((form) => {
     if (form.dataset.swfReady) return;
     form.dataset.swfReady = '1';
-    new SwForm(form);
+    instances.push(new SwForm(form));
   });
 }
 

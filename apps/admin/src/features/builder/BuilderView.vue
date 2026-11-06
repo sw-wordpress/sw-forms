@@ -10,11 +10,13 @@ import { useAppStore } from '@/stores/app';
 import { useBuilderStore } from '@/stores/builder';
 import EntriesView from '@/features/entries/EntriesView.vue';
 import BuilderCanvas from './BuilderCanvas.vue';
+import FormHistory from './FormHistory.vue';
 import FormSettingsPanel from './FormSettingsPanel.vue';
 import InspectorPanel from './InspectorPanel.vue';
 import NotificationsPanel from './NotificationsPanel.vue';
 import PalettePanel from './PalettePanel.vue';
 import PreviewDialog from './PreviewDialog.vue';
+import WebhooksPanel from './WebhooksPanel.vue';
 
 const { t } = useI18n();
 const route = useRoute();
@@ -75,6 +77,10 @@ async function save(): Promise<void> {
 }
 
 function selectError(path: string): void {
+  if (path.startsWith('webhook:')) {
+    go('webhooks');
+    return;
+  }
   if (path.startsWith('notification:')) {
     go('notifications');
     return;
@@ -144,10 +150,9 @@ onBeforeUnmount(() => {
 });
 
 onBeforeRouteLeave(async (to) => {
-  if (to.params.id === route.params.id || !store.dirty) return true;
+  if (to.params.id === route.params.id || !store.dirty) return;
   // Unsaved changes are kept as a draft; leaving is safe once the draft is stored.
   if (store.draftState !== 'saved') await store.saveDraft();
-  return true;
 });
 </script>
 
@@ -187,6 +192,7 @@ onBeforeRouteLeave(async (to) => {
         <q-tab v-if="canManage" name="build" icon="r_view_quilt" :label="t('builder.tabs.build')" />
         <q-tab v-if="canManage" name="settings" icon="r_tune" :label="t('builder.tabs.settings')" />
         <q-tab v-if="canManage" name="notifications" icon="r_mail" :label="t('builder.tabs.notifications')" />
+        <q-tab v-if="canManage" name="webhooks" icon="r_webhook" :label="t('webhooks.title')" />
         <q-tab name="entries" icon="r_inbox" :label="t('builder.tabs.entries')" />
       </q-tabs>
 
@@ -235,8 +241,9 @@ onBeforeRouteLeave(async (to) => {
         <BuilderCanvas />
         <InspectorPanel />
       </div>
-      <div v-else-if="tab === 'settings'" class="swf-builder__page"><FormSettingsPanel /></div>
+      <div v-else-if="tab === 'settings'" class="swf-builder__page"><FormSettingsPanel /><FormHistory /></div>
       <div v-else-if="tab === 'notifications'" class="swf-builder__page"><NotificationsPanel /></div>
+      <div v-else-if="tab === 'webhooks'" class="swf-builder__page"><WebhooksPanel /></div>
       <div v-else class="swf-builder__page">
         <EntriesView :form-id="formId" :entry-id="route.params.entryId ? Number(route.params.entryId) : null" />
       </div>

@@ -5,15 +5,19 @@
     "license": "GPL-2.0-or-later",
     "require": {
         "php": ">=8.2",
+        "ext-fileinfo": "*",
         "ext-json": "*",
-        "ext-fileinfo": "*"
+        "ext-openssl": "*",
+        "woocommerce/action-scheduler": "~4.2.0"
     },
     "require-dev": {
         "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
         "phpcompatibility/phpcompatibility-wp": "^2.1",
+        "phpstan/extension-installer": "^1.4",
         "phpstan/phpstan": "^2.0",
         "phpunit/phpunit": "^11.0",
         "squizlabs/php_codesniffer": "^3.10",
+        "szepeviktor/phpstan-wordpress": "^2.0",
         "wp-coding-standards/wpcs": "^3.1"
     },
     "autoload": {
@@ -36,17 +40,24 @@
             "constant_prefix": "SWFORMS_",
             "functions_prefix": "swforms_",
             "generate_autoloader": true,
-            "delete_vendor_directories": true
+            "delete_vendor_directories": true,
+            "excluded_packages": [
+                "woocommerce/action-scheduler"
+            ]
         }
     },
     "config": {
         "sort-packages": true,
         "optimize-autoloader": true,
         "allow-plugins": {
-            "dealerdirect/phpcodesniffer-composer-installer": true
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "phpstan/extension-installer": true
         },
         "platform": {
             "php": "8.2.0"
+        },
+        "audit": {
+            "abandoned": "report"
         }
     },
     "scripts": {

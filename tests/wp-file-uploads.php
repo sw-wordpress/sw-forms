@@ -7,6 +7,8 @@ declare(strict_types=1);
 define('WP_USE_THEMES', false);
 $_SERVER['HTTP_HOST'] = 'localhost';
 require(getenv('WP_ROOT') ?: dirname(__DIR__, 4)) . '/wp-load.php';
+// Assertions below use source-language error messages.
+switch_to_locale('en_US');
 
 use SWForms\WordPress\Fields\FieldRegistry;
 use SWForms\WordPress\Fields\FileField;

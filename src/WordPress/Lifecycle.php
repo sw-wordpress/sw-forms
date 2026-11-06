@@ -25,11 +25,16 @@ final class Lifecycle {
 	/** Deactivation keeps all data. */
 	public static function deactivate(): void {
 		Maintenance::unschedule();
+		wp_clear_scheduled_hook( \SWForms\WordPress\Webhooks\DeliveryService::RECOVER_HOOK );
+		if ( class_exists( 'ActionScheduler' ) && \ActionScheduler::is_initialized() ) {
+			as_unschedule_all_actions( \SWForms\WordPress\Webhooks\DeliveryService::HOOK, array(), \SWForms\WordPress\Support\Queue::GROUP );
+		}
 	}
 
 	/** Removes plugin data only if enabled in the settings. */
 	public static function uninstall(): void {
 		Maintenance::unschedule();
+		wp_clear_scheduled_hook( \SWForms\WordPress\Webhooks\DeliveryService::RECOVER_HOOK );
 		if ( ! Settings::all()['delete_data_on_uninstall'] ) {
 			return;
 		}
@@ -40,6 +45,7 @@ final class Lifecycle {
 		Schema::drop_all();
 		Capabilities::revoke_all();
 		delete_option( Settings::OPTION );
+		delete_option( \SWForms\WordPress\Spam\CaptchaSettings::OPTION );
 		delete_option( Schema::VERSION_OPTION );
 	}
 }

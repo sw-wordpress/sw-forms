@@ -28,3 +28,6 @@ const execution = testExecutionXml(results, (source) => {
 });
 writeFileSync(resolve(packageRoot, 'coverage/test-execution.xml'), execution);
 console.log(`Exported ${results.numPassedTests} executed frontend tests for SonarQube.`);
+
+const { checkLineCoverage } = await import('./coverage-gate.mjs');
+console.log(checkLineCoverage(JSON.parse(readFileSync(resolve(packageRoot, 'coverage/coverage-summary.json'), 'utf8'))));

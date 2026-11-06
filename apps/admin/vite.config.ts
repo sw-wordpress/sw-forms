@@ -1,32 +1,19 @@
-import { fileURLToPath, URL } from 'node:url';
 import { resolve } from 'node:path';
 import { defineConfig } from 'vitest/config';
 import vue from '@vitejs/plugin-vue';
 import { quasar, transformAssetUrls } from '@quasar/vite-plugin';
-import { swfScope } from './tools/postcssScope';
+import { swfScope } from './tools/postcssScope.ts';
 
-/** Ship only the woff2 icon font (all supported browsers); drops the legacy woff. */
-function woff2Only() {
-  return {
-    name: 'swf-woff2-only',
-    enforce: 'pre' as const,
-    transform(code: string, id: string) {
-      if (!id.includes('material-icons-round.css')) return null;
-      return code.replace(/,\s*url\([^)]*\.woff\d?\??[^)]*\)\s*format\((['"])woff\1\)/g, '');
-    },
-  };
-}
-
-const outDir = resolve(__dirname, '../../assets/admin');
+const outDir = resolve(import.meta.dirname, '../../assets/admin');
 
 /** Admin SPA build. The frontend runtime has its own config (vite.frontend.config.ts). */
 export default defineConfig({
   base: './',
-  plugins: [woff2Only(), vue({ template: { transformAssetUrls } }), quasar()],
+  plugins: [vue({ template: { transformAssetUrls } }), quasar()],
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url)),
-      '@shared': fileURLToPath(new URL('./shared', import.meta.url)),
+      '@': resolve(import.meta.dirname, 'src'),
+      '@shared': resolve(import.meta.dirname, 'shared'),
     },
   },
   css: { postcss: { plugins: [swfScope()] } },
@@ -40,9 +27,12 @@ export default defineConfig({
     target: 'es2020',
     modulePreload: { polyfill: false },
     chunkSizeWarningLimit: 900,
-    rollupOptions: {
-      input: { app: resolve(__dirname, 'src/main.ts') },
+    rolldownOptions: {
+      input: { app: resolve(import.meta.dirname, 'src/main.ts') },
       output: {
+        // Keep side effects in the tiny entry only: WordPress versions app.js with a
+        // query string, while lazy chunks import shared modules without that query.
+        codeSplitting: { groups: [{ name: 'bootstrap', test: /[\\/]src[\\/]bootstrap\.ts$/ }] },
         entryFileNames: 'app.js',
         chunkFileNames: 'chunks/[name]-[hash].js',
         assetFileNames: (info) => {
@@ -55,6 +45,8 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     include: ['tests/**/*.test.ts'],
+    // Mounting real Quasar views under parallel V8 coverage can exceed the 5 s default on CI.
+    testTimeout: 20_000,
     css: false,
     coverage: {
       provider: 'v8',
@@ -64,10 +56,19 @@ export default defineConfig({
       exclude: ['**/*.d.ts'],
       thresholds: {
         'frontend/main.ts': { lines: 85 },
+        'frontend/timePicker.ts': { lines: 95 },
         'frontend/imagePreviews.ts': { lines: 95 },
+        'frontend/imageCrop.ts': { lines: 95 },
+        'frontend/mediaFiles.ts': { lines: 95 },
+        'frontend/mediaInputs.ts': { lines: 95 },
+        'frontend/recordingControl.ts': { lines: 95 },
+        'frontend/signaturePad.ts': { lines: 95 },
         'frontend/fileValues.ts': { lines: 100 },
         'src/api/client.ts': { lines: 95 },
         'src/features/entries/EntryFields.vue': { lines: 100 },
+        'src/features/forms/templateBrowser.ts': { lines: 95 },
+        'src/features/forms/TemplateDetail.vue': { lines: 95 },
+        'src/features/forms/FormLibrary.vue': { lines: 85 },
       },
     },
     server: { deps: { inline: ['quasar'] } },

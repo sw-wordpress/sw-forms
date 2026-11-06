@@ -13,9 +13,10 @@ mkdir -p coverage
 XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-clover coverage/unit.xml --log-junit coverage/unit-junit.xml
 ```
 
-PHPUnit measures the complete PHP application: `src/`, `includes/`, `sw-forms.php` and
-`uninstall.php`. Unexecuted WordPress files remain in the denominator; they are not excluded
-to improve the percentage. The regular suite requires no WordPress installation or database.
+PHPUnit measures and PHPStan (level 8, no baseline) analyses the complete PHP application: `src/`,
+`includes/`, `sw-forms.php` and `uninstall.php`. PHPStan's plugin constants, optional plugin
+functions (WP Armour, WPBakery) and corrected core PHPDoc live in `tests/phpstan/`.
+Unexecuted WordPress files remain in the denominator; they are not excluded to improve the percentage. The regular suite requires no WordPress installation or database.
 Coverage needs Xdebug in coverage mode or PCOV. No coverage driver means a failing coverage job.
 
 ## Real WordPress and HTTP tests
@@ -54,6 +55,22 @@ random per-run key; its fault hooks are not installed in the plugin.
 The REST suite additionally tests publication versus drafts, invalid schema preservation,
 duplication, status changes, entry search/presentation, bulk operations, missing-resource
 responses and the distinction between viewing entries, editing forms and anonymous access.
+PHPUnit's WordPress bootstrap and its loopback HTTP fixture explicitly select `en_US`, since
+their assertions use English source messages. This does not change the site's stored locale.
+Webhook tests cover encrypted secrets, draft rotation/discard, REST redaction, independent
+duplicate secrets, field-id mapping, payload filters and signatures of exact JSON/form bodies.
+The browser configuration round-trip runs with `node apps/admin/scripts/e2e/webhooks.mjs`.
+`WebhookDeliveryTest` covers real queue execution, immutable retry snapshots, bounded backoff,
+terminal failure notification/badges, temporary data erasure, lease recovery, queue persistence
+failure, preview/conditions and resend authorization. `WebhookHttpTest` uses a real loopback
+HTTP receiver to verify exact signed bytes and request-scoped exception cleanup. The browser
+flow `node apps/admin/scripts/e2e/webhook-delivery.mjs` exercises the test button, signed echo
+receiver, final failure badge, entry status and resend/polling. Its isolated loopback REST
+router requires a random per-run header; no test filters are installed on the normal site.
+`node apps/admin/scripts/e2e/editor-layout.mjs` verifies the editor's viewport frame at
+desktop widths, independent palette/canvas scrolling, every editor tab, narrow-screen
+panel access and releasing the document scroll lock when returning to the forms list.
+It also captures light/dark/mobile views under `/tmp/swf-editor-layout-*.png`.
 
 ## Frontend tests
 
@@ -83,30 +100,55 @@ renewal, JSON, WordPress errors, malformed responses, cancellation and network f
 
 CI fails on missing/unexecuted coverage or missing test-execution artifacts. It enforces:
 
-- Full PHP line coverage of at least 80%.
+- Full PHP line coverage of more than 80 % (`tests/coverage/check.php`; exactly 80 % fails).
+- Full frontend line coverage of more than 80 % (`apps/admin/tools/coverage-gate.mjs`, run by
+  `npm run test:coverage`). Vitest thresholds are inclusive minimums on rounded percentages,
+  so both gates compare integer line counts instead.
 - Upload field/transport/storage classes at least 95%, submission service at least 85%.
+- Starter template catalog and preview route at least 95% PHP lines (the preview route runs over
+  loopback HTTP in `TemplatePreviewHttpTest`).
+- Template gallery helpers and dialogs at least 95% (helper, detail dialog) and 85% (gallery) of
+  frontend lines (`apps/admin/vite.config.ts`).
 - Frontend form runtime at least 85%, filename parsing and entry-file presentation 100%,
   image-preview lifecycle at least 95%, and REST client at least 95% line coverage.
 
 SonarQube's configured quality gate remains independent; these checks do not waive it.
+
+Dependency security: every push/PR fails on known advisories in **shipped** dependencies
+(`composer audit --locked --no-dev`, `npm audit --omit=dev --audit-level=high`). New advisories
+appear without code changes, so `.github/workflows/security-audit.yml` audits all dependencies,
+including dev tooling, daily. It keeps one open issue labelled `security-audit` (repo watchers are
+notified; edits/comments only when findings change) and closes it once clean.
+`.github/dependabot.yml` opens weekly grouped PRs: security fixes, peer-coupled packages
+(vitest, vite toolchain), dev tools, runtime minor/patch; runtime majors arrive individually.
+Dependabot PRs get no repository secrets, so SonarQube analyses them only after merging.
+The frontend toolchain needs Node `^22.22.2 || ^24.15.0 || >=26` (jsdom 30; vue-i18n/Quasar need >= 22); `apps/admin/.nvmrc` pins 22 like CI.
+Dependabot alerts and security updates must be enabled in the repository settings.
 The artifacts imported by its separate job are `coverage/clover.xml`, `coverage/junit.xml`,
 `apps/admin/coverage/lcov.info` and `apps/admin/coverage/test-execution.xml`. Coverage-merger
 and test-report conversion have regression tests for overlapping hits, portable paths,
-foreign paths, empty reports, escaped text and retained failures/skips.
+foreign paths, empty reports, escaped text and retained failures/skips; both overall gates
+are tested at the boundary (80.00 % fails, 80.01 % passes).
 
 Measured locally with PHP 8.2/PCOV and Vitest V8 during this change:
 
 | Scope | Line coverage |
 |-------|---------------|
 | Portable core alone, before adapter collection | 92.31% (480/520) |
-| Complete PHP application after CLI/HTTP/REST integration | 87.67% (4067/4639) |
+| Complete PHP application after media integration | 87.95% (4175/4747) |
 | Complete frontend before new tests | 30.81% |
-| Complete frontend after image-upload tests | 41.74% |
-| Frontend form runtime | 88.88% |
+| Complete frontend after media tests | 44.93% |
+| Complete frontend after view/shell component tests | 98.96% (6567/6636) |
+| Complete frontend, Vitest 5 (counts executable lines only) | 92.11% (2780/3018) |
+| Frontend form runtime | 88.74% |
 | Filename parser, REST client, entry-file component | 100% |
-| PHP upload field | 97.35% |
+| PHP upload field | 98.28% |
 | PHP image-upload field / local preview manager | 100% |
 | PHP incoming-file and upload-storage classes | 100% |
+| PHP signature/audio/video fields | 100% |
+| PHP shared recording field | 98.15% |
+| Browser crop/signature/file bridge/manager modules | 100% |
+| Browser recording control | 99.05% |
 
 Core-only and complete-application percentages are different scopes and must not be compared
 as a before/after regression. Remaining frontend gaps are chiefly other builder/settings
@@ -116,6 +158,97 @@ Clover/LCOV independently. SonarQube may report different percentages because it
 line model and branch accounting differ from the local runners.
 
 Browser smoke checks remain useful in addition to coverage tests. Against local WordPress,
-run `node apps/admin/scripts/e2e/frontend.mjs`, `admin.mjs` and `uploads.mjs` with the PHP helper
+run `node apps/admin/scripts/e2e/frontend.mjs`, `admin.mjs`, `uploads.mjs`, `images.mjs` and `media.mjs` with the PHP helper
 on PATH and the repository-pinned Playwright Chromium installed. These are not counted as
 Vitest coverage; the CI HTTP suite and DOM-runtime tests supply that report independently.
+
+`media.mjs` launches real Chromium recording with synthetic devices (no microphone/camera
+hardware needed). It checks crop pixel dimensions, drawn signature bytes, live browser-produced
+audio/video streams accepted by PHP, permission-free initial rendering, automatic limits,
+track shutdown on hiding/removal, busy-submit blocking, no-JS fallback and palette persistence.
+Synthetic media files in `tests/fixtures/media` are committed; FFmpeg was used only to generate
+those samples and is not needed in CI or at runtime. Stream-kind rejection and permanent
+file cleanup are verified over real multipart HTTP. Run upload browser suites sequentially:
+some assertions deliberately count all generated files in the disposable WordPress directory.
+The new PHP media fields and frontend media modules have 95% coverage guards (concrete
+audio/video PHP types require 100%). These do not waive SonarQube's separate quality gate.
+
+
+## Design variants (0.6.0)
+
+`tests/Unit/DesignTest.php` (normalisation, colour/contrast, safe inline tokens) and
+`tests/WordPress/DesignTest.php` (classic markup unchanged, floatable/filled markup, embed
+`variant`, `swf_form_design`, demo forms without postback/REST, gallery access). Vitest:
+`field-state`, `frontend-designs` (filled/valid state, demo mode without network),
+`design-css` (stylesheet contract: transform-only 180–240 ms label motion, easing,
+reduced motion, schemes) and `design-settings` (builder card, contrast warnings).
+
+Layout, motion and overlap need a real engine: `node apps/admin/scripts/e2e/designs.mjs`
+checks label geometry (border position, no text overlap, no layout shift, intermediate frame),
+blur with/without content, programmatic/prefilled/select values, keyboard and ARIA errors,
+surprise-motion effects and ticks, reduced motion, 390 px layout, dark schemes and that a
+published animated-float form stores unchanged data. It creates/deletes its own form/page.
+Measured: PHP 89.00% (6091/6844; the local loopback upload suite fails independently),
+frontend 92.40% (2881/3118); `Core\Design` 100%.
+
+## Milestone 3
+
+`tests/WordPress/MilestoneThreeTest.php` covers filtered CSV and permissions, original-version
+entry edits, revision conflicts, notes, multi-page privacy export/erasure, merge tags, forged
+disabled values and both CAPTCHA verification APIs. External verification requests are mocked;
+real site/secret credentials and provider availability require deployment testing.
+
+Core CSV tests check formula injection and nested shapes. `logic/effects.json` is shared by
+PHP and TypeScript for required/disabled cascades and independent repeater rows. Vitest covers
+CAPTCHA token expiry/reset/removal and entry editor value shapes. Run
+`node apps/admin/scripts/e2e/m3.mjs` against local WordPress for dynamic effects, searchable
+select keyboard interaction, entry edits/notes, real CSV download, caret insertion and erasure.
+
+WP Armour: `tests/Unit/WpArmourTest.php` prüft die optionale Anbindung ohne WordPress.
+Bei aktivem WP Armour prüft `WpArmourIntegrationTest` im WordPress-Testlauf zusätzlich
+REST, POST-Metadaten, Vorschau, vertrauenswürdige Aufrufe und (mit Extended) den
+Wortfilter. Den Test sowohl mit Basis allein als auch mit Extended ausführen.
+Der Frontend-Browsertest prüft bei aktivem WP Armour auch die Ablehnung ohne JavaScript.
+`SWF_WPA_VANILLA=1 node apps/admin/scripts/e2e/frontend.mjs` ersetzt nur im Testbrowser
+die WP-Armour-Skripte durch deren Vanilla-Varianten; die Website-Einstellungen bleiben gleich.
+
+## Extension API (0.4.0)
+
+`ExtensionApiTest` runs the [example add-on](../examples/sw-forms-example/) through real
+WordPress: schema normalization, rendering, required/custom validation, repeater paths,
+visibility, storage, logged actions, merge-tag escaping and legacy-filter precedence.
+Vitest covers queued/late JavaScript registration and structured settings controls;
+`HookDocumentationTest` checks hook documentation completeness.
+
+For the production-build browser test, activate the example add-on in a **disposable**
+WordPress and run `WP_ROOT=/path/to/test-wordpress node apps/admin/scripts/e2e/extension-api.mjs`.
+It checks custom inspector/canvas loading via script handle, undo/redo, field selection,
+key-value/repeater persistence, invalid/valid submission, confirmation and the action log.
+The test creates/deletes its own form/page and makes no external service calls. Keep this
+production-build check: WordPress versions the entry script with a query string, so shared
+state must live in hashed chunks rather than the entry module.
+
+`SWF_E2E_OFFLINE=1 node apps/admin/scripts/e2e/admin.mjs` keeps the admin test local by
+answering unrelated external theme fonts/avatars with empty responses. App assets and REST
+requests still use the real WordPress; this avoids flaky third-party network failures.
+
+## Milestone 5
+
+`MilestoneFiveTest` covers secret-free portability, inactive imports, permissions, immutable
+history/draft restoration, step validation without persistence or token consumption,
+forged calculation values, safe HTML, dynamic block output and owned mail attachments.
+`VisualComposerTest` isolates the optional `vc_map` contract when WPBakery is absent.
+Arithmetic fixtures in `tests/fixtures/calculations.json` run in PHP and TypeScript.
+The frontend runtime test covers remote step progression, retained values and errors that
+reveal an earlier page.
+
+Run `WP_ROOT=/path/to/test-wordpress node apps/admin/scripts/e2e/m5.mjs` after building.
+It exercises real step requests/calculations, history, templates, JSON file import/export
+and Gutenberg ServerSideRender. It creates/deletes its own forms/pages and needs an admin
+and a working block editor in a disposable WordPress. Existing upload tests still cover
+MIME/provenance/size/rollback; attachment tests use the server-owned manifest.
+
+`node apps/admin/scripts/e2e/templates.mjs` checks the starter template gallery in the built app:
+categories and search, the interactive template preview (step validation, hidden conditional
+fields, values kept over Back), and that one click creates an inactive independent form. Its
+selectors avoid UI wording, so it runs with an English or German site.

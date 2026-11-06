@@ -54,7 +54,14 @@ final class AdminPage {
 		}
 		$version = (string) filemtime( SWF_DIR . 'assets/admin/app.js' );
 		wp_enqueue_style( self::HANDLE, SWF_URL . 'assets/admin/app.css', array(), $version );
-		wp_enqueue_script( self::HANDLE, SWF_URL . 'assets/admin/app.js', array(), $version, true );
+		wp_enqueue_script( 'sw-forms-builder-api', SWF_URL . 'assets/builder-api.js', array(), SWF_VERSION, true );
+		wp_enqueue_script( self::HANDLE, SWF_URL . 'assets/admin/app.js', array( 'sw-forms-builder-api' ), $version, true );
+		foreach ( \SWForms\WordPress\Fields\FieldRegistry::instance()->all() as $type ) {
+			$handle = $type instanceof \SWForms\WordPress\Fields\BuilderFieldTypeInterface ? $type->builder_script() : '';
+			if ( '' !== $handle && wp_script_is( $handle, 'registered' ) ) {
+				wp_enqueue_script( $handle );
+			}
+		}
 		wp_add_inline_script( self::HANDLE, 'window.swFormsConfig = ' . wp_json_encode( $this->config() ) . ';', 'before' );
 	}
 
@@ -73,6 +80,7 @@ final class AdminPage {
 			'adminUrl'     => esc_url_raw( admin_url( 'admin.php?page=' . self::SLUG ) ),
 			'capabilities' => Capabilities::current_user_caps(),
 			'siteUrl'      => esc_url_raw( home_url( '/' ) ),
+			'galleryUrl'   => current_user_can( Capabilities::MANAGE_FORMS ) ? esc_url_raw( \SWForms\WordPress\Frontend\DesignGallery::url() ) : '',
 		);
 	}
 

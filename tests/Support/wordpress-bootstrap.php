@@ -13,6 +13,8 @@ define('WP_USE_THEMES', false);
 $_SERVER['HTTP_HOST'] = 'localhost';
 $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
 require_once $wordpress . '/wp-load.php';
+// Fixtures assert English source messages, independently of the development site's locale.
+switch_to_locale('en_US');
 if (!function_exists('swf_submit')) {
     throw new RuntimeException('Activate SW Forms in the test WordPress first.');
 }

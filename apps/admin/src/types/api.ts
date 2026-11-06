@@ -14,6 +14,9 @@ export interface SettingDefinition {
   max?: number;
   integer?: boolean;
   images?: boolean;
+  fields?: SettingDefinition[];
+  maxItems?: number;
+  fieldTypes?: string[];
 }
 
 export interface FieldTypeDefinition {
@@ -38,6 +41,7 @@ export interface Notification {
   message: string;
   replyTo: string;
   fromName: string;
+  attachFiles?: boolean;
   logic: Logic | null;
 }
 
@@ -47,8 +51,42 @@ export interface FormSettings {
   confirmation: { type: 'message' | 'redirect' | 'page'; message: string; url: string; pageId: number };
   storeEntries: boolean;
   retentionDays: number;
-  spam: { honeypot: boolean; minSeconds: number; rateLimit: number };
+  spam: { honeypot: boolean; minSeconds: number; rateLimit: number; provider?: string };
   notifications: Notification[];
+  webhooks?: Webhook[];
+  steps?: StepsSettings;
+  design?: DesignSettings;
+}
+
+export type DesignVariant = 'classic' | 'floating' | 'minimal' | 'dark-focus' | 'guided-card' | 'animated-float' | 'surprise-motion';
+export type DesignToken = 'accent' | 'text' | 'background' | 'surface' | 'border';
+
+/** Presentation only (docs/schema.md); the server normalises it. */
+export interface DesignSettings {
+  variant: DesignVariant;
+  scheme: 'light' | 'dark' | 'auto';
+  tokens: Partial<Record<DesignToken, string>> & { radius?: number };
+}
+
+/** Multi-step mode; page breaks only split the form while enabled. */
+export interface StepsSettings {
+  enabled: boolean;
+  firstLabel: string;
+  indicator: 'numbers' | 'dots' | 'text';
+}
+
+export interface Webhook {
+  id: string;
+  name: string;
+  enabled: boolean;
+  url: string;
+  method: 'POST' | 'PUT';
+  format: 'json' | 'form';
+  headers: { name: string; value: string }[];
+  mapping: { field: string; target: string }[];
+  logic: Logic | null;
+  secret?: string;
+  hasSecret?: boolean;
 }
 
 export interface FormDocument {
@@ -59,6 +97,35 @@ export interface FormDocument {
 
 export type FormStatus = 'active' | 'inactive';
 
+/** Gallery card of `GET /form-templates` (metadata only, docs/rest-api.md). */
+export interface FormTemplateCard {
+  id: string;
+  version: string;
+  title: string;
+  description?: string;
+  icon?: string;
+  category: string;
+  tags: string[];
+  fields: number;
+  steps: number;
+  conditions: number;
+  isMultiStep: boolean;
+}
+
+/** Category group of the gallery. */
+export interface TemplateCategory {
+  slug: string;
+  title: string;
+  icon: string;
+  count: number;
+}
+
+/** Full item of `GET /form-templates/{id}`; `previewUrl` renders the real form (demo only). */
+export interface FormTemplate extends FormTemplateCard {
+  document: FormDocument;
+  previewUrl: string;
+}
+
 export interface FormSummary {
   id: number;
   title: string;
@@ -67,6 +134,7 @@ export interface FormSummary {
   hasDraft: boolean;
   entries: number;
   unread: number;
+  webhookFailures?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -137,11 +205,32 @@ export interface EntryDetail {
   fields: EntryNode[];
   user: string;
   log: EntryLogItem[];
+  webhooks?: WebhookDelivery[];
+}
+
+export interface WebhookDelivery {
+  id: number;
+  webhookId: string;
+  eventId: string;
+  status: 'pending' | 'running' | 'success' | 'failed';
+  attempts: number;
+  httpCode: number;
+  durationMs: number;
+  message: string;
+  nextAttemptAt: string | null;
+}
+
+export interface WebhookTestResult {
+  success: boolean;
+  code: number;
+  duration: number;
+  message: string;
 }
 
 export type BulkAction = 'read' | 'unread' | 'star' | 'unstar' | 'spam' | 'trash' | 'restore' | 'delete';
 
 export interface GlobalSettings {
+  captcha?: Record<'turnstile' | 'hcaptcha', { siteKey: string; hasSecret?: boolean; secret?: string }>;
   ip_mode: 'hash' | 'none';
   from_email: string;
   from_name: string;

@@ -9,7 +9,7 @@ export interface LogicRule {
 }
 
 export interface Logic {
-  action: 'show' | 'hide';
+  action: 'show' | 'hide' | 'require' | 'disable';
   match: 'all' | 'any';
   rules: LogicRule[];
 }
@@ -39,11 +39,11 @@ export interface ElementNode {
   /** Frontend tree only: produces data / container kind / how to read the value. */
   data?: boolean;
   container?: ContainerKind;
-  kind?: 'text' | 'bool' | 'list' | 'radio' | 'none';
+  kind?: 'text' | 'bool' | 'list' | 'radio' | 'matrix' | 'none';
 }
 
-/** Value of a field (string, list, bool) or the rows of a repeater. */
-export type FieldValue = string | boolean | string[] | Values[] | null | undefined;
+/** Value of a field (string, list, bool, matrix answer map) or the rows of a repeater. */
+export type FieldValue = string | boolean | string[] | Record<string, string> | Values[] | null | undefined;
 export type Values = Record<string, FieldValue>;
 
 export interface TypeCatalog {
@@ -63,6 +63,9 @@ export function staticCatalog(
 }
 
 export const BUILT_IN_CATALOG = staticCatalog({
+  html: { data: false, container: '' },
+  'page-break': { data: false, container: '' },
+  calculation: { data: true, container: '' },
   input: { data: true, container: '' },
   'birthdate': { data: true, container: '' },
   'date-interval': { data: true, container: '' },
@@ -74,9 +77,13 @@ export const BUILT_IN_CATALOG = staticCatalog({
   'tags': { data: true, container: '' },
 
   image: { data: true, container: '' },
+  signature: { data: true, container: '' },
+  audio: { data: true, container: '' },
+  video: { data: true, container: '' },
   file: { data: true, container: '' },
   textarea: { data: true, container: '' },
   checkbox: { data: true, container: '' },
+  matrix: { data: true, container: '' },
   radio: { data: true, container: '' },
   select: { data: true, container: '' },
   name: { data: true, container: 'children' },

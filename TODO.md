@@ -10,48 +10,50 @@ Konzept: `/home/swarnat/.claude/plans/ich-m-chte-ein-plugin-parallel-glacier.md`
 - Einträge (Liste, Filter, Suche, Bulk, Detail mit Log), E-Mail-Benachrichtigungen, Bestätigung
 - Spamschutz ohne Nonce (Token, Honeypot, Rate-Limit), No-JS-Postback, Barrierefreiheit, de_DE
 
-## Milestone 2 – Webhooks (0.2.0)
+## ✅ Milestone 2 – Webhooks (implementiert, 0.2.0)
 
-- [ ] Action Scheduler per Composer bündeln, Queue-Wrapper (`swf_` Gruppe)
-- [ ] Webhook-Einstellungen pro Formular: URL, Methode (POST/PUT), Format (JSON / form-encoded), Header, Feld-Mapping (Standard: alle Felder), Bedingung (LogicEditor wiederverwenden)
-- [ ] Payload: `{event, eventId, form, entry, data}`; Filter `swf_webhook_payload`
-- [ ] Signatur `X-SWForms-Signature` (HMAC-SHA256, Secret pro Webhook, verschlüsselt gespeichert, nie im Export/REST im Klartext)
-- [ ] Asynchrone Zustellung, Retries mit Backoff (z. B. 1 min, 5 min, 30 min, 2 h, 12 h), Timeout
-- [ ] SSRF-Schutz: nur http(s), keine privaten/lokalen IPs (Filter für Ausnahmen), `wp_safe_remote_request`
-- [ ] Zustellungslog in `swf_entry_log` (Status, HTTP-Code, Dauer, gekürzte Antwort) + „Erneut senden“ im Eintrag
-- [ ] Endgültiger Fehlschlag: Admin-Mail + Badge in der Formularliste; Hooks `swf_webhook_sent` / `swf_webhook_failed`
-- [ ] Speicherung aus: Eintrag temporär halten, nach Zustellung/letztem Retry löschen
-- [ ] Builder-Tab „Webhooks“ inkl. Test-Button mit Beispieldaten
-- [ ] Tests: Signatur (Unit), Queue/Retry (Integration), E2E gegen lokalen Echo-Endpoint
+- [x] Action Scheduler per Composer bündeln, Queue-Wrapper (`swf_background` Gruppe; Release-Bootstrap und Queue-Integrationstests)
+- [x] Webhook-Einstellungen pro Formular: URL, Methode (POST/PUT), Format (JSON / form-encoded), Header, Feld-Mapping (Standard: alle Felder), Bedingung (LogicEditor wiederverwenden)
+- [x] Payload: `{event, eventId, form, entry, data}`; Filter `swf_webhook_payload`
+- [x] Signatur `X-SWForms-Signature` (HMAC-SHA256, Secret pro Webhook, verschlüsselt gespeichert, nie im Export/REST im Klartext)
+- [x] Asynchrone Zustellung, Retries mit Backoff (z. B. 1 min, 5 min, 30 min, 2 h, 12 h), Timeout
+- [x] SSRF-Schutz: nur http(s), keine privaten/lokalen IPs (Filter für Ausnahmen), `wp_safe_remote_request`
+- [x] Zustellungslog in `swf_entry_log` (Status, HTTP-Code, Dauer, gekürzte Antwort) + „Erneut senden“ im Eintrag
+- [x] Endgültiger Fehlschlag: Admin-Mail + Badge in der Formularliste; Hooks `swf_webhook_sent` / `swf_webhook_failed`
+- [x] Speicherung aus: Eintrag temporär halten, nach Zustellung/letztem Retry löschen
+- [x] Builder-Tab „Webhooks“ inkl. Test-Button mit Beispieldaten
+- [x] Tests: Signatur (Unit), Queue/Retry (Integration), E2E gegen lokalen Echo-Endpoint
 
-## Milestone 3 – Komfort & Export (0.3.0)
+## ✅ Milestone 3 – Komfort & Export (implementiert, 0.3.0)
 
-- [ ] CSV-Export der Einträge (Filter/Suche berücksichtigen, Formel-Injection-Schutz, Repeater flach oder als JSON)
-- [ ] Weitere Merge-Tags (`{entry:ip}` nur bei Hash-Modus nein, `{form:url}`, `{field:key:raw}` für Rohwerte)
-- [ ] Merge-Tags an Cursorposition einfügen statt anhängen
-- [ ] Captcha-Provider-Interface + Turnstile / hCaptcha (`swf_register_spam_providers`)
-- [ ] Select mit Suchfeld (Combobox, barrierefrei)
-- [ ] Bedingte Pflichtfelder / Deaktivieren (Logik-Aktionen `require`, `disable`)
-- [ ] Datenschutz: WP-Privacy-Exporter/-Eraser für Einträge (per E-Mail-Feld)
-- [ ] Einträge bearbeiten (Admin), Notizen am Eintrag
+- [x] CSV-Export der Einträge (Filter/Suche berücksichtigen, Formel-Injection-Schutz, Repeater flach oder als JSON)
+- [x] Weitere Merge-Tags (`{entry:ip}` bleibt bei Hash-/Ohne-IP-Modus leer, `{form:url}`, `{field:key:raw}` für Rohwerte)
+- [x] Merge-Tags an Cursorposition einfügen statt anhängen
+- [x] Captcha-Provider-Interface + Turnstile / hCaptcha (`swf_register_spam_providers`)
+- [x] Select mit Suchfeld (Combobox, barrierefrei)
+- [x] Bedingte Pflichtfelder / Deaktivieren (Logik-Aktionen `require`, `disable`)
+- [x] Datenschutz: WP-Privacy-Exporter/-Eraser für Einträge (per E-Mail-Feld)
+- [x] Einträge bearbeiten (Admin), Notizen am Eintrag
 
-## Milestone 4 – Plugin-API festschreiben (0.4.0)
+## ✅ Milestone 4 – Plugin-API festschreiben (implementiert, 0.4.0)
 
-- [ ] Interfaces & Hooks als stabil markieren, `@since` pflegen, Deprecation-Policy in `docs/extending.md`
-- [ ] Registries vervollständigen: `swf_register_validators`, `swf_register_merge_tags` (statt nur Filter)
-- [ ] Settings-Schema: Typen `field-picker`, `key-value`, `repeater`; eigene Vue-Komponente per JS-Handle für Add-on-Inspector/Canvas
-- [ ] Beispiel-Add-on (eigener Feldtyp + eigene Aktion) als Testfall der API
-- [ ] PHPUnit-Integrationssuite mit WP-Testumgebung (statt nur `tests/wp-smoke.php`)
+- [x] Interfaces & Hooks als stabil markieren, `@since` pflegen, Deprecation-Policy in `docs/extending.md`
+- [x] Registries vervollständigen: `swf_register_validators`, `swf_register_merge_tags` (statt nur Filter)
+- [x] Settings-Schema: Typen `field-picker`, `key-value`, `repeater`; eigene Vue-Komponente per JS-Handle für Add-on-Inspector/Canvas
+- [x] Beispiel-Add-on (eigener Feldtyp + eigene Aktion) als Testfall der API
+- [x] PHPUnit-Integrationssuite mit WP-Testumgebung (statt nur `tests/wp-smoke.php`)
+- [x] erweiterte Dokumentation in Englisch aller Filter/Actions, inkl. @since Informationen (Parameter, Zweck)
 
-## Milestone 5 – Ausbau (0.5.0+)
+## ✅ Milestone 5 – Ausbau (implementiert, 0.5.0)
 
-- [ ] Gutenberg-Block (Formularauswahl, Live-Vorschau per ServerSideRender)
-- [ ] Import/Export von Formularen (JSON, ohne Secrets)
-- [ ] Mehrschritt-Formulare (Seitenumbruch-Element, Fortschritt, Validierung pro Schritt)
-- [ ] Datei-Upload (geschütztes Verzeichnis, Typ-/Größenprüfung, Anhang in Mails)
-- [ ] Weitere Felder: Datepicker, Rating, Signatur, HTML/Text-Block, Berechnung
-- [ ] Vorlagenbibliothek (Kontakt, Anmeldung, Umfrage)
-- [ ] Versionsverlauf im Builder (alte Version ansehen / wiederherstellen)
+- [x] Gutenberg-Block (Formularauswahl, Live-Vorschau per ServerSideRender)
+- [x] Visual Composer Block (Formularauswahl)
+- [x] Import/Export von Formularen (JSON, ohne Secrets)
+- [x] Mehrschritt-Formulare (Seitenumbruch-Element, Fortschritt, Validierung pro Schritt)
+- [x] Datei-Upload (vorhandene Ablage mit zufälligen URLs und Typ-/Größenprüfung; neu: optionale Mail-Anhänge bis 20 MB; keine authentifizierte Privatablage)
+- [x] Weitere Felder: native Datumsauswahl, Rating und Signatur bereits vorhanden; neu: sicherer HTML/Text-Block und Berechnung
+- [x] Vorlagenbibliothek (Kontakt, Anmeldung, Umfrage)
+- [x] Versionsverlauf im Builder (alte Version ansehen / wiederherstellen)
 
 ## Bekannte Punkte / technische Schulden
 

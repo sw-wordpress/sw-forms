@@ -10,6 +10,14 @@ const files = (...names: string[]) => names.map((name) => new File(['document'],
 const change = (element: HTMLInputElement) => element.dispatchEvent(new Event('change', { bubbles: true }));
 const submit = () => document.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
 const response = (data: unknown) => ({ json: async () => data }) as Response;
+/** Keeps the real URL constructor (the runtime and jsdom parse URLs) and fakes only object URLs. */
+const stubObjectUrls = (revoke: (url: string) => void = vi.fn()) => {
+  class PreviewURL extends URL {
+    static createObjectURL = (): string => 'blob:preview';
+    static revokeObjectURL = revoke;
+  }
+  vi.stubGlobal('URL', PreviewURL);
+};
 const drop = (target: Element, names?: string[], type = 'drop') => {
   const event = new Event(type, { bubbles: true, cancelable: true });
   if (names) Object.defineProperty(event, 'dataTransfer', { value: { files: files(...names) } });
@@ -44,6 +52,159 @@ afterEach(() => {
 });
 
 describe('actual frontend form runtime', () => {
+  it('validates pages remotely without submitting early, preserves earlier values and reveals final cross-page errors', async () => {
+    const fields = [field('quantity'), field('name'), field('total', 'calculation', 'text', { settings: { operation: 'product', decimals: 2, sources: [{ field: 'quantity' }, { field: 'price' }] } }), field('price')];
+    const html = '<p class="swf-step-progress" hidden></p><section class="swf-step" data-swf-step="0"><h3 tabindex="-1">First</h3>' + wrap('quantity', '<input name="swf[quantity]" value="2">') + wrap('price', '<input name="swf[price]" value="3">') + '</section><section class="swf-step" data-swf-step="1"><h3 tabindex="-1">Second</h3>' + wrap('name', '<input name="swf[name]">') + wrap('total', '<input readonly name="swf[total]">') + '</section><div class="swf-step-nav" hidden><button type="button" class="swf-step-back">Back</button><button type="button" class="swf-step-next">Next</button></div>';
+    await mountForm(true, { fields, html });
+    const pages = [...document.querySelectorAll<HTMLElement>('.swf-step')];
+    expect(pages[1]!.hidden).toBe(true);
+    expect(document.querySelector<HTMLInputElement>('[name="swf[total]"]')!.value).toBe('6.00');
+    vi.mocked(fetch).mockResolvedValueOnce(response({ status: 'success', code: 'step' }));
+    document.querySelector<HTMLButtonElement>('.swf-step-next')!.click();
+    await flushPromises();
+    expect(new FormData(document.querySelector('form')!).get('swf[quantity]')).toBe('2');
+    expect((vi.mocked(fetch).mock.calls[0]![1]!.body as FormData).get('swf_step')).toBe('0');
+    expect(pages[0]!.hidden).toBe(true);
+    expect(pages[1]!.hidden).toBe(false);
+    expect(document.querySelector('.swf-confirmation')).toBeNull();
+    vi.mocked(fetch).mockResolvedValueOnce(response({ status: 'invalid', errors: { quantity: 'Changed invalid source' } }));
+    submit(); await flushPromises();
+    expect(pages[0]!.hidden).toBe(false);
+    expect(document.querySelector('.swf-summary')?.textContent).toContain('Changed invalid source');
+    expect((vi.mocked(fetch).mock.calls[1]![1]!.body as FormData).has('swf_step')).toBe(false);
+  });
+
+  it('shows step progress, marks done steps and navigates back through the indicator', async () => {
+    const item = (i: number, label: string) => `<li class="swf-steps__item" data-swf-step-indicator="${i}"><button type="button" class="swf-steps__button" disabled><span class="swf-steps__marker">${i + 1}</span><span class="swf-steps__label">${label}</span></button></li>`;
+    const html = `<ol class="swf-steps swf-steps--numbers" hidden>${item(0, 'Trip')}${item(1, 'Wishes')}${item(2, 'Contact')}</ol><p class="swf-step-progress swf-sr-only" hidden></p>`
+      + ['Trip', 'Wishes', 'Contact'].map((label, i) => `<section class="swf-step" data-swf-step="${i}"><h3 tabindex="-1">${label}</h3>${wrap(`f${i}`, `<input name="swf[f${i}]">`)}</section>`).join('')
+      + '<div class="swf-step-nav" hidden><button type="button" class="swf-step-back">Back</button><button type="button" class="swf-step-next">Next</button></div>';
+    await mountForm(true, { fields: [field('f0'), field('f1'), field('f2')], html });
+    const items = [...document.querySelectorAll<HTMLElement>('.swf-steps__item')];
+    const buttons = items.map((li) => li.querySelector('button')!);
+    const pages = [...document.querySelectorAll<HTMLElement>('.swf-step')];
+    expect(document.querySelector<HTMLElement>('.swf-steps')!.hidden).toBe(false);
+    expect(items[0]!.getAttribute('aria-current')).toBe('step');
+    expect(buttons.every((b) => b.disabled)).toBe(true);
+    expect(document.querySelector('.swf-step-progress')!.textContent).toBe('1/3');
+
+    vi.mocked(fetch).mockResolvedValue(response({ status: 'success', code: 'step' }));
+    document.querySelector<HTMLButtonElement>('.swf-step-next')!.click(); await flushPromises();
+    document.querySelector<HTMLButtonElement>('.swf-step-next')!.click(); await flushPromises();
+    expect(pages[2]!.hidden).toBe(false);
+    expect(items[0]!.classList.contains('is-done')).toBe(true);
+    expect(items[1]!.classList.contains('is-done')).toBe(true);
+    expect(items[2]!.classList.contains('is-current')).toBe(true);
+    expect(items[1]!.hasAttribute('aria-current')).toBe(false);
+    expect(buttons[0]!.disabled).toBe(false);
+    expect(buttons[2]!.disabled).toBe(true);
+
+    buttons[0]!.click();
+    expect(pages[0]!.hidden).toBe(false);
+    expect(pages[2]!.hidden).toBe(true);
+    expect(items[0]!.classList.contains('is-current')).toBe(true);
+    expect(items[1]!.classList.contains('is-done')).toBe(false);
+    expect(buttons[1]!.disabled).toBe(true);
+    // Forward jumps are not possible through the indicator (validation runs on Next).
+    buttons[1]!.disabled = false;
+    buttons[1]!.click();
+    expect(pages[0]!.hidden).toBe(false);
+  });
+
+  it('includes the step label in the progress text', async () => {
+    const html = '<p class="swf-step-progress" hidden></p>' + ['A', 'B'].map((label, i) => `<section class="swf-step" data-swf-step="${i}"><h3 tabindex="-1">${label}</h3>${wrap(`f${i}`, `<input name="swf[f${i}]">`)}</section>`).join('') + '<div class="swf-step-nav" hidden><button type="button" class="swf-step-back">Back</button><button type="button" class="swf-step-next">Next</button></div>';
+    const fields = [field('f0'), field('f1')];
+    document.body.innerHTML = '';
+    const config = { formId: 7, rest: '/submit', ajax: '/ajax', preview: true, nonce: 'n', fields, i18n: { sending: 'Sending', networkError: 'Offline', summary: 'Correct', progress: 'Step {current} of {total}: {label}' } };
+    document.body.innerHTML = `<div><form class="swf-form" data-swf-form="7">${html}<input name="swf_token" value="old"><button class="swf-submit">Send</button><script class="swf-config" type="application/json">${JSON.stringify(config)}</script></form></div>`;
+    await import('../frontend/main');
+    expect(document.querySelector('.swf-step-progress')!.textContent).toBe('Step 1 of 2: A');
+  });
+
+  it('reads matrix values for conditions and submits stable keys in independent repeater rows', async () => {
+    const controls = (prefix: string) => ['service', 'quality'].map((row) => [1, 5].map((value) => `<input type="radio" data-swf-matrix-row="${row}" name="${prefix}[${row}]" value="${value}">`).join('')).join('');
+    const rows = field('rows', 'group', 'none', { container: 'children', settings: { repeatable: true }, children: [field('nested', 'matrix', 'matrix'), field('why', 'input', 'text', { logic: condition('nested', 'is', '5') })] });
+    const row = `<div class="swf-row" data-swf-row="__INDEX__">${wrap('nested', '<span id="question-__INDEX__">Question</span><span id="answer-__INDEX__">Answer</span>' + controls('swf[rows][__INDEX__][nested]').replaceAll('type="radio"', 'type="radio" aria-labelledby="question-__INDEX__ answer-__INDEX__" aria-describedby="desc-__INDEX__ err-__INDEX__"'))}${wrap('why', '<input name="swf[rows][__INDEX__][why]">')}<button type="button" class="swf-row-remove">Remove</button></div>`;
+    await mountForm(true, { fields: [field('survey', 'matrix', 'matrix'), field('note', 'input', 'text', { logic: condition('survey', 'is', '5') }), rows], html: wrap('survey', controls('swf[survey]')) + wrap('note', '<input name="swf[note]">') + `<fieldset class="swf-repeater" data-swf-id="rows" data-swf-min="0" data-swf-max="2"><div class="swf-rows"></div><template class="swf-row-template">${row}</template><button type="button" class="swf-row-add">Add</button></fieldset>` });
+    expect(document.querySelector<HTMLElement>('[data-swf-id=note]')!.hidden).toBe(true);
+    const chosen = document.querySelector<HTMLInputElement>('[name="swf[survey][service]"][value="5"]')!;
+    chosen.checked = true; change(chosen);
+    expect(document.querySelector<HTMLElement>('[data-swf-id=note]')!.hidden).toBe(false);
+    const add = document.querySelector<HTMLButtonElement>('.swf-row-add')!; add.click(); add.click();
+    const renderedRows = document.querySelectorAll<HTMLElement>('.swf-rows > .swf-row');
+    const rowToken = renderedRows[1]!.dataset.swfRow!;
+    const nested = renderedRows[1]!.querySelector<HTMLInputElement>('[data-swf-matrix-row=quality][value="5"]')!;
+    expect(nested.getAttribute('aria-labelledby')).toBe(`question-${rowToken} answer-${rowToken}`);
+    expect(nested.getAttribute('aria-describedby')).toBe(`desc-${rowToken} err-${rowToken}`);
+    nested.checked = true; change(nested);
+    const why = document.querySelectorAll<HTMLElement>('[data-swf-id=why]');
+    expect(why[0]!.hidden).toBe(true); expect(why[1]!.hidden).toBe(false);
+    submit(); await flushPromises();
+    const body = vi.mocked(fetch).mock.calls[0]![1]!.body as FormData;
+    expect(body.get('swf[survey][service]')).toBe('5');
+    expect(body.get(`swf[rows][${rowToken}][nested][quality]`)).toBe('5');
+    expect(body.has('swf[rows][0][nested][quality]')).toBe(false);
+    document.querySelector<HTMLFormElement>('form')!.reset(); await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(document.querySelector<HTMLElement>('[data-swf-id=note]')!.hidden).toBe(true);
+  });
+  it('keeps time pickers and searchable selects focusable together in repeater rows and error links', async () => {
+    const rows = field('rows', 'group', 'none', { container: 'children', settings: { repeatable: true }, children: [field('times', 'time-interval', 'list'), field('choice', 'select', 'text')] });
+    const row = `<div class="swf-row" data-swf-row="__INDEX__">${wrap('times', '<div><label for="from-__INDEX__">From</label><input type="time" id="from-__INDEX__" name="swf[rows][__INDEX__][times][from]" data-swf-time-picker step="900"></div><div><label for="to-__INDEX__">To</label><input type="time" id="to-__INDEX__" name="swf[rows][__INDEX__][times][to]" data-swf-time-picker step="900"></div>')}${wrap('choice', '<select id="choice-__INDEX__" name="swf[rows][__INDEX__][choice]" data-swf-search><option value="">Choose</option><option value="a">A</option></select>')}<button type="button" class="swf-row-remove">Remove</button></div>`;
+    await mountForm(true, { fields: [rows], html: `<fieldset class="swf-repeater" data-swf-id="rows" data-swf-min="0" data-swf-max="2"><div class="swf-rows"></div><template class="swf-row-template">${row}</template><button type="button" class="swf-row-add">Add</button></fieldset>` });
+    const add = document.querySelector<HTMLButtonElement>('.swf-row-add')!; add.click(); add.click();
+    const rendered = document.querySelectorAll<HTMLElement>('.swf-row');
+    expect(document.activeElement).toBe(rendered[1]!.querySelector('[data-swf-time-unit=hour]'));
+    vi.mocked(fetch).mockResolvedValue(response({ status: 'invalid', message: 'Fix row', errors: { 'rows[1].times': 'Required', 'rows[1].choice': 'Required' } }));
+    submit(); await flushPromises();
+    const links = document.querySelectorAll<HTMLAnchorElement>('.swf-summary a'); links[0]!.click();
+    expect(document.activeElement).toBe(rendered[1]!.querySelector('[data-swf-time-unit=hour]'));
+    links[1]!.click(); expect(document.activeElement).toBe(rendered[1]!.querySelector('.ts-control input'));
+    rendered[1]!.querySelector<HTMLButtonElement>('.swf-row-remove')!.click();
+    expect(document.activeElement).toBe(rendered[0]!.querySelector('[data-swf-time-unit=hour]'));
+  });
+  it('focuses the visible searchable select from an error link and after adding a repeater row', async () => {
+    const choice = field('choice', 'select', 'text');
+    const rows = field('rows', 'group', 'none', { container: 'children', settings: { repeatable: true }, children: [field('nested', 'select', 'text')] });
+    const row = `<div class="swf-row" data-swf-row="__INDEX__">${wrap('nested', '<select id="select-__INDEX__" name="swf[rows][__INDEX__][nested]" data-swf-search><option value="">Choose</option><option value="a">A</option></select>')}<button type="button" class="swf-row-remove">Remove</button></div>`;
+    await mountForm(true, { fields: [choice, rows], html: wrap('choice', '<select id="choice" name="swf[choice]" data-swf-search><option value="">Choose</option><option value="a">A</option></select>') + `<fieldset class="swf-repeater" data-swf-id="rows" data-swf-min="0" data-swf-max="2"><div class="swf-rows"></div><template class="swf-row-template">${row}</template><button type="button" class="swf-row-add">Add</button></fieldset>` });
+    vi.mocked(fetch).mockResolvedValue(response({ status: 'invalid', message: 'Fix choice', errors: { choice: 'Required' } }));
+    submit(); await flushPromises(); document.querySelector<HTMLAnchorElement>('.swf-summary a')!.click();
+    expect(document.activeElement).toBe(document.querySelector('[data-swf-id=choice] .ts-control input'));
+    document.querySelector<HTMLButtonElement>('.swf-row-add')!.click();
+    expect(document.activeElement).toBe(document.querySelector('.swf-row .ts-control input'));
+  });
+  it('keeps submission blocked when another thumbnail is cancelled during a crop export', async () => {
+    stubObjectUrls();
+    vi.stubGlobal('DataTransfer', class {
+      files: File[] = [];
+      items = { add: (file: File) => { this.files.push(file); } };
+    });
+    vi.spyOn(HTMLImageElement.prototype, 'naturalWidth', 'get').mockReturnValue(200);
+    vi.spyOn(HTMLImageElement.prototype, 'naturalHeight', 'get').mockReturnValue(100);
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ drawImage: vi.fn() } as unknown as CanvasRenderingContext2D);
+    let complete: BlobCallback = () => {};
+    vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation((callback) => { complete = callback; });
+    await mountForm(true, { fields: [field('photo', 'image', 'list')], html: wrap('photo', '<div class="swf-upload"><input type="file" name="swf[photo][]" data-swf-image data-swf-crop data-swf-preview-limit="2" data-swf-busy-message="Finish crop"></div><div class="swf-image-previews" hidden></div>') });
+    input().files = [new File(['a'], 'a.png', { type: 'image/png' }), new File(['b'], 'b.png', { type: 'image/png' })] as unknown as FileList;
+    change(input());
+    const figures = document.querySelectorAll('figure');
+    figures[0]!.querySelector<HTMLButtonElement>('.swf-crop-apply')!.click();
+    figures[1]!.querySelectorAll<HTMLButtonElement>('button')[1]!.click();
+    submit(); await flushPromises();
+    expect(fetch).not.toHaveBeenCalled();
+    expect(document.querySelector('.swf-summary')!.textContent).toContain('Finish crop');
+    complete(new Blob(['cropped'], { type: 'image/png' })); await flushPromises();
+    expect(input().files?.[0]?.name).toBe('a-cropped.png');
+    expect(input().files?.[1]?.name).toBe('b.png');
+    submit(); await flushPromises(); expect(fetch).toHaveBeenCalledOnce();
+  });
+  it('blocks submission during media processing and allows it when processing finishes', async () => {
+    await mountForm(); enable();
+    input().dataset.swfMediaBusy = '1'; input().dataset.swfBusyMessage = 'Finish recording';
+    submit(); await flushPromises(); expect(fetch).not.toHaveBeenCalled();
+    expect(document.querySelector('.swf-summary')!.textContent).toContain('Finish recording');
+    delete input().dataset.swfMediaBusy; submit(); await flushPromises(); expect(fetch).toHaveBeenCalledOnce();
+  });
   it('disables hidden uploads and cascades visibility through plain file names', async () => {
     await mountForm();
     expect(input().disabled).toBe(true);
@@ -139,7 +300,7 @@ describe('actual frontend form runtime', () => {
   });
   it('releases actual image previews on reset and reevaluates visibility', async () => {
     const revoke = vi.fn();
-    vi.stubGlobal('URL', { createObjectURL: () => 'blob:preview', revokeObjectURL: revoke });
+    stubObjectUrls(revoke);
     await mountForm(true, { fields: [field('photo', 'image', 'list')], html: wrap('photo', '<div class="swf-upload"><input type="file" name="swf[photo][]" data-swf-image></div><div class="swf-image-previews" hidden></div>') });
     input().files = [new File(['png'], 'photo.png', { type: 'image/png' })] as unknown as FileList;
     change(input());
@@ -151,7 +312,7 @@ describe('actual frontend form runtime', () => {
   });
   it('releases image object URLs when a public form is replaced by its confirmation', async () => {
     const revoke = vi.fn();
-    vi.stubGlobal('URL', { createObjectURL: () => 'blob:preview', revokeObjectURL: revoke });
+    stubObjectUrls(revoke);
     await mountForm(false, { fields: [field('photo', 'image', 'list')], html: wrap('photo', '<div class="swf-upload"><input type="file" name="swf[photo][]" data-swf-image></div><div class="swf-image-previews" hidden></div>') });
     input().files = [new File(['png'], 'photo.png', { type: 'image/png' })] as unknown as FileList;
     change(input()); submit(); await flushPromises();

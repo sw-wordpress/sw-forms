@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, toRaw } from 'vue';
 import { useI18n } from 'vue-i18n';
 import EmptyState from '@/components/ui/EmptyState.vue';
 import SwfCard from '@/components/ui/SwfCard.vue';
@@ -19,14 +19,6 @@ function update(id: string, patch: Partial<Notification>, coalesce = ''): void {
     const n = s.notifications.find((x) => x.id === id);
     if (n) Object.assign(n, patch);
   }, coalesce === '' ? '' : `${id}:${coalesce}`);
-}
-
-function append(id: string, field: 'to' | 'subject' | 'message' | 'replyTo', tag: string): void {
-  const n = notifications.value.find((x) => x.id === id);
-  if (!n) return;
-  const current = n[field];
-  const separator = field === 'to' && current.trim() !== '' ? ', ' : current === '' || field === 'message' ? '' : ' ';
-  update(id, { [field]: `${current}${separator}${tag}` });
 }
 
 function add(): void {
@@ -51,7 +43,7 @@ function duplicate(notification: Notification): void {
   const id = newId('n');
   store.updateFormSettings((s) => {
     const index = s.notifications.findIndex((x) => x.id === notification.id);
-    s.notifications.splice(index + 1, 0, { ...structuredClone(notification), id, name: `${notification.name} (2)` });
+    s.notifications.splice(index + 1, 0, { ...structuredClone(toRaw(notification)), id, name: `${notification.name} (2)` });
   });
   open.value = id;
 }
@@ -101,11 +93,11 @@ function remove(id: string): void {
             :hint="t('notifications.toHint')"
             @update:model-value="update(n.id, { to: String($event ?? '') }, 'to')"
           />
-          <MergeTagMenu email-only @insert="append(n.id, 'to', $event)" />
+          <MergeTagMenu email-only />
         </div>
         <div class="swf-with-tags">
           <q-input :model-value="n.subject" outlined dense :label="t('notifications.subject')" @update:model-value="update(n.id, { subject: String($event ?? '') }, 'subject')" />
-          <MergeTagMenu @insert="append(n.id, 'subject', $event)" />
+          <MergeTagMenu />
         </div>
         <div class="swf-with-tags">
           <q-input
@@ -118,15 +110,16 @@ function remove(id: string): void {
             input-style="min-height: 140px"
             @update:model-value="update(n.id, { message: String($event ?? '') }, 'message')"
           />
-          <MergeTagMenu html @insert="append(n.id, 'message', $event)" />
+          <MergeTagMenu html />
         </div>
         <div class="swf-grid">
           <div class="swf-with-tags">
             <q-input :model-value="n.replyTo" outlined dense :label="t('notifications.replyTo')" @update:model-value="update(n.id, { replyTo: String($event ?? '') }, 'replyTo')" />
-            <MergeTagMenu email-only @insert="append(n.id, 'replyTo', $event)" />
+            <MergeTagMenu email-only />
           </div>
           <q-input :model-value="n.fromName" outlined dense :label="t('notifications.fromName')" :hint="t('notifications.fromHint')" @update:model-value="update(n.id, { fromName: String($event ?? '') }, 'fromName')" />
         </div>
+        <q-toggle :model-value="n.attachFiles === true" :label="t('m5.attachFiles')" @update:model-value="update(n.id, { attachFiles: !!$event })" />
         <div class="swf-notification__logic">
           <LogicEditor :logic="n.logic" :owner-id="null" subject="notification" @update="update(n.id, { logic: $event })" />
         </div>

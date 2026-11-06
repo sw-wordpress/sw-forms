@@ -1,0 +1,162 @@
+{
+  "fields": [
+    {
+      "id": "toggle",
+      "type": "checkbox",
+      "key": "toggle",
+      "settings": {
+        "mode": "single"
+      }
+    },
+    {
+      "id": "required",
+      "type": "input",
+      "key": "required",
+      "logic": {
+        "action": "require",
+        "match": "all",
+        "rules": [
+          {
+            "field": "toggle",
+            "op": "notempty"
+          }
+        ]
+      }
+    },
+    {
+      "id": "group",
+      "type": "group",
+      "key": "group",
+      "logic": {
+        "action": "disable",
+        "match": "all",
+        "rules": [
+          {
+            "field": "toggle",
+            "op": "notempty"
+          }
+        ]
+      },
+      "children": [
+        {
+          "id": "child",
+          "type": "input",
+          "key": "child",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "dependent",
+      "type": "input",
+      "key": "dependent",
+      "logic": {
+        "action": "show",
+        "match": "all",
+        "rules": [
+          {
+            "field": "child",
+            "op": "notempty"
+          }
+        ]
+      }
+    },
+    {
+      "id": "rows",
+      "type": "group",
+      "key": "rows",
+      "settings": {
+        "repeatable": true
+      },
+      "children": [
+        {
+          "id": "rowToggle",
+          "type": "checkbox",
+          "key": "toggle",
+          "settings": {
+            "mode": "single"
+          }
+        },
+        {
+          "id": "rowRequired",
+          "type": "input",
+          "key": "required",
+          "logic": {
+            "action": "require",
+            "match": "all",
+            "rules": [
+              {
+                "field": "rowToggle",
+                "op": "notempty"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "cases": [
+    {
+      "name": "conditional effects False",
+      "values": {
+        "toggle": false,
+        "child": "forged",
+        "rows": [
+          {
+            "rowToggle": false
+          },
+          {
+            "rowToggle": true
+          }
+        ]
+      },
+      "visible": {
+        "group": true,
+        "child": true,
+        "required": true,
+        "dependent": true
+      },
+      "enabled": {
+        "group": true,
+        "child": true,
+        "required": true
+      },
+      "required": {
+        "required": false,
+        "rows[0].rowRequired": false,
+        "rows[1].rowRequired": true
+      }
+    },
+    {
+      "name": "conditional effects True",
+      "values": {
+        "toggle": true,
+        "child": "forged",
+        "rows": [
+          {
+            "rowToggle": false
+          },
+          {
+            "rowToggle": true
+          }
+        ]
+      },
+      "visible": {
+        "group": true,
+        "child": true,
+        "required": true,
+        "dependent": false
+      },
+      "enabled": {
+        "group": false,
+        "child": false,
+        "required": true
+      },
+      "required": {
+        "required": true,
+        "rows[0].rowRequired": false,
+        "rows[1].rowRequired": true
+      }
+    }
+  ]
+}

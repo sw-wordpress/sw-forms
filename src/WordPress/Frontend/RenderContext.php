@@ -5,6 +5,9 @@
  * One context exists per scope (form level or one repeater row). Template rows (for the
  * frontend script) use the index placeholder `__INDEX__`.
  *
+ * Public extension API; stable from 0.4.0.
+ *
+ * @since 0.1.0
  * @package SWForms
  */
 
@@ -32,7 +35,17 @@ final class RenderContext {
 		private readonly string $name_prefix = 'swf',
 		private readonly string $id_prefix = '',
 		private readonly string $row_index = '',
+		private readonly bool $floating_labels = false,
 	) {}
+
+	/**
+	 * Whether the form design places labels inside single controls (floating labels).
+	 *
+	 * @since 0.6.0
+	 */
+	public function floating_labels(): bool {
+		return $this->floating_labels;
+	}
 
 	/** Request name, e.g. `swf[abc]` or `swf[rep][0][abc][]`. */
 	public function name( string $id, string $suffix = '' ): string {
@@ -65,6 +78,14 @@ final class RenderContext {
 		return $this->row_index;
 	}
 
+	public function disabled( string $id ): bool {
+		return null !== $this->visibility && ! $this->visibility->isEnabled( $id, $this->path_prefix );
+	}
+
+	public function required( string $id ): bool {
+		return null !== $this->visibility && $this->visibility->isRequired( $id, $this->path_prefix );
+	}
+
 	/**
 	 * Renders child elements in this scope.
 	 *
@@ -89,7 +110,8 @@ final class RenderContext {
 			$this->path_prefix . $repeater_id . '[' . $index . '].',
 			$this->name_prefix . '[' . $repeater_id . '][' . $index . ']',
 			$this->dom_id( $repeater_id ) . '-' . $index,
-			$index
+			$index,
+			$this->floating_labels
 		);
 	}
 }

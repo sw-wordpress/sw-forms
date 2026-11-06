@@ -2,6 +2,9 @@
 /**
  * Registry of element types. Add-ons register their types on the `swf_register_field_types` action.
  *
+ * Public extension API; stable from 0.4.0.
+ *
+ * @since 0.1.0
  * @package SWForms
  */
 
@@ -25,12 +28,16 @@ final class FieldRegistry implements TypeCatalog {
 			self::$instance = new self();
 			foreach ( array(
 				new InputField(),
+				new HtmlField(),
+				new PageBreakField(),
+				new CalculationField(),
 				new BirthdateField(),
 				new DateIntervalField(),
 				new TimeIntervalField(),
 				new TextareaField(),
 				new CheckboxField(),
 				new RadioField(),
+				new MatrixField(),
 				new SelectField(),
 				new RangeField(),
 				new RatingField(),
@@ -39,6 +46,9 @@ final class FieldRegistry implements TypeCatalog {
 				new TagsField(),
 				new FileField(),
 				new ImageField(),
+				new SignatureField(),
+				new AudioField(),
+				new VideoField(),
 				new GroupField(),
 				new NameField(),
 				new AddressField(),

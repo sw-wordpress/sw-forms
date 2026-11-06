@@ -2,6 +2,9 @@
 /**
  * Base class with schema driven settings normalisation and accessible wrapper markup.
  *
+ * Public extension API; stable from 0.4.0.
+ *
+ * @since 0.1.0
  * @package SWForms
  */
 
@@ -17,6 +20,9 @@ abstract class AbstractFieldType implements FieldTypeInterface {
 
 	/** Hard cap for any single text value. */
 	protected const MAX_TEXT = 10000;
+
+	/** Input types whose label can float inside the control. */
+	private const FLOATING_INPUT_TYPES = array( 'text', 'email', 'tel', 'url', 'number', 'password', 'search', 'date', 'time', 'datetime-local' );
 
 	public function is_data(): bool {
 		return true;
@@ -156,6 +162,14 @@ abstract class AbstractFieldType implements FieldTypeInterface {
 		if ( '' !== $error ) {
 			$classes[] = 'swf-field--error';
 		}
+		$floating = ! $fieldset && '' !== $label && $context->floating_labels() ? $this->floating_control( $control ) : null;
+		if ( null !== $floating ) {
+			$control   = $floating;
+			$classes[] = 'swf-field--floatable';
+			if ( ! $this->is_empty( $context->value( $id ), $element ) ) {
+				$classes[] = 'swf-field--filled';
+			}
+		}
 		$css_class = (string) ( $element['cssClass'] ?? '' );
 		if ( '' !== $css_class ) {
 			$classes[] = $css_class;
@@ -189,6 +203,35 @@ abstract class AbstractFieldType implements FieldTypeInterface {
 		) . '>';
 
 		return $open . $label_html . $control . $desc_html . $error_html . '</' . $tag . '>';
+	}
+
+	/**
+	 * A control markup with exactly one text-like input, textarea or single select can show a
+	 * floating label. Returns the markup with a blank placeholder (so `:placeholder-shown`
+	 * reflects programmatic and restored values in CSS) or null when the label must stay above.
+	 */
+	private function floating_control( string $control ): ?string {
+		$processor = new \WP_HTML_Tag_Processor( $control );
+		$controls  = 0;
+		$floatable = false;
+		while ( $processor->next_tag() ) {
+			$tag  = $processor->get_tag();
+			$type = strtolower( (string) ( $processor->get_attribute( 'type' ) ?? 'text' ) );
+			if ( ! in_array( $tag, array( 'INPUT', 'SELECT', 'TEXTAREA', 'BUTTON' ), true ) || ( 'INPUT' === $tag && 'hidden' === $type ) ) {
+				continue;
+			}
+			++$controls;
+			$floatable = match ( $tag ) {
+				'INPUT'    => in_array( $type, self::FLOATING_INPUT_TYPES, true ),
+				'TEXTAREA' => true,
+				'SELECT'   => null === $processor->get_attribute( 'multiple' ) && null === $processor->get_attribute( 'data-swf-search' ),
+				default    => false,
+			};
+			if ( $floatable && 'SELECT' !== $tag && null === $processor->get_attribute( 'placeholder' ) ) {
+				$processor->set_attribute( 'placeholder', ' ' );
+			}
+		}
+		return 1 === $controls && $floatable ? $processor->get_updated_html() : null;
 	}
 
 	/**
