@@ -20,9 +20,9 @@ try {
     const requests = [];
     let release;
     const pending = new Promise(resolve => { release = resolve; });
-    if (due) await page.addInitScript(() => {
-      Object.defineProperty(window, 'swfVerifiedUpdates', { set(value) { value.due = true; this.swfUpdateTestConfig = value; }, get() { return this.swfUpdateTestConfig; } });
-    });
+    await page.addInitScript((dueFlag) => {
+      Object.defineProperty(window, 'swfVerifiedUpdates', { set(value) { value.due = dueFlag; this.swfUpdateTestConfig = value; }, get() { return this.swfUpdateTestConfig; } });
+    }, due);
     await page.route('**/*', async route => {
       const request = route.request();
       const data = new URLSearchParams(request.postData() || '');
