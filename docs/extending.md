@@ -296,3 +296,13 @@ Visual Composer Website Builder product is not targeted by this WPBakery integra
 Document import/export, templates and history contracts are in [rest-api.md](rest-api.md#form-tools-and-editor-embedding-050).
 A restored draft still uses the existing published-key warnings; explicitly review keys
 before publishing it. Historical entry data and its original field definitions are retained.
+
+### GitHub update adapter (since 0.5.0)
+
+`includes/update/` is an isolated temporary distribution adapter with `SWF_Update_*`
+classes. Its internal storage and verification methods are not an installer extension API.
+Use the documented [local key/descriptor filters](hooks.md#verified-github-updates-since-050)
+only from trusted local code; remote key discovery is unsupported. WordPress owns installation.
+The existing compatibility/deprecation policy applies to these filters. A WordPress.org
+build must remove the provider include and Update URI and clear its own cached offers/state;
+see [operations](GITHUB-UPDATES-BETRIEB.md).

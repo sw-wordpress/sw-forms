@@ -17,3 +17,7 @@
 /.scannerwork/
 
 /apps/admin/coverage/
+
+/tests/wp/vendor/
+/tests/wp/.phpunit.result.cache
+/dist/

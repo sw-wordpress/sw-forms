@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SW Forms\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-01 13:47+0100\n"
+"POT-Creation-Date: 2026-11-10 21:47+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,50 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: includes/update/class-sw-forms-update-provider.php:56
+msgid "Nur manuelle Aktualisierung"
+msgstr ""
+
+#: includes/update/class-sw-forms-update-provider.php:190
+msgid "Signiertes GitHub-Release. Installation nur manuell über WordPress."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-provider.php:224
+msgid "Check for updates now"
+msgstr ""
+
+#: includes/update/class-sw-forms-update-provider.php:236
+msgid "GitHub updates are blocked: no public release key is configured."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-provider.php:240
+msgid "No verified update check yet."
+msgstr ""
+
+#. translators: %s: time span, e.g. "2 hours"
+#: includes/update/class-sw-forms-update-provider.php:243
+#, php-format
+msgid "Last verified check: %s ago."
+msgstr ""
+
+#. translators: %s: error message
+#: includes/update/class-sw-forms-update-provider.php:247
+#, php-format
+msgid "Last error: %s"
+msgstr ""
+
+#: includes/update/class-sw-forms-update-provider.php:263
+msgid "Checking signed releases…"
+msgstr ""
+
+#: includes/update/class-sw-forms-update-provider.php:264
+msgid "Update check completed."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-provider.php:265
+msgid "GitHub could not be reached. Please try again later."
+msgstr ""
 
 #: src/WordPress/Actions/EmailNotifications.php:37
 msgid "Condition not met."
@@ -3191,12 +3235,12 @@ msgid ""
 msgstr ""
 
 #. translators: 1: required PHP version, 2: current PHP version
-#: sw-forms.php:34
+#: sw-forms.php:36
 #, php-format
 msgid "SW Forms requires PHP %1$s or newer. You are running PHP %2$s."
 msgstr ""
 
-#: sw-forms.php:56
+#: sw-forms.php:58
 msgid ""
 "SW Forms: the vendor directory is missing. Install the release package or "
 "run \"composer install\"."

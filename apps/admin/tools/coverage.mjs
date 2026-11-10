@@ -10,7 +10,7 @@ let files = 0;
 const normalized = readFileSync(report, 'utf8').replace(/^SF:(.+)$/gm, (_, source) => {
   const path = realpathSync(isAbsolute(source) ? source : resolve(packageRoot, source));
   const name = relative(root, path).replaceAll('\\', '/');
-  if (name.startsWith('../') || !name.startsWith('apps/admin/')) throw new Error(`Coverage escaped application: ${source}`);
+  if (name.startsWith('../') || (!name.startsWith('apps/admin/') && name !== 'assets/js/sw-forms-updates.js')) throw new Error(`Coverage escaped application: ${source}`);
   files++;
   return `SF:${name}`;
 });

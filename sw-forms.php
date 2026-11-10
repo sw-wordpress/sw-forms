@@ -2,10 +2,12 @@
 /**
  * Plugin Name:       SW Forms
  * Description:       Drag and drop form builder with conditional logic, entries, notifications and an extension API.
+ * Update URI:        https://github.com/sw-wordpress/sw-forms
  * Version:           0.5.0
  * Requires at least: 6.8
  * Requires PHP:      8.2
  * Author:            Stefan Warnat
+ * Author URI:        https://stefanwarnat.de
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       sw-forms
@@ -74,6 +76,8 @@ require_once $swf_scheduler;
 unset( $swf_scheduler );
 
 require_once SWF_DIR . 'includes/functions.php';
+require_once SWF_DIR . 'includes/update/class-sw-forms-update-provider.php';
+register_deactivation_hook( __FILE__, array( SWF_Update_Provider::class, 'deactivate' ) );
 
 register_activation_hook( __FILE__, array( \SWForms\WordPress\Lifecycle::class, 'activate' ) );
 register_deactivation_hook( __FILE__, array( \SWForms\WordPress\Lifecycle::class, 'deactivate' ) );

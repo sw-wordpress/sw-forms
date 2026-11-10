@@ -2,12 +2,56 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SW Forms 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-01 13:47+0100\n"
+"POT-Creation-Date: 2026-11-10 21:47+0100\n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: includes/update/class-sw-forms-update-provider.php:56
+msgid "Nur manuelle Aktualisierung"
+msgstr "Nur manuelle Aktualisierung"
+
+#: includes/update/class-sw-forms-update-provider.php:190
+msgid "Signiertes GitHub-Release. Installation nur manuell über WordPress."
+msgstr "Signiertes GitHub-Release. Installation nur manuell über WordPress."
+
+#: includes/update/class-sw-forms-update-provider.php:224
+msgid "Check for updates now"
+msgstr "Jetzt auf Updates prüfen"
+
+#: includes/update/class-sw-forms-update-provider.php:236
+msgid "GitHub updates are blocked: no public release key is configured."
+msgstr "GitHub-Updates sind gesperrt: kein öffentlicher Release-Schlüssel eingerichtet."
+
+#: includes/update/class-sw-forms-update-provider.php:240
+msgid "No verified update check yet."
+msgstr "Noch keine verifizierte Update-Prüfung."
+
+#. translators: %s: time span, e.g. "2 hours"
+#: includes/update/class-sw-forms-update-provider.php:243
+#, php-format
+msgid "Last verified check: %s ago."
+msgstr "Letzte verifizierte Prüfung: vor %s."
+
+#. translators: %s: error message
+#: includes/update/class-sw-forms-update-provider.php:247
+#, php-format
+msgid "Last error: %s"
+msgstr "Letzter Fehler: %s"
+
+#: includes/update/class-sw-forms-update-provider.php:263
+msgid "Checking signed releases…"
+msgstr "Signierte Releases werden geprüft …"
+
+#: includes/update/class-sw-forms-update-provider.php:264
+msgid "Update check completed."
+msgstr "Update-Prüfung abgeschlossen."
+
+#: includes/update/class-sw-forms-update-provider.php:265
+msgid "GitHub could not be reached. Please try again later."
+msgstr "GitHub konnte nicht erreicht werden. Bitte später erneut prüfen."
 
 #: src/WordPress/Actions/EmailNotifications.php:37
 msgid "Condition not met."
@@ -1240,7 +1284,9 @@ msgstr "Bewerbung"
 msgid ""
 "Contact data, vacancy, CV and cover letter as PDF uploads, plus an "
 "application-specific privacy notice."
-msgstr "Kontaktdaten, Stelle, Lebenslauf und Anschreiben als PDF-Upload, dazu ein eigener Datenschutzhinweis für Bewerbungen."
+msgstr ""
+"Kontaktdaten, Stelle, Lebenslauf und Anschreiben als PDF-Upload, dazu ein "
+"eigener Datenschutzhinweis für Bewerbungen."
 
 #: src/WordPress/Forms/Templates/BusinessTemplates.php:43
 #: src/WordPress/Forms/Templates/BusinessTemplates.php:163
@@ -1374,7 +1420,9 @@ msgstr "Lebenslauf (PDF)"
 msgid ""
 "One PDF, at most 10 MB. Files are stored on the server, so keep personal "
 "data in mind."
-msgstr "Ein PDF, maximal 10 MB. Dateien werden auf dem Server gespeichert – personenbezogene Daten im Blick behalten."
+msgstr ""
+"Ein PDF, maximal 10 MB. Dateien werden auf dem Server gespeichert – "
+"personenbezogene Daten im Blick behalten."
 
 #: src/WordPress/Forms/Templates/BusinessTemplates.php:120
 msgid "Cover letter (PDF, optional)"
@@ -1397,7 +1445,9 @@ msgstr "Bestätigung"
 msgid ""
 "Use Back to review your entries. The confirmation lists everything you "
 "submitted, including the uploaded files."
-msgstr "Mit „Zurück“ die Angaben prüfen. Die Bestätigung listet alles Übermittelte inklusive der hochgeladenen Dateien."
+msgstr ""
+"Mit „Zurück“ die Angaben prüfen. Die Bestätigung listet alles Übermittelte "
+"inklusive der hochgeladenen Dateien."
 
 #: src/WordPress/Forms/Templates/BusinessTemplates.php:131
 #: src/WordPress/Forms/Templates/CommunityTemplates.php:248
@@ -1415,7 +1465,9 @@ msgstr "Angebot anfragen"
 msgid ""
 "Client type unlocks the company field, services as cards and a project "
 "description with a minimum length."
-msgstr "Der Kundentyp blendet das Firmenfeld ein, Leistungen als Karten und eine Projektbeschreibung mit Mindestlänge."
+msgstr ""
+"Der Kundentyp blendet das Firmenfeld ein, Leistungen als Karten und eine "
+"Projektbeschreibung mit Mindestlänge."
 
 #: src/WordPress/Forms/Templates/BusinessTemplates.php:151
 msgid "Who is requesting?"
@@ -1516,7 +1568,9 @@ msgstr "Weitere Angaben"
 msgid ""
 "Use Back to review your entries. The confirmation lists everything you "
 "submitted."
-msgstr "Mit „Zurück“ die Angaben prüfen. Die Bestätigung listet alle übermittelten Angaben auf."
+msgstr ""
+"Mit „Zurück“ die Angaben prüfen. Die Bestätigung listet alle übermittelten "
+"Angaben auf."
 
 #: src/WordPress/Forms/Templates/BusinessTemplates.php:251
 #: src/WordPress/Forms/Templates/CommunityTemplates.php:85
@@ -1534,7 +1588,9 @@ msgstr "Support-Ticket"
 #: src/WordPress/Forms/Templates/BusinessTemplates.php:268
 msgid ""
 "Area, problem type and priority; error reports ask for reproduction steps."
-msgstr "Bereich, Art des Problems und Priorität; bei Fehlern fragt das Formular nach den Schritten zur Nachstellung."
+msgstr ""
+"Bereich, Art des Problems und Priorität; bei Fehlern fragt das Formular nach "
+"den Schritten zur Nachstellung."
 
 #: src/WordPress/Forms/Templates/BusinessTemplates.php:288
 msgid "Product or area"
@@ -1591,7 +1647,8 @@ msgstr "Hoch"
 
 #: src/WordPress/Forms/Templates/BusinessTemplates.php:322
 msgid "High means something is unusable for several people right now."
-msgstr "Hoch bedeutet, dass etwas für mehrere Personen gerade nicht nutzbar ist."
+msgstr ""
+"Hoch bedeutet, dass etwas für mehrere Personen gerade nicht nutzbar ist."
 
 #: src/WordPress/Forms/Templates/BusinessTemplates.php:325
 msgid "Affected version"
@@ -1623,7 +1680,9 @@ msgstr "Screenshot oder Log-Datei (optional)"
 
 #: src/WordPress/Forms/Templates/BusinessTemplates.php:371
 msgid "PDF, PNG, JPG or TXT, at most 10 MB per file. Export log files as TXT."
-msgstr "PDF, PNG, JPG oder TXT, maximal 10 MB pro Datei. Log-Dateien als TXT exportieren."
+msgstr ""
+"PDF, PNG, JPG oder TXT, maximal 10 MB pro Datei. Log-Dateien als TXT "
+"exportieren."
 
 #: src/WordPress/Forms/Templates/BusinessTemplates.php:388
 msgid "Lead qualification"
@@ -1633,7 +1692,9 @@ msgstr "Lead-Qualifizierung"
 msgid ""
 "Contact, needs and a meeting wish: the appointment block only appears when a "
 "talk is wanted."
-msgstr "Kontakt, Bedarf und Wunschtermin: Der Terminblock erscheint nur, wenn ein Gespräch gewünscht ist."
+msgstr ""
+"Kontakt, Bedarf und Wunschtermin: Der Terminblock erscheint nur, wenn ein "
+"Gespräch gewünscht ist."
 
 #: src/WordPress/Forms/Templates/BusinessTemplates.php:404
 msgid "Work e-mail"
@@ -1746,7 +1807,10 @@ msgstr "Datenschutz"
 msgid ""
 "We use your entries to answer the request. Replace this text with your own "
 "privacy notice and add a link to it before publishing."
-msgstr "Wir nutzen Ihre Angaben, um die Anfrage zu beantworten. Diesen Text durch den eigenen Datenschutzhinweis ersetzen und einen Link ergänzen, bevor das Formular veröffentlicht wird."
+msgstr ""
+"Wir nutzen Ihre Angaben, um die Anfrage zu beantworten. Diesen Text durch "
+"den eigenen Datenschutzhinweis ersetzen und einen Link ergänzen, bevor das "
+"Formular veröffentlicht wird."
 
 #: src/WordPress/Forms/Templates/BusinessTemplates.php:533
 msgid "Data protection for applications"
@@ -1757,7 +1821,10 @@ msgid ""
 "We store your application only for this application process and delete it "
 "afterwards, unless a longer legal retention period applies. Replace this "
 "text with your own notice before publishing."
-msgstr "Ihre Bewerbung wird nur für dieses Bewerbungsverfahren gespeichert und danach gelöscht, sofern keine längere gesetzliche Aufbewahrung gilt. Diesen Text vor der Veröffentlichung durch den eigenen Hinweis ersetzen."
+msgstr ""
+"Ihre Bewerbung wird nur für dieses Bewerbungsverfahren gespeichert und "
+"danach gelöscht, sofern keine längere gesetzliche Aufbewahrung gilt. Diesen "
+"Text vor der Veröffentlichung durch den eigenen Hinweis ersetzen."
 
 #: src/WordPress/Forms/Templates/CommunityTemplates.php:31
 msgid "Survey"
@@ -1767,7 +1834,9 @@ msgstr "Umfrage"
 msgid ""
 "Two steps: rating and scales first, then the optional wish for a reply which "
 "unlocks the e-mail field."
-msgstr "Zwei Schritte: zuerst Bewertung und Skalen, danach der Wunsch nach einer Antwort, der das E-Mail-Feld einblendet."
+msgstr ""
+"Zwei Schritte: zuerst Bewertung und Skalen, danach der Wunsch nach einer "
+"Antwort, der das E-Mail-Feld einblendet."
 
 #: src/WordPress/Forms/Templates/CommunityTemplates.php:38
 msgid "Which topics interest you?"
@@ -1845,7 +1914,9 @@ msgstr "Vereinsmitgliedschaft"
 msgid ""
 "Address in two columns, membership cards and a repeatable group for further "
 "family members."
-msgstr "Adresse in zwei Spalten, Mitgliedschaft als Karten und eine wiederholbare Gruppe für weitere Familienmitglieder."
+msgstr ""
+"Adresse in zwei Spalten, Mitgliedschaft als Karten und eine wiederholbare "
+"Gruppe für weitere Familienmitglieder."
 
 #: src/WordPress/Forms/Templates/CommunityTemplates.php:148
 #: src/WordPress/Forms/Templates/CommunityTemplates.php:216
@@ -1907,7 +1978,9 @@ msgstr "Weitere Familienmitglieder"
 #: src/WordPress/Forms/Templates/CommunityTemplates.php:220
 msgid ""
 "Add one row per person; the entries are stored together under this group."
-msgstr "Pro Person eine Zeile hinzufügen; die Angaben werden gemeinsam unter dieser Gruppe gespeichert."
+msgstr ""
+"Pro Person eine Zeile hinzufügen; die Angaben werden gemeinsam unter dieser "
+"Gruppe gespeichert."
 
 #: src/WordPress/Forms/Templates/CommunityTemplates.php:227
 msgid "Contribution"
@@ -1917,7 +1990,9 @@ msgstr "Beitrag"
 msgid ""
 "Replace this text with the contribution of the selected membership type and "
 "the due dates."
-msgstr "Diesen Text durch den Beitrag der gewählten Mitgliedsart und die Fälligkeiten ersetzen."
+msgstr ""
+"Diesen Text durch den Beitrag der gewählten Mitgliedsart und die "
+"Fälligkeiten ersetzen."
 
 #: src/WordPress/Forms/Templates/CommunityTemplates.php:232
 msgid "Statute and order"
@@ -1929,7 +2004,9 @@ msgstr "Satzung und Ordnung"
 msgid ""
 "Read the statute and the access rules. Replace this text with your own "
 "wording and add a link: %s"
-msgstr "Satzung und Hausordnung lesen. Diesen Text durch den eigenen Wortlaut ersetzen und einen Link ergänzen: %s"
+msgstr ""
+"Satzung und Hausordnung lesen. Diesen Text durch den eigenen Wortlaut "
+"ersetzen und einen Link ergänzen: %s"
 
 #: src/WordPress/Forms/Templates/CommunityTemplates.php:236
 msgid "Statute in full text"
@@ -1943,7 +2020,9 @@ msgstr "Erklärungen"
 msgid ""
 "I accept the statute and the contribution order, and I confirm that the data "
 "above is correct."
-msgstr "Ich anerkenne Satzung und Beitragsordnung und bestätige, dass die Angaben oben richtig sind."
+msgstr ""
+"Ich anerkenne Satzung und Beitragsordnung und bestätige, dass die Angaben "
+"oben richtig sind."
 
 #: src/WordPress/Forms/Templates/CommunityTemplates.php:242
 msgid "Direct debit authorisation"
@@ -1953,7 +2032,9 @@ msgstr "SEPA-Lastschriftmandat"
 msgid ""
 "I authorise the club to collect the contribution by direct debit. Only add "
 "this field when your accounting really uses SEPA."
-msgstr "Ich ermächtige den Verein, den Beitrag per Lastschrift einzuziehen. Dieses Feld nur verwenden, wenn die Buchhaltung tatsächlich SEPA nutzt."
+msgstr ""
+"Ich ermächtige den Verein, den Beitrag per Lastschrift einzuziehen. Dieses "
+"Feld nur verwenden, wenn die Buchhaltung tatsächlich SEPA nutzt."
 
 #: src/WordPress/Forms/Templates/CommunityTemplates.php:261
 msgid "Donation pledge"
@@ -1963,7 +2044,9 @@ msgstr "Spendenzusage"
 msgid ""
 "Amount and rhythm as cards; the address only appears when a donation receipt "
 "is wanted."
-msgstr "Betrag und Rhythmus als Karten; die Adresse erscheint nur, wenn eine Spendenbescheinigung gewünscht ist."
+msgstr ""
+"Betrag und Rhythmus als Karten; die Adresse erscheint nur, wenn eine "
+"Spendenbescheinigung gewünscht ist."
 
 #: src/WordPress/Forms/Templates/CommunityTemplates.php:268
 msgid "Amount"
@@ -1972,7 +2055,9 @@ msgstr "Betrag"
 #: src/WordPress/Forms/Templates/CommunityTemplates.php:272
 msgid ""
 "At least 1.00. Enter the amount as a plain number, for example 25 or 12.50."
-msgstr "Mindestens 1,00. Den Betrag als reine Zahl eingeben, zum Beispiel 25 oder 12,50."
+msgstr ""
+"Mindestens 1,00. Den Betrag als reine Zahl eingeben, zum Beispiel 25 oder "
+"12,50."
 
 #: src/WordPress/Forms/Templates/CommunityTemplates.php:277
 msgid "How often?"
@@ -1994,7 +2079,9 @@ msgstr "Jährlich"
 msgid ""
 "This form records the pledge only. Recurring payments need a separate "
 "payment or direct debit integration."
-msgstr "Dieses Formular erfasst nur die Zusage. Wiederkehrende Zahlungen brauchen eine eigene Zahlungs- oder Lastschrift-Integration."
+msgstr ""
+"Dieses Formular erfasst nur die Zusage. Wiederkehrende Zahlungen brauchen "
+"eine eigene Zahlungs- oder Lastschrift-Integration."
 
 #: src/WordPress/Forms/Templates/CommunityTemplates.php:291
 msgid "What should the donation support?"
@@ -2038,7 +2125,9 @@ msgstr "Brauchen Sie eine Spendenbescheinigung?"
 msgid ""
 "Use Back to review your entries. After submitting you will see a summary of "
 "everything you entered."
-msgstr "Mit „Zurück“ die Angaben prüfen. Nach dem Absenden erscheint eine Übersicht aller Eingaben."
+msgstr ""
+"Mit „Zurück“ die Angaben prüfen. Nach dem Absenden erscheint eine Übersicht "
+"aller Eingaben."
 
 #: src/WordPress/Forms/Templates/CommunityTemplates.php:385
 msgid "How to pay"
@@ -2048,7 +2137,9 @@ msgstr "Zahlungsweg"
 msgid ""
 "This pledge does not transfer money. Replace this text with your bank "
 "details or a payment link before publishing."
-msgstr "Diese Zusage überweist kein Geld. Diesen Text vor der Veröffentlichung durch die eigenen Bankdaten oder einen Zahlungslink ersetzen."
+msgstr ""
+"Diese Zusage überweist kein Geld. Diesen Text vor der Veröffentlichung durch "
+"die eigenen Bankdaten oder einen Zahlungslink ersetzen."
 
 #: src/WordPress/Forms/Templates/CommunityTemplates.php:390
 msgid "Donation"
@@ -2058,7 +2149,10 @@ msgstr "Spende"
 msgid ""
 "We process your entries to run the club or the donation. Replace this text "
 "with your own privacy notice and add a link to it before publishing."
-msgstr "Wir verarbeiten Ihre Angaben für den Verein oder die Spende. Diesen Text durch den eigenen Datenschutzhinweis ersetzen und einen Link ergänzen, bevor das Formular veröffentlicht wird."
+msgstr ""
+"Wir verarbeiten Ihre Angaben für den Verein oder die Spende. Diesen Text "
+"durch den eigenen Datenschutzhinweis ersetzen und einen Link ergänzen, bevor "
+"das Formular veröffentlicht wird."
 
 #: src/WordPress/Forms/Templates/EventsTemplates.php:31
 msgid "Event registration"
@@ -2068,7 +2162,9 @@ msgstr "Veranstaltungsanmeldung"
 msgid ""
 "Attendee data, ticket cards with a conditional discount reason, participant "
 "count and a confirmation step."
-msgstr "Teilnehmerdaten, Tickets als Karten mit bedingtem Grund für die Ermäßigung, Personenzahl und ein Bestätigungsschritt."
+msgstr ""
+"Teilnehmerdaten, Tickets als Karten mit bedingtem Grund für die Ermäßigung, "
+"Personenzahl und ein Bestätigungsschritt."
 
 #: src/WordPress/Forms/Templates/EventsTemplates.php:63
 #: src/WordPress/Forms/Templates/EventsTemplates.php:66
@@ -2152,7 +2248,9 @@ msgstr "Name der weiteren Person"
 #: src/WordPress/Forms/Templates/EventsTemplates.php:134
 msgid ""
 "Add one row for every further person. Their data is stored inside this group."
-msgstr "Pro weiterer Person eine Zeile hinzufügen. Deren Angaben werden in dieser Gruppe gespeichert."
+msgstr ""
+"Pro weiterer Person eine Zeile hinzufügen. Deren Angaben werden in dieser "
+"Gruppe gespeichert."
 
 #: src/WordPress/Forms/Templates/EventsTemplates.php:138
 msgid "Barriers, allergies, other remarks"
@@ -2164,7 +2262,8 @@ msgstr "Allgemeine Geschäftsbedingungen"
 
 #: src/WordPress/Forms/Templates/EventsTemplates.php:146
 msgid "I accept the terms and conditions of this event."
-msgstr "Ich akzeptiere die Allgemeinen Geschäftsbedingungen dieser Veranstaltung."
+msgstr ""
+"Ich akzeptiere die Allgemeinen Geschäftsbedingungen dieser Veranstaltung."
 
 #: src/WordPress/Forms/Templates/EventsTemplates.php:173
 msgid "Workshop booking"
@@ -2195,7 +2294,9 @@ msgstr "Sondertermin"
 msgid ""
 "Replace the options with the workshops you actually offer; session times are "
 "fixed in this starter."
-msgstr "Die Optionen durch die tatsächlich angebotenen Workshops ersetzen; die Sitzungszeiten sind in dieser Vorlage festgelegt."
+msgstr ""
+"Die Optionen durch die tatsächlich angebotenen Workshops ersetzen; die "
+"Sitzungszeiten sind in dieser Vorlage festgelegt."
 
 #: src/WordPress/Forms/Templates/EventsTemplates.php:197
 msgid "Start"
@@ -2249,7 +2350,9 @@ msgstr "Helferanmeldung"
 #: src/WordPress/Forms/Templates/EventsTemplates.php:277
 msgid ""
 "Tasks and availability as cards, with a free-text field for the “other” task."
-msgstr "Aufgaben und Verfügbarkeit als Karten, mit einem Freitextfeld für die sonstige Aufgabe."
+msgstr ""
+"Aufgaben und Verfügbarkeit als Karten, mit einem Freitextfeld für die "
+"sonstige Aufgabe."
 
 #: src/WordPress/Forms/Templates/EventsTemplates.php:307
 msgid "Deployment"
@@ -2312,7 +2415,9 @@ msgstr "Freizeit- und Rüstzeitenanmeldung"
 msgid ""
 "Four steps: participant, contact, stay and confirmation. Minor participants "
 "unlock a contact person group."
-msgstr "Vier Schritte: Teilnehmende, Kontakt, Aufenthalt und Bestätigung. Minderjährige blenden eine Kontaktperson-Gruppe ein."
+msgstr ""
+"Vier Schritte: Teilnehmende, Kontakt, Aufenthalt und Bestätigung. "
+"Minderjährige blenden eine Kontaktperson-Gruppe ein."
 
 #: src/WordPress/Forms/Templates/EventsTemplates.php:397
 msgid "Gender"
@@ -2333,7 +2438,9 @@ msgstr "Ist die teilnehmende Person zu Beginn der Freizeit noch unter 18?"
 #: src/WordPress/Forms/Templates/EventsTemplates.php:452
 msgid ""
 "Compare the date of birth with the first day of the camp, not with today."
-msgstr "Geburtsdatum mit dem ersten Tag der Freizeit vergleichen, nicht mit dem heutigen Tag."
+msgstr ""
+"Geburtsdatum mit dem ersten Tag der Freizeit vergleichen, nicht mit dem "
+"heutigen Tag."
 
 #: src/WordPress/Forms/Templates/EventsTemplates.php:457
 msgid "Contact person for minors"
@@ -2353,7 +2460,9 @@ msgstr "E-Mail der Kontaktperson"
 
 #: src/WordPress/Forms/Templates/EventsTemplates.php:465
 msgid "These fields are grouped together and stored under their own key."
-msgstr "Diese Felder sind gruppiert und werden unter einem eigenen Schlüssel gespeichert."
+msgstr ""
+"Diese Felder sind gruppiert und werden unter einem eigenen Schlüssel "
+"gespeichert."
 
 #: src/WordPress/Forms/Templates/EventsTemplates.php:469
 msgid "About the stay"
@@ -2407,7 +2516,9 @@ msgstr "Fotos"
 msgid ""
 "I agree that photos of me may be published. This is voluntary and you can "
 "withdraw it at any time."
-msgstr "Ich bin damit einverstanden, dass Fotos von mir veröffentlicht werden. Das ist freiwillig und kann jederzeit widerrufen werden."
+msgstr ""
+"Ich bin damit einverstanden, dass Fotos von mir veröffentlicht werden. Das "
+"ist freiwillig und kann jederzeit widerrufen werden."
 
 #: src/WordPress/Forms/Templates/EventsTemplates.php:531
 msgid "Room preference"
@@ -2430,7 +2541,11 @@ msgid ""
 "We process your entries to organise the event and may pass them to the "
 "people who need them (catering, transport, group leaders). Replace this text "
 "with your own privacy notice before publishing."
-msgstr "Wir verarbeiten Ihre Angaben zur Organisation der Veranstaltung und geben sie an die beteiligten Personen weiter (Verpflegung, Fahrt, Gruppenleitungen). Diesen Text vor der Veröffentlichung durch den eigenen Datenschutzhinweis ersetzen."
+msgstr ""
+"Wir verarbeiten Ihre Angaben zur Organisation der Veranstaltung und geben "
+"sie an die beteiligten Personen weiter (Verpflegung, Fahrt, "
+"Gruppenleitungen). Diesen Text vor der Veröffentlichung durch den eigenen "
+"Datenschutzhinweis ersetzen."
 
 #: src/WordPress/Forms/Templates/GeneralTemplates.php:35
 msgid "Contact form"
@@ -2460,7 +2575,9 @@ msgstr "Rückruf anfordern"
 msgid ""
 "Name, number and a preferred slot; the time window only appears once a date "
 "is set."
-msgstr "Name, Nummer und ein Wunschtermin; das Zeitfenster erscheint erst nach der Terminwahl."
+msgstr ""
+"Name, Nummer und ein Wunschtermin; das Zeitfenster erscheint erst nach der "
+"Terminwahl."
 
 #: src/WordPress/Forms/Templates/GeneralTemplates.php:133
 msgid "What is it about?"
@@ -2474,7 +2591,9 @@ msgstr "Feedback und Bewertung"
 msgid ""
 "Star rating, category and recommendation; the e-mail field only appears for "
 "people who want to be contacted."
-msgstr "Sterne, Kategorie und Weiterempfehlung; das E-Mail-Feld erscheint nur für Personen, die kontaktiert werden möchten."
+msgstr ""
+"Sterne, Kategorie und Weiterempfehlung; das E-Mail-Feld erscheint nur für "
+"Personen, die kontaktiert werden möchten."
 
 #: src/WordPress/Forms/Templates/GeneralTemplates.php:154
 msgid "Overall rating"
@@ -2508,7 +2627,9 @@ msgstr "Was können wir verbessern?"
 msgid ""
 "Your rating tells us something went wrong. A concrete example helps us fix "
 "it – but you can also submit the form without it."
-msgstr "Ihre Bewertung zeigt, dass etwas nicht gepasst hat. Ein konkretes Beispiel hilft bei der Behebung – das Formular lässt sich aber auch ohne absenden."
+msgstr ""
+"Ihre Bewertung zeigt, dass etwas nicht gepasst hat. Ein konkretes Beispiel "
+"hilft bei der Behebung – das Formular lässt sich aber auch ohne absenden."
 
 #: src/WordPress/Forms/Templates/GeneralTemplates.php:189
 msgid "May we contact you about this?"
@@ -2520,7 +2641,8 @@ msgstr "Newsletter-Anmeldung"
 
 #: src/WordPress/Forms/Templates/GeneralTemplates.php:222
 msgid "E-mail first, optional name and topic selection as checkbox cards."
-msgstr "Zuerst E-Mail, danach optional Name und Themenauswahl als Ankreuzkarten."
+msgstr ""
+"Zuerst E-Mail, danach optional Name und Themenauswahl als Ankreuzkarten."
 
 #: src/WordPress/Forms/Templates/GeneralTemplates.php:228
 msgid "E-mail address"
@@ -2554,7 +2676,9 @@ msgstr "Terminanfrage"
 msgid ""
 "Three steps: slot, contact data and confirmation. An inquiry, not a binding "
 "booking."
-msgstr "Drei Schritte: Termin, Kontaktdaten und Bestätigung. Dies ist eine Anfrage, keine verbindliche Buchung."
+msgstr ""
+"Drei Schritte: Termin, Kontaktdaten und Bestätigung. Dies ist eine Anfrage, "
+"keine verbindliche Buchung."
 
 #: src/WordPress/Forms/Templates/GeneralTemplates.php:294
 msgid "Introductory meeting"
@@ -2584,13 +2708,17 @@ msgstr "Was sollen wir wissen?"
 msgid ""
 "Please check your entries on the previous steps. After submitting you will "
 "see a summary of everything you entered."
-msgstr "Bitte prüfen Sie Ihre Angaben in den vorherigen Schritten. Nach dem Absenden erscheint eine Übersicht aller Eingaben."
+msgstr ""
+"Bitte prüfen Sie Ihre Angaben in den vorherigen Schritten. Nach dem Absenden "
+"erscheint eine Übersicht aller Eingaben."
 
 #: src/WordPress/Forms/Templates/GeneralTemplates.php:360
 msgid ""
 "This is a request. You will receive a written confirmation once the slot has "
 "actually been booked."
-msgstr "Dies ist eine Anfrage. Eine schriftliche Bestätigung folgt, sobald der Termin tatsächlich gebucht ist."
+msgstr ""
+"Dies ist eine Anfrage. Eine schriftliche Bestätigung folgt, sobald der "
+"Termin tatsächlich gebucht ist."
 
 #: src/WordPress/Forms/Templates/GeneralTemplates.php:363
 msgid "Preferred slot"
@@ -2600,7 +2728,10 @@ msgstr "Wunschtermin"
 msgid ""
 "We process your entries to handle your request. Replace this text with your "
 "own privacy notice and add a link to it before publishing."
-msgstr "Wir verarbeiten Ihre Angaben zur Bearbeitung der Anfrage. Diesen Text durch den eigenen Datenschutzhinweis ersetzen und einen Link ergänzen, bevor das Formular veröffentlicht wird."
+msgstr ""
+"Wir verarbeiten Ihre Angaben zur Bearbeitung der Anfrage. Diesen Text durch "
+"den eigenen Datenschutzhinweis ersetzen und einen Link ergänzen, bevor das "
+"Formular veröffentlicht wird."
 
 #: src/WordPress/Frontend/DesignGallery.php:42
 msgid "You are not allowed to view the design gallery."
@@ -2811,7 +2942,9 @@ msgstr "Vorschau"
 msgid ""
 "This is the real form. Try it out, including conditions and validation – "
 "nothing you enter is sent or stored."
-msgstr "Dies ist das echte Formular. Zum Ausprobieren inklusive Bedingungen und Validierung – Eingaben werden weder gesendet noch gespeichert."
+msgstr ""
+"Dies ist das echte Formular. Zum Ausprobieren inklusive Bedingungen und "
+"Validierung – Eingaben werden weder gesendet noch gespeichert."
 
 #: src/WordPress/Rest/EntriesController.php:122
 #: src/WordPress/Rest/ExportController.php:52
@@ -3282,18 +3415,34 @@ msgstr ""
 "Bedingungen prüfen."
 
 #. translators: 1: required PHP version, 2: current PHP version
-#: sw-forms.php:34
+#: sw-forms.php:36
 #, php-format
 msgid "SW Forms requires PHP %1$s or newer. You are running PHP %2$s."
 msgstr "SW Forms benötigt PHP %1$s oder neuer. Installiert ist PHP %2$s."
 
-#: sw-forms.php:56
+#: sw-forms.php:58
 msgid ""
 "SW Forms: the vendor directory is missing. Install the release package or "
 "run \"composer install\"."
 msgstr ""
 "SW Forms: Das vendor-Verzeichnis fehlt. Das Release-Paket installieren oder "
 "„composer install“ ausführen."
+
+#~ msgid ""
+#~ "GitHub updates are verified and installed manually through the WordPress "
+#~ "Plugins page."
+#~ msgstr ""
+#~ "GitHub-Updates werden verifiziert und manuell über die WordPress-"
+#~ "Pluginübersicht installiert."
+
+#~ msgid "Last attempt:"
+#~ msgstr "Letzter Versuch:"
+
+#~ msgid "SW Forms updates"
+#~ msgstr "SW Forms Updates"
+
+#~ msgid "Updates"
+#~ msgstr "Updates"
 
 #~ msgid "Name, email and message: the classic contact form."
 #~ msgstr "Name, E-Mail und Nachricht: das klassische Kontaktformular."
