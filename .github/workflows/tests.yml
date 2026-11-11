@@ -59,7 +59,7 @@ jobs:
         php /tmp/wp-cli.phar db query 'CREATE DATABASE IF NOT EXISTS swf_wp_tests CHARACTER SET utf8mb4' --path="$WP_ROOT"
         composer install --working-dir=tests/wp --no-interaction --no-progress
         tests/wp/vendor/bin/phpunit -c tests/wp/phpunit.xml.dist --coverage-clover coverage/wordpress/verified-updates.xml --log-junit coverage/verified-updates-junit.xml
-        WP_MULTISITE=1 tests/wp/vendor/bin/phpunit -c tests/wp/phpunit.xml.dist --log-junit coverage/verified-updates-multisite-junit.xml
+        WP_MULTISITE=1 tests/wp/vendor/bin/phpunit -c tests/wp/phpunit.xml.dist --coverage-clover coverage/wordpress/verified-updates-multisite.xml --log-junit coverage/verified-updates-multisite-junit.xml
     - uses: actions/setup-node@v7
       with:
         node-version: '22'

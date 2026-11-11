@@ -13,8 +13,8 @@ Pluginübersicht. Keine eigene Update-Seite und keine Laufzeitabhängigkeit von 
 | `composer check` | bestanden: PSR-12, WPCS, PHPStan Level 8 ohne Baseline, 114 Unit-Tests / 667 Assertions |
 | vollständige WordPress-Suite, private Installation/DB | 139 Tests / 2391 Assertions; 1 erwarteter Skip für das optionale, dort nicht installierte WP Armour |
 | acht eigenständige WordPress-Integrationsskripte einschließlich Smoke-Test | bestanden |
-| isolierte Update-Suite | 59 Tests: Single-Site 170 Assertions, Multisite 173 Assertions |
-| gemergte vollständige PHP-Coverage | 8389/9120 Zeilen = 91,98 %; alle bestehenden strengeren Bereichsgrenzen bestanden |
+| isolierte Update-Suite | 59 Tests: Single-Site 170 Assertions, Multisite 179 Assertions |
+| gemergte vollständige PHP-Coverage | 8400/9122 Zeilen = 92,09 %; alle bestehenden strengeren Bereichsgrenzen bestanden |
 | npm Lint, Typecheck, Build | bestanden |
 | Vitest einschließlich eigenständigem Update-JS | 414 Tests; 3049/3291 Zeilen = 92,65 %; alle bestehenden Bereichsgrenzen bestanden |
 | Chromium: Frontend, Builder/Admin, native Pluginzeile | bestanden; Einzelaufruf, manueller/schweigsamer Tagescheck, Status und unveränderte native Navigation |
@@ -59,3 +59,8 @@ Textdomain und sind in Englisch/Deutsch geprüft. Die CI provisioniert `swf_wp_t
 nachdem der erste Lauf am fehlenden Testschema scheiterte. Frontend-, PHP-, WordPress- und
 Release-Prüfungen wurden nach den Korrekturen lokal wiederholt; GitHub-Reviewstatus wird im
 PR separat dokumentiert.
+
+Der nachgelagerte SonarCloud-Hinweis `php:S4790` ist durch SHA-256 statt MD5 für den
+Advisory-Lock-Bezeichner behoben. Der Wert bleibt einschließlich Pluginpräfix auf 64 Zeichen
+begrenzt. Die Multisite-Prüfung erfasst die tatsächlich verwendeten SQL-Locknamen zweier
+aktivierter Pluginkopien und prüft Trennung und Längenlimit; beide Modi gehen in die Coverage ein.

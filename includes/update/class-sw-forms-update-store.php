@@ -48,7 +48,10 @@ final class SWF_Update_Store {
 		// sitemeta has no unique key. Serialize network lease creation at the database,
 		// including installations with a persistent object cache.
 		if ( is_multisite() ) {
-			$mutex = 'swf-updates-' . md5( $wpdb->sitemeta . ':' . get_current_network_id() );
+			// MySQL advisory lock names have a 64-character limit, including the plugin prefix.
+			$prefix = 'swf-updates-';
+			$digest = hash( 'sha256', $wpdb->sitemeta . ':' . get_current_network_id() );
+			$mutex  = $prefix . substr( $digest, 0, 64 - strlen( $prefix ) );
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- Atomic network lease.
 			if ( '1' !== (string) $wpdb->get_var( $wpdb->prepare( 'SELECT GET_LOCK(%s, 0)', $mutex ) ) ) {
 				return false;

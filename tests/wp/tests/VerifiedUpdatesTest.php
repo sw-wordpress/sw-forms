@@ -554,8 +554,27 @@ throw new SWF_Verified_Update_Exit();
             $this->assertTrue(has_action('wp_ajax_swfpeer_check_github_updates') !== false);
             SWFPeer_Update_Store::write(['last_attempt' => 123]);
             $this->assertSame([], SWF_Update_Store::read());
-            $ownLock = SWF_Update_Store::acquire();
-            $peerLock = SWFPeer_Update_Store::acquire();
+            $mutexNames = [];
+            $captureMutex = static function ($query) use (&$mutexNames) {
+                if (preg_match("/SELECT GET_LOCK\('([^']+)'/", $query, $match)) {
+                    $mutexNames[] = $match[1];
+                }
+                return $query;
+            };
+            add_filter('query', $captureMutex);
+            try {
+                $ownLock = SWF_Update_Store::acquire();
+                $peerLock = SWFPeer_Update_Store::acquire();
+            } finally {
+                remove_filter('query', $captureMutex);
+            }
+            if (is_multisite()) {
+                $this->assertCount(2, $mutexNames);
+                $this->assertNotSame($mutexNames[0], $mutexNames[1]);
+                foreach ($mutexNames as $mutexName) {
+                    $this->assertLessThanOrEqual(64, strlen($mutexName));
+                }
+            }
             $this->assertIsArray($ownLock);
             $this->assertIsArray($peerLock);
             SWFPeer_Update_Store::release($peerLock);
