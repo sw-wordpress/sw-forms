@@ -1,7 +1,7 @@
 /** Isolated WordPress only: WP_ROOT must point at the disposable installation. */
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { readdirSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -10,8 +10,16 @@ const here = dirname(fileURLToPath(import.meta.url));
 assert.match(process.env.WP_ROOT || '', /^\/tmp\/swf-wordpress/);
 const auth = JSON.parse(execFileSync('php', [join(here, 'admin-auth.php')], { encoding: 'utf8' }));
 const cache = join(homedir(), '.cache/ms-playwright');
-const chrome = readdirSync(cache).filter(v => /^chromium-\d+$/.test(v)).sort().pop();
-const browser = await chromium.launch({ executablePath: join(cache, chrome, 'chrome-linux/chrome'), args: ['--no-sandbox'] });
+// Prefer the binary installed for this Playwright version; older local caches remain usable.
+const candidates = [chromium.executablePath()];
+if (existsSync(cache)) {
+  for (const version of readdirSync(cache).filter(v => /^chromium-\d+$/.test(v)).sort().reverse()) {
+    candidates.push(join(cache, version, 'chrome-linux64/chrome'), join(cache, version, 'chrome-linux/chrome'));
+  }
+}
+const executablePath = candidates.find(existsSync);
+assert.ok(executablePath, 'Install Chromium with npx playwright-core install chromium');
+const browser = await chromium.launch({ executablePath, args: ['--no-sandbox'] });
 try {
   for (const due of [false, true]) {
     const context = await browser.newContext();
