@@ -16,6 +16,7 @@ jobs:
   build:
     name: Build release zip
     runs-on: ubuntu-latest
+    environment: plugin-releases
 
     steps:
       - name: Checkout
@@ -27,12 +28,17 @@ jobs:
           REPO_NAME: ${{ github.event.repository.name }}
         run: |
           RAW="${GITHUB_REF_NAME}"
+          if ! printf '%s' "$RAW" | grep -Eq '^v?[0-9]+(\.[0-9]+){2,3}(-[0-9]{2})?$'; then exit 1; fi
           VERSION="${RAW#v}"
           VERSION="${VERSION%-*}"
 
-          echo "repo=$REPO_NAME" >> "$GITHUB_OUTPUT"
+          HEADER="$(sed -n 's/^ \* Version: *//p' sw-forms.php)"
+          CONSTANT="$(sed -n "s/define( 'SWF_VERSION', '\([^']*\)' );/\1/p" sw-forms.php)"
+          test "$HEADER" = "$VERSION"
+          test "$CONSTANT" = "$VERSION"
+          echo "repo=$PLUGIN_SLUG" >> "$GITHUB_OUTPUT"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "zip=${REPO_NAME}-${VERSION}.zip" >> "$GITHUB_OUTPUT"
+          echo "zip=${PLUGIN_SLUG}-${VERSION}.zip" >> "$GITHUB_OUTPUT"
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -40,6 +46,7 @@ jobs:
           php-version: '8.2'
           tools: composer:v2
           coverage: none
+          extensions: sodium, zip
 
       - name: Validate Composer configuration
         run: composer validate --strict
@@ -54,10 +61,11 @@ jobs:
             --no-scripts \
             --optimize-autoloader
 
-      - name: Smoke-test source checkout
-        run: |
-          php tests/bootstrap.php
-          php tests/uninstall-bootstrap.php
+      - name: Embed release public key (fails closed without signing configuration)
+        env:
+          SW_PLUGIN_RELEASE_SIGNING_KEY: ${{ secrets.SW_PLUGIN_RELEASE_SIGNING_KEY }}
+          SW_PLUGIN_RELEASE_KEY_ID: ${{ vars.SW_PLUGIN_RELEASE_KEY_ID }}
+        run: php bin/release-manifest.php public-key includes/update/trusted-keys.php
 
       - name: Isolate dependencies with Mozart
         run: |
@@ -91,51 +99,7 @@ jobs:
           REPO_NAME: ${{ steps.metadata.outputs.repo }}
           VERSION: ${{ steps.metadata.outputs.version }}
         run: |
-          STAGING="$RUNNER_TEMP/staging/$PLUGIN_SLUG"
-
-          mkdir -p "$STAGING"
-
-          # Ship only the isolated libraries, never Composer's original vendor tree.
-          rsync -a \
-            --exclude='/.git/' \
-            --exclude='/.github/' \
-            --exclude='/.gitignore' \
-            --exclude='/.editorconfig' \
-            --exclude='/.phpcs.cache' \
-            --exclude='/.phpcs-wp.cache' \
-            --exclude='/.phpunit.cache/' \
-            --exclude='/.phpunit.result.cache' \
-            --exclude='/.phpstan.cache/' \
-            --exclude='/vendor/' \
-            --exclude='/tests/' \
-            --exclude='/coverage/' \
-            --exclude='/.scannerwork/' \
-            --exclude='/sonar-project.properties' \
-            --exclude='/node_modules/' \
-            --exclude='/apps/' \
-            --exclude='/bin/' \
-            --exclude='/AGENTS.md' \
-            --exclude='/TODO.md' \
-            --exclude='/.env*' \
-            --exclude='*.log' \
-            --exclude='*.zip' \
-            --exclude='/composer.json' \
-            --exclude='/composer.lock' \
-            --exclude='/phpcs.xml*' \
-            --exclude='/phpcs-wordpress.xml*' \
-            --exclude='/phpstan.neon*' \
-            --exclude='/phpunit.xml*' \
-            ./ "$STAGING/"
-
-          # Prove that the plugin boots without the original vendor directory.
-          php tests/bootstrap.php "$STAGING"
-          php tests/uninstall-bootstrap.php "$STAGING"
-
-          # Keep the installed plugin slug stable, even if the repository is renamed.
-          (
-            cd "$RUNNER_TEMP/staging"
-            zip -qr "$GITHUB_WORKSPACE/${REPO_NAME}-${VERSION}.zip" "$PLUGIN_SLUG"
-          )
+          bash bin/build-zip.sh "$GITHUB_WORKSPACE"
 
       - name: Verify ZIP contents
         env:
@@ -153,8 +117,35 @@ jobs:
             exit 1
           fi
 
-      - name: Create release and attach ZIP
-        uses: softprops/action-gh-release@v3
-        with:
-          name: ${{ steps.metadata.outputs.version }}
-          files: ${{ steps.metadata.outputs.zip }}
+      - name: Upload packages to draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          if gh release view "$RELEASE_TAG" --json isDraft > "$RUNNER_TEMP/existing-release.json" 2>/dev/null; then
+            php -r '$r=json_decode(file_get_contents($argv[1]),true); exit(empty($r["isDraft"])?1:0);' "$RUNNER_TEMP/existing-release.json" \
+              || { echo "Release $RELEASE_TAG is already published; refusing to modify it." >&2; exit 1; }
+          else
+            gh release create "$RELEASE_TAG" --draft --verify-tag --title "$RELEASE_TAG"
+          fi
+          gh release upload "$RELEASE_TAG" "$GITHUB_WORKSPACE"/sw-forms-*.zip --clobber
+          # Resolve drafts via gh release view; the tag endpoint does not resolve them.
+          RELEASE_API_URL="$(gh release view "$RELEASE_TAG" --json apiUrl --jq .apiUrl)"
+          gh api "$RELEASE_API_URL" > "$RUNNER_TEMP/release.json"
+
+      - name: Sign exact uploaded packages
+        env:
+          SW_PLUGIN_RELEASE_SIGNING_KEY: ${{ secrets.SW_PLUGIN_RELEASE_SIGNING_KEY }}
+          SW_PLUGIN_RELEASE_KEY_ID: ${{ vars.SW_PLUGIN_RELEASE_KEY_ID }}
+        run: php bin/release-manifest.php sign "$RUNNER_TEMP/release.json" "$GITHUB_WORKSPACE" "$GITHUB_SHA"
+
+      - name: Verify signed artifacts with runtime validators
+        run: php bin/verify-release.php "$RUNNER_TEMP/release.json" "$GITHUB_WORKSPACE" includes/update/trusted-keys.php
+
+      - name: Publish complete signed release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          gh release upload "$RELEASE_TAG" "$GITHUB_WORKSPACE/sw-plugin-release.json" "$GITHUB_WORKSPACE/sw-plugin-release.json.sig" --clobber
+          gh release edit "$RELEASE_TAG" --draft=false

@@ -1,8 +1,5 @@
 name: Tests and SonarQube
 on:
-  push:
-    branches:
-    - '**'
   pull_request: null
 permissions:
   contents: read
@@ -45,16 +42,45 @@ jobs:
         php /tmp/wp-cli.phar core install --path="$WP_ROOT" --url=http://localhost --title="SW Forms tests" --admin_user=swf-admin --admin_password=swf-test-admin-password --admin_email=test@example.test --skip-email
         ln -s "$GITHUB_WORKSPACE" "$WP_ROOT/wp-content/plugins/sw-forms"
         php /tmp/wp-cli.phar plugin activate sw-forms --path="$WP_ROOT"
+    - name: Install Zsh for documented operator command tests
+      run: sudo apt-get update && sudo apt-get install -y zsh
     - name: Unit coverage
       run: |-
         mkdir -p coverage
         vendor/bin/phpunit --coverage-clover coverage/unit.xml --log-junit coverage/unit-junit.xml
     - name: Real WordPress and multipart HTTP coverage
       run: composer coverage:wp
+    - name: Isolated verified update tests (single site and multisite, sequential)
+      env:
+        SWF_TEST_DB_USER: root
+        SWF_TEST_DB_PASSWORD: swf-test
+        SWF_TEST_DB_PORT: '3306'
+      run: |
+        php /tmp/wp-cli.phar db query 'CREATE DATABASE IF NOT EXISTS swf_wp_tests CHARACTER SET utf8mb4' --path="$WP_ROOT"
+        composer install --working-dir=tests/wp --no-interaction --no-progress
+        tests/wp/vendor/bin/phpunit -c tests/wp/phpunit.xml.dist --coverage-clover coverage/wordpress/verified-updates.xml --log-junit coverage/verified-updates-junit.xml
+        WP_MULTISITE=1 tests/wp/vendor/bin/phpunit -c tests/wp/phpunit.xml.dist --coverage-clover coverage/wordpress/verified-updates-multisite.xml --log-junit coverage/verified-updates-multisite-junit.xml
+    - uses: actions/setup-node@v7
+      with:
+        node-version: '22'
+        cache: npm
+        cache-dependency-path: apps/admin/package-lock.json
+    - name: Browser check of verified updates in disposable WordPress
+      run: |
+        cd apps/admin
+        npm ci
+        npx playwright-core install --with-deps chromium
+        cd ../..
+        php /tmp/wp-cli.phar option update home http://localhost:8877 --path="$WP_ROOT"
+        php /tmp/wp-cli.phar option update siteurl http://localhost:8877 --path="$WP_ROOT"
+        php -S 127.0.0.1:8877 -t "$WP_ROOT" > /tmp/swf-browser-server.log 2>&1 &
+        SERVER_PID=$!
+        trap 'kill "$SERVER_PID"' EXIT
+        node apps/admin/scripts/e2e/verified-updates.mjs
     - name: Merge and normalize Clover paths
       run: php tests/coverage/merge.php coverage/unit.xml coverage/wordpress/*.xml
     - name: Merge PHPUnit test execution
-      run: php tests/coverage/junit.php coverage/unit-junit.xml coverage/wordpress-junit.xml
+      run: php tests/coverage/junit.php coverage/unit-junit.xml coverage/wordpress-junit.xml coverage/verified-updates-junit.xml coverage/verified-updates-multisite-junit.xml
     - name: Verify adapter coverage was imported
       run: php tests/coverage/check.php
     - name: Upload Clover coverage
@@ -99,9 +125,7 @@ jobs:
     if: |-
       (github.event_name == 'pull_request' &&
        github.event.pull_request.head.repo.full_name == github.repository &&
-       github.event.pull_request.user.login != 'dependabot[bot]') ||
-      (github.event_name == 'push' &&
-       github.ref_name == github.event.repository.default_branch)
+       github.event.pull_request.user.login != 'dependabot[bot]')
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
@@ -138,3 +162,34 @@ jobs:
         args: -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }}
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  release-artifacts:
+    name: Validate real signed release ZIP with disposable key
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v7
+    - uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        extensions: sodium, zip
+        tools: composer:v2
+        coverage: none
+    - uses: actions/setup-node@v7
+      with:
+        node-version: '22'
+        cache: npm
+        cache-dependency-path: apps/admin/package-lock.json
+    - name: Prepare disposable production checkout
+      run: |
+        mkdir -p /tmp/swf-release-build
+        git ls-files -z | rsync -a --from0 --files-from=- ./ /tmp/swf-release-build/
+        cd /tmp/swf-release-build
+        composer install --no-dev --prefer-dist --no-interaction --no-scripts --optimize-autoloader
+        mkdir -p libraries
+        cp -R vendor/woocommerce/action-scheduler libraries/action-scheduler
+        php -r 'foreach (json_decode(file_get_contents("composer.lock"), true)["packages"] as $p) { if ($p["name"] === "woocommerce/action-scheduler") { file_put_contents("vendor/woocommerce/action-scheduler/composer.json", json_encode($p)); } }'
+        docker run --rm --user "$(id -u):$(id -g)" -v /tmp/swf-release-build:/project coenjacobs/mozart:1.2.3 /mozart/bin/mozart compose
+        cd apps/admin
+        npm ci
+        npm run build
+    - name: Sign and verify actual ZIP, package completeness and missing-secret failure
+      run: php tests/check-release-build.php /tmp/swf-release-build /tmp/swf-release-dist

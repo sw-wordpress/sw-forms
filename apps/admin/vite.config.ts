@@ -50,9 +50,10 @@ export default defineConfig({
     css: false,
     coverage: {
       provider: 'v8',
+      allowExternal: true,
       reporter: ['text', 'clover', 'lcov', 'json-summary'],
       reportsDirectory: 'coverage',
-      include: ['src/**/*.{ts,vue}', 'shared/**/*.ts', 'frontend/**/*.ts'],
+      include: ['src/**/*.{ts,vue}', 'shared/**/*.ts', 'frontend/**/*.ts', '../../assets/js/sw-forms-updates.js'],
       exclude: ['**/*.d.ts'],
       thresholds: {
         'frontend/main.ts': { lines: 85 },

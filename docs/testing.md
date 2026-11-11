@@ -2,7 +2,7 @@
 
 The portable core, WordPress adapter and frontend need different runners. A passing core
 suite does not establish coverage of uploads, persistence, permissions or the browser runtime.
-CI runs all three and imports both coverage **and test execution** into SonarQube.
+On pull requests, CI runs all three and imports both coverage **and test execution** into SonarQube.
 
 ## Portable PHP tests
 
@@ -114,14 +114,14 @@ CI fails on missing/unexecuted coverage or missing test-execution artifacts. It 
 
 SonarQube's configured quality gate remains independent; these checks do not waive it.
 
-Dependency security: every push/PR fails on known advisories in **shipped** dependencies
+Dependency security: each PR fails on known advisories in **shipped** dependencies
 (`composer audit --locked --no-dev`, `npm audit --omit=dev --audit-level=high`). New advisories
 appear without code changes, so `.github/workflows/security-audit.yml` audits all dependencies,
 including dev tooling, daily. It keeps one open issue labelled `security-audit` (repo watchers are
 notified; edits/comments only when findings change) and closes it once clean.
 `.github/dependabot.yml` opens weekly grouped PRs: security fixes, peer-coupled packages
 (vitest, vite toolchain), dev tools, runtime minor/patch; runtime majors arrive individually.
-Dependabot PRs get no repository secrets, so SonarQube analyses them only after merging.
+Dependabot PRs get no repository secrets and skip the SonarQube scan.
 The frontend toolchain needs Node `^22.22.2 || ^24.15.0 || >=26` (jsdom 30; vue-i18n/Quasar need >= 22); `apps/admin/.nvmrc` pins 22 like CI.
 Dependabot alerts and security updates must be enabled in the repository settings.
 The artifacts imported by its separate job are `coverage/clover.xml`, `coverage/junit.xml`,
@@ -252,3 +252,36 @@ MIME/provenance/size/rollback; attachment tests use the server-owned manifest.
 categories and search, the interactive template preview (step validation, hidden conditional
 fields, values kept over Back), and that one click creates an inactive independent form. Its
 selectors avoid UI wording, so it runs with an English or German site.
+
+## Verified manual GitHub updates
+
+`tests/wp/` has a separate locked PHPUnit 9.6/wp-phpunit project and disposable core under
+its ignored `vendor/` directory. It loads the update adapter only. Native upgrader tests
+assert this private plugin directory before replacing any files; never redirect it to a
+working site's plugin directory. The main WordPress suite still tests the complete plugin.
+
+```sh
+composer install --working-dir=tests/wp
+bash bin/test-db.sh start
+XDEBUG_MODE=coverage tests/wp/vendor/bin/phpunit -c tests/wp/phpunit.xml.dist --coverage-clover coverage/verified-updates.xml
+WP_MULTISITE=1 tests/wp/vendor/bin/phpunit -c tests/wp/phpunit.xml.dist
+```
+
+The helper resets only a dedicated `/tmp/swf-*` database directory (default port 33110,
+user/password `swf`, database `swf_wp_tests`). CI supplies its private MariaDB credentials.
+Run DB suites sequentially. Merge `coverage/verified-updates.xml` with the normal unit/HTTP
+reports before the unchanged full PHP gate. The standalone update JS is included in Vitest
+coverage and SonarQube sources; it is not hidden from the frontend denominator.
+
+`ReleaseOperationsTest` executes the three documented key blocks in disposable directories
+under Bash and Zsh using a fake `gh`. `ReleaseWorkflowTest` checks draft metadata resolution
+and refusal to overwrite published releases. `tests/check-release-build.php` signs real
+production ZIPs with a disposable key and runs the runtime validators, missing-secret and
+package completeness checks, plus the store build check. Its first argument must be an
+already prepared throw-away production checkout under `/tmp`; the source trust ring is
+never modified. CI's PR-only `release-artifacts` job prepares that checkout with Mozart.
+
+The browser check `apps/admin/scripts/e2e/verified-updates.mjs` requires `WP_ROOT` under
+`/tmp/swf-wordpress`, a loopback HTTP server and Playwright Chromium. It verifies only the
+native plugin row, manual/silent checks and no installation requests. Production operator
+requirements and current limits: [operations](GITHUB-UPDATES-BETRIEB.md).

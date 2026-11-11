@@ -40,3 +40,26 @@ Configure the `SONAR_TOKEN` Actions secret and `SONAR_ORGANIZATION` Actions vari
 
 Unmeasured application code remains in the coverage scope; generated assets and dependencies
 are not analysis inputs. Thresholds and report formats: [testing.md](testing.md).
+
+## Verified GitHub releases
+
+Operator setup, trust bootstrap, rotation and the WordPress.org exit are in the
+[operating manual](GITHUB-UPDATES-BETRIEB.md). The operator has provisioned the public key `sw-forms-2026-11` in the shipped keyring.
+The private signing key stays outside WordPress; environment secrets and approvals must be
+configured separately before the first signed release.
+
+The protected `plugin-releases` environment supplies `SW_PLUGIN_RELEASE_SIGNING_KEY`
+(Base64 Sodium 64-byte secret) and `SW_PLUGIN_RELEASE_KEY_ID`. Before building, the
+workflow merges its public key into the existing keyring, rejecting conflicting IDs.
+The tag must match both header and `SWF_VERSION`. `bin/build-zip.sh` packages prepared
+Mozart dependencies, Action Scheduler and built assets. It never modifies source versions.
+Uploaded draft asset IDs bind the signed manifest. `bin/verify-release.php` uses the
+runtime signature/ZIP verifiers and checks package completeness and the embedded public
+key before publication. A published release cannot be overwritten. The release workflow
+runs artifact validation only; test suites run exclusively on pull requests.
+
+A future store package can be built with `bash bin/build-zip.sh /tmp/swf-store-dist wordpress-org`.
+This edits only staging: the external Update URI, provider include/deactivation registration,
+`includes/update/` and its script are removed. The default is `github`. This packaging switch
+alone is not a migration for existing sites; deliver the documented signed transition and
+state cleanup first, then test single-site and multisite before store submission.

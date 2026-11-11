@@ -48,3 +48,15 @@ do not expose it directly to anonymous callers without your own authorization/sp
 * `swf_render_form( int $form_id, bool $title = false, string $variant = '' ): string` – `$variant` overrides the stored design variant
 * `swf_get_form( int $form_id ): ?array` – published document
 * `swf_submit( int $form_id, array $values ): SubmissionResult` – full pipeline without spam checks
+
+### Verified GitHub updates (since 0.5.0)
+
+- `swf_verified_release_public_keys(array<string,string> $keys): array<string,string>`:
+  local Ed25519 trust anchors (`key_id => Base64 public key`). Only trusted local code may
+  extend these; never use remote metadata or request input. `SWF_RELEASE_PUBLIC_KEYS`
+  optionally replaces the shipped ring before this filter. No global SW-plugin keyring.
+- `swf_verified_update_descriptors(array<string,array{slug:string,version:string}> $plugins)`:
+  local basenames and installed versions; only `sw-forms` is permitted by the signed source.
+  Intended for controlled adapters/tests, not a URL or repository selection API.
+
+Policy, limits and operator setup: [GitHub updates](GITHUB-UPDATES-BETRIEB.md).

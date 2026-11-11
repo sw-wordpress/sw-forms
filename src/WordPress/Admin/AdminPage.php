@@ -52,7 +52,7 @@ final class AdminPage {
 		if ( $hook !== $this->hook || ! is_readable( SWF_DIR . 'assets/admin/app.js' ) ) {
 			return;
 		}
-		$version = (string) filemtime( SWF_DIR . 'assets/admin/app.js' );
+		$version = SWF_VERSION;
 		wp_enqueue_style( self::HANDLE, SWF_URL . 'assets/admin/app.css', array(), $version );
 		wp_enqueue_script( 'sw-forms-builder-api', SWF_URL . 'assets/builder-api.js', array(), SWF_VERSION, true );
 		wp_enqueue_script( self::HANDLE, SWF_URL . 'assets/admin/app.js', array( 'sw-forms-builder-api' ), $version, true );
