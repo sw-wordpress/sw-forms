@@ -9,13 +9,18 @@
       if (pending) return pending;
       const button = document.getElementById('swf-verified-updates-check');
       const result = document.getElementById('swf-verified-updates-result');
+      const reload = document.getElementById('swf-verified-updates-reload');
+      if (manual && reload) reload.hidden = true;
       if (manual && result) { result.hidden = false; result.textContent = config.checking; }
       if (button) button.disabled = true;
       const controller = new AbortController();
       const timer = window.setTimeout(() => controller.abort(), 90000);
       pending = fetch(config.url, {signal:controller.signal, method:'POST', credentials:'same-origin', body:new URLSearchParams({action:'swf_check_github_updates', nonce:config.nonce, manual:manual?'1':'0'})})
         .then(response => { if (!response.ok) throw new Error(config.failed); return response.json(); })
-        .then(response => { if (manual && result) result.textContent = response.data?.message || config.completed; })
+        .then(response => {
+          if (manual && result) result.textContent = response.data?.message || config.completed;
+          if (manual && reload && response.success === true) reload.hidden = false;
+        })
         .catch(() => { if (manual && result) result.textContent = config.failed; })
         .finally(() => { window.clearTimeout(timer); pending = null; if (button) button.disabled = false; });
       return pending;

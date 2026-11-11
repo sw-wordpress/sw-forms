@@ -9,7 +9,7 @@ async function load() {
 beforeEach(() => {
   vi.resetModules();
   vi.useFakeTimers();
-  document.body.innerHTML = '<button id="swf-verified-updates-check"></button><p id="swf-verified-updates-result" hidden></p>';
+  document.body.innerHTML = '<button id="swf-verified-updates-check"></button><p id="swf-verified-updates-result" hidden></p><a id="swf-verified-updates-reload" href="/wp-admin/plugins.php" hidden>Reload</a>';
   win.swfVerifiedUpdates = { due: false, nonce: 'test', url: '/admin-ajax.php', checking: 'Checking', completed: 'Done', failed: 'Failed' };
   request = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true, data: { message: 'Verified' } }) });
   vi.stubGlobal('fetch', request);
@@ -32,11 +32,12 @@ it('checks manually once while pending and displays the escaped result', async (
   expect(document.querySelector('p')!.hidden).toBe(false);
   const options = request.mock.calls[0]![1];
   expect(Object.fromEntries(options.body)).toEqual({ action: 'swf_check_github_updates', nonce: 'test', manual: '1' });
-  resolve({ ok: true, json: async () => ({ data: { message: '<b>Verified</b>' } }) });
+  resolve({ ok: true, json: async () => ({ success: true, data: { message: '<b>Verified</b>' } }) });
   await vi.advanceTimersByTimeAsync(0);
   expect(document.querySelector('p')!.textContent).toBe('<b>Verified</b>');
   expect(document.querySelector('p b')).toBeNull();
   expect(button.disabled).toBe(false);
+  expect(document.querySelector('a')!.hidden).toBe(false);
 });
 it.each(['http', 'network', 'empty'])('handles %s responses and releases the button', async mode => {
   if (mode === 'http') request.mockResolvedValue({ ok: false });
@@ -55,6 +56,7 @@ it.each([false, true])('defers a daily check; idle callback available: %s', asyn
   expect(request).toHaveBeenCalledTimes(1);
   expect(request.mock.calls[0]![1].body.get('manual')).toBe('0');
   expect(document.querySelector('p')!.hidden).toBe(true);
+  expect(document.querySelector('a')!.hidden).toBe(true);
 });
 it('works on other backend pages without controls and aborts timed out requests', async () => {
   document.body.innerHTML = '';
@@ -62,4 +64,18 @@ it('works on other backend pages without controls and aborts timed out requests'
   request.mockImplementation((_url, options) => new Promise((_resolve, reject) => options.signal.addEventListener('abort', () => reject(new Error()))));
   await load(); await vi.advanceTimersByTimeAsync(92000);
   expect(request.mock.calls[0]![1].signal.aborted).toBe(true);
+});
+
+it('offers reload only on successful manual checks and hides it on retry or refusal', async () => {
+  await load();
+  document.querySelector('button')!.click();
+  await vi.advanceTimersByTimeAsync(0);
+  expect(document.querySelector('a')!.hidden).toBe(false);
+  expect(document.querySelector('a')!.getAttribute('href')).toBe('/wp-admin/plugins.php');
+  request.mockResolvedValue({ ok: true, json: async () => ({ success: false, data: { message: 'Throttled' } }) });
+  document.querySelector('button')!.click();
+  expect(document.querySelector('a')!.hidden).toBe(true);
+  await vi.advanceTimersByTimeAsync(0);
+  expect(document.querySelector('p')!.textContent).toBe('Throttled');
+  expect(document.querySelector('a')!.hidden).toBe(true);
 });

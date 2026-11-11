@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SW Forms\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-10 21:47+0100\n"
+"POT-Creation-Date: 2026-11-11 22:14+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,48 +18,248 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
+#: includes/update/class-sw-forms-update-manifest.php:34
+msgid "Signature verification is unavailable or metadata is too large."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-manifest.php:39
+msgid "Invalid signature envelope."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-manifest.php:44
+msgid "Unknown key or invalid release signature."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-manifest.php:49
+msgid "Release identity does not match the signature."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-manifest.php:52
+msgid "Invalid manifest format."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-manifest.php:56
+msgid "Unknown manifest fields."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-manifest.php:62
+msgid "Ambiguous release assets."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-manifest.php:71
+msgid "Unknown package fields."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-manifest.php:76
+msgid "Invalid or duplicate package entry."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-manifest.php:80
+msgid "Minimum version is missing."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-manifest.php:85
+msgid "Release asset does not match the signed package."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-manifest.php:92
+msgid "Main plugin version does not match the release tag."
+msgstr ""
+
+#. translators: %s: verification error details.
+#: includes/update/class-sw-forms-update-manifest.php:97
+#, php-format
+msgid "Release verification failed: %s"
+msgstr ""
+
+#: includes/update/class-sw-forms-update-manifest.php:118
+msgid "Duplicate JSON key."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-package.php:26
+msgid "ZIP size or SHA-256 does not match, or ZIP verification is unavailable."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-package.php:30
+msgid "Invalid ZIP archive."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-package.php:36
+msgid "Too many ZIP entries."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-package.php:43
+msgid "ZIP entry is unreadable."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-package.php:49
+msgid "ZIP file type is unreadable."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-package.php:53
+msgid "Unsafe ZIP path or file type."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-package.php:58
+msgid "Extraction limit exceeded."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-package.php:63
+msgid "Plugin main file is missing."
+msgstr ""
+
+#. translators: %s: plugin header name.
+#: includes/update/class-sw-forms-update-package.php:72
+#, php-format
+msgid "Plugin header contradicts the manifest: %s"
+msgstr ""
+
 #: includes/update/class-sw-forms-update-provider.php:56
-msgid "Nur manuelle Aktualisierung"
+msgid "Manual updates only"
+msgstr ""
+
+#: includes/update/class-sw-forms-update-provider.php:74
+msgid "GitHub updates can only be installed manually in the WordPress backend."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-provider.php:78
+msgid "Automatic GitHub installation is blocked."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-provider.php:95
+msgid "No valid manual WordPress update request."
 msgstr ""
 
 #: includes/update/class-sw-forms-update-provider.php:190
-msgid "Signiertes GitHub-Release. Installation nur manuell über WordPress."
+msgid "Signed GitHub release. Install only manually through WordPress."
 msgstr ""
 
 #: includes/update/class-sw-forms-update-provider.php:224
 msgid "Check for updates now"
 msgstr ""
 
-#: includes/update/class-sw-forms-update-provider.php:236
+#: includes/update/class-sw-forms-update-provider.php:226
+msgid "Reload the plugin list to show available updates"
+msgstr ""
+
+#: includes/update/class-sw-forms-update-provider.php:237
 msgid "GitHub updates are blocked: no public release key is configured."
 msgstr ""
 
-#: includes/update/class-sw-forms-update-provider.php:240
+#: includes/update/class-sw-forms-update-provider.php:241
 msgid "No verified update check yet."
 msgstr ""
 
 #. translators: %s: time span, e.g. "2 hours"
-#: includes/update/class-sw-forms-update-provider.php:243
+#: includes/update/class-sw-forms-update-provider.php:244
 #, php-format
 msgid "Last verified check: %s ago."
 msgstr ""
 
 #. translators: %s: error message
-#: includes/update/class-sw-forms-update-provider.php:247
+#: includes/update/class-sw-forms-update-provider.php:248
 #, php-format
 msgid "Last error: %s"
 msgstr ""
 
-#: includes/update/class-sw-forms-update-provider.php:263
+#: includes/update/class-sw-forms-update-provider.php:264
 msgid "Checking signed releases…"
 msgstr ""
 
-#: includes/update/class-sw-forms-update-provider.php:264
+#: includes/update/class-sw-forms-update-provider.php:265
 msgid "Update check completed."
 msgstr ""
 
-#: includes/update/class-sw-forms-update-provider.php:265
+#: includes/update/class-sw-forms-update-provider.php:266
 msgid "GitHub could not be reached. Please try again later."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-service.php:39
+msgid "Update checks require an authorized backend session."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-service.php:42
+msgid "Public release key or Sodium is missing. GitHub updates are blocked."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-service.php:46
+msgid "An update check is already running."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-service.php:51
+msgid "The last update check is still within the check interval."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-service.php:57
+msgid "The update check took too long. Its result was discarded."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-service.php:65
+msgid ""
+"Signed release information verified. Install updates manually through the "
+"Plugins page."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-service.php:67
+msgid "Invalid release response."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-service.php:88
+msgid "No valid stable release response."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-service.php:97
+msgid "Release manifest or signature is missing."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-service.php:113
+msgid "A newer verified version must not be rolled back."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-service.php:132
+msgid "Check for updates again before installing."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-service.php:138
+msgid "Stale release offer."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-service.php:152
+msgid "GitHub installation requires an authorized backend session."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-service.php:160
+msgid "Package, version or system requirements do not match."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-service.php:167
+msgid "Temporary update file is unavailable."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-transport.php:22
+msgid "Update URL is not allowed."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-transport.php:42
+msgid "GitHub could not be reached."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-transport.php:48
+msgid "Invalid update redirect."
+msgstr ""
+
+#. translators: %s: HTTP status code.
+#: includes/update/class-sw-forms-update-transport.php:55
+#, php-format
+msgid "GitHub response: HTTP %s"
+msgstr ""
+
+#: includes/update/class-sw-forms-update-transport.php:60
+msgid "Update response exceeds the size limit."
+msgstr ""
+
+#: includes/update/class-sw-forms-update-transport.php:64
+msgid "Too many update redirects."
 msgstr ""
 
 #: src/WordPress/Actions/EmailNotifications.php:37

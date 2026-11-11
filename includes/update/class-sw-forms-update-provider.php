@@ -53,7 +53,7 @@ final class SWF_Update_Provider {
 	}
 
 	public static function automatic_html( string $html, string $file ): string {
-		return isset( self::descriptors()[ $file ] ) ? esc_html__( 'Nur manuelle Aktualisierung', 'sw-forms' ) : $html;
+		return isset( self::descriptors()[ $file ] ) ? esc_html__( 'Manual updates only', 'sw-forms' ) : $html;
 	}
 
 	/**
@@ -71,11 +71,11 @@ final class SWF_Update_Provider {
 			return $reply;
 		}
 		if ( null === $descriptor || ! is_admin() || wp_doing_cron() || ! current_user_can( 'update_plugins' ) || ( defined( 'WP_CLI' ) && WP_CLI ) || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
-			return new WP_Error( 'manual_update_required', 'GitHub-Installation nur manuell im WordPress-Backend erlaubt.' );
+			return new WP_Error( 'manual_update_required', __( 'GitHub updates can only be installed manually in the WordPress backend.', 'sw-forms' ) );
 		}
 		self::load();
 		if ( ! SWF_Update_Service::interactive() || ( isset( $upgrader->skin ) && is_a( $upgrader->skin, 'Automatic_Upgrader_Skin' ) && ! is_a( $upgrader->skin, 'WP_Ajax_Upgrader_Skin' ) ) ) {
-			return new WP_Error( 'manual_update_required', 'Automatische GitHub-Installation ist gesperrt.' );
+			return new WP_Error( 'manual_update_required', __( 'Automatic GitHub installation is blocked.', 'sw-forms' ) );
 		}
 		// Core authenticated the native single/bulk/updates-AJAX action before invoking its upgrader.
 		$action        = isset( $_REQUEST['action'] ) && is_string( $_REQUEST['action'] ) ? sanitize_key( $_REQUEST['action'] ) : '';
@@ -92,7 +92,7 @@ final class SWF_Update_Provider {
 			$nonce = sanitize_text_field( wp_unslash( $_REQUEST['_wpnonce'] ) );
 		}
 		if ( ! isset( $nonce_actions[ $action ] ) || ! wp_verify_nonce( $nonce, $nonce_actions[ $action ] ) ) {
-			return new WP_Error( 'manual_update_required', 'Kein gültiger manueller WordPress-Updateauftrag.' );
+			return new WP_Error( 'manual_update_required', __( 'No valid manual WordPress update request.', 'sw-forms' ) );
 		}
 		if ( ! function_exists( 'get_plugin_data' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/plugin.php';
@@ -187,7 +187,7 @@ final class SWF_Update_Provider {
 					'requires'      => $offer->requires,
 					'requires_php'  => $offer->requires_php,
 					'download_link' => $offer->package,
-					'sections'      => array( 'description' => esc_html__( 'Signiertes GitHub-Release. Installation nur manuell über WordPress.', 'sw-forms' ) ),
+					'sections'      => array( 'description' => esc_html__( 'Signed GitHub release. Install only manually through WordPress.', 'sw-forms' ) ),
 				);
 			}
 		}
@@ -223,6 +223,7 @@ final class SWF_Update_Provider {
 		}
 		$meta[] = '<button type="button" class="button-link" id="swf-verified-updates-check">' . esc_html__( 'Check for updates now', 'sw-forms' ) . '</button>'
 			. ' <span id="swf-verified-updates-result" role="status" aria-live="polite" hidden></span>'
+			. ' <a id="swf-verified-updates-reload" href="' . esc_url( is_multisite() ? network_admin_url( 'plugins.php' ) : admin_url( 'plugins.php' ) ) . '" hidden>' . esc_html__( 'Reload the plugin list to show available updates', 'sw-forms' ) . '</a>'
 			. ' <span id="swf-verified-updates-status">' . esc_html( self::status_text() ) . '</span>';
 		return $meta;
 	}

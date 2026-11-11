@@ -14,7 +14,7 @@ final class ReleaseOperationsTest extends TestCase
     {
         $this->directory = sys_get_temp_dir() . '/swf-operations-' . bin2hex(random_bytes(8));
         mkdir($this->directory . '/plugin/includes/update', 0700, true);
-        file_put_contents($this->directory . '/plugin/includes/update/trusted-keys.php', '<?php return ["historical" => "preserved"];');
+        copy(dirname(__DIR__, 2) . '/includes/update/trusted-keys.php', $this->directory . '/plugin/includes/update/trusted-keys.php');
     }
 
     protected function tearDown(): void
@@ -44,7 +44,7 @@ final class ReleaseOperationsTest extends TestCase
         preg_match_all('/```bash\n(.*?)\n```/s', $manual, $matches);
         self::assertCount(3, $matches[1]);
         $blocks = array_map(fn ($block) => str_replace([
-            '$HOME/.local/share/sw-forms-release-keys',
+            '$HOME/.local/share/sw-forms-release-keys-2026-11-next',
             '/var/www/html/wordpress_dev/wp-content/plugins/sw-forms',
         ], [$this->directory . '/keys', $this->directory . '/plugin'], $block), $matches[1]);
         // Replace only read-only diff; no temporary Git repository is needed.
@@ -60,9 +60,12 @@ final class ReleaseOperationsTest extends TestCase
         self::assertSame(0, $this->runCommand(['bash', '-c', $blocks[1]]));
         self::assertSame(0, $this->runCommand(['zsh', '-c', $blocks[1]]));
         $keys = require $this->directory . '/plugin/includes/update/trusted-keys.php';
-        self::assertSame('preserved', $keys['historical']);
-        self::assertCount(2, $keys);
-        file_put_contents($this->directory . '/keys/public-keys.php', '<?php return ' . var_export(['sw-forms-2026-11' => base64_encode(random_bytes(32))], true) . ';');
+        $existing = require $root . '/includes/update/trusted-keys.php';
+        foreach ($existing as $id => $public) {
+            self::assertSame($public, $keys[$id]);
+        }
+        self::assertCount(count($existing) + 1, $keys);
+        file_put_contents($this->directory . '/keys/public-keys.php', '<?php return ' . var_export(['sw-forms-2026-11-next' => base64_encode(random_bytes(32))], true) . ';');
         self::assertNotSame(0, $this->runCommand(['bash', '-c', $blocks[1]]));
         self::assertSame($keys, require $this->directory . '/plugin/includes/update/trusted-keys.php');
         // A fake gh consumes the private key via stdin, checking shape without logging it.
@@ -101,6 +104,7 @@ SH;
     {
         $script = <<<'PHP'
 class WP_Error { public function __construct(...$args) {} }
+function __($text, $domain) { return $text; }
 function is_admin() { return $GLOBALS['context'] !== 'frontend'; }
 function is_multisite() { return false; }
 function wp_doing_cron() { return $GLOBALS['context'] === 'cron'; }

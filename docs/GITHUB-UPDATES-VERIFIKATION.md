@@ -1,6 +1,6 @@
 # Verifikation der GitHub-Updates
 
-Stand: 10. November 2026. Ziel: `sw-wordpress/sw-forms`, Repository-ID `1432336899`,
+Stand: 11. November 2026. Ziel: `sw-wordpress/sw-forms`, Repository-ID `1432336899`,
 Basename `sw-forms/sw-forms.php`, `SWF_VERSION=0.5.0`.
 Die Sicherheitsimplementierung wurde aus der [Referenz 49dc66f](https://github.com/sw-wordpress/churchtools-suite/tree/49dc66f)
 adaptiert; die UI folgt SW BackupIt: ausschließlich `plugin_row_meta` in der nativen
@@ -13,10 +13,10 @@ Pluginübersicht. Keine eigene Update-Seite und keine Laufzeitabhängigkeit von 
 | `composer check` | bestanden: PSR-12, WPCS, PHPStan Level 8 ohne Baseline, 114 Unit-Tests / 667 Assertions |
 | vollständige WordPress-Suite, private Installation/DB | 139 Tests / 2391 Assertions; 1 erwarteter Skip für das optionale, dort nicht installierte WP Armour |
 | acht eigenständige WordPress-Integrationsskripte einschließlich Smoke-Test | bestanden |
-| isolierte Update-Suite | 58 Tests: Single-Site 161 Assertions, Multisite 164 Assertions |
-| gemergte vollständige PHP-Coverage | 8386/9117 Zeilen = 91,98 %; alle bestehenden strengeren Bereichsgrenzen bestanden |
+| isolierte Update-Suite | 59 Tests: Single-Site 170 Assertions, Multisite 173 Assertions |
+| gemergte vollständige PHP-Coverage | 8389/9120 Zeilen = 91,98 %; alle bestehenden strengeren Bereichsgrenzen bestanden |
 | npm Lint, Typecheck, Build | bestanden |
-| Vitest einschließlich eigenständigem Update-JS | 413 Tests; 3046/3288 Zeilen = 92,64 %; alle bestehenden Bereichsgrenzen bestanden |
+| Vitest einschließlich eigenständigem Update-JS | 414 Tests; 3049/3291 Zeilen = 92,65 %; alle bestehenden Bereichsgrenzen bestanden |
 | Chromium: Frontend, Builder/Admin, native Pluginzeile | bestanden; Einzelaufruf, manueller/schweigsamer Tagescheck, Status und unveränderte native Navigation |
 | echte Mozart-Release-ZIPs | gebaut; mit Wegwerfschlüssel signiert und mit Laufzeitprüfern verifiziert; fehlendes Secret blockiert; Paketvollständigkeit und Ausschluss privater Testschlüssel geprüft |
 | WordPress.org-Build | bootet; Update URI, Provider und dessen Skript fehlen; Quellcheckout bleibt unverändert |
@@ -48,3 +48,14 @@ Updateversorgung wird deshalb nicht behauptet. Lokale Tests verwenden weiterhin 
 Wegwerfschlüssel. Einrichtung/Rotation und Grenzen:
 [Betriebshandbuch](GITHUB-UPDATES-BETRIEB.md). Der Store-Build ist geprüft; ein tatsächlicher
 Store-Übergang bestehender Installationen samt Zustandsbereinigung bleibt ein späterer Release.
+
+## PR-Follow-up
+
+Drei gültige Hinweise aus PR #64 wurden umgesetzt: Schlüssel-Neuprovisionierung verwendet
+`sw-forms-2026-11-next` und erhält den bestehenden Schlüssel; der Befehlstest startet nun
+mit dem echten öffentlichen Schlüsselring. Nach erfolgreicher manueller Prüfung führt ein
+Neuladen-Link zurück zur nativen Pluginliste. Alle neuen Benutzermeldungen laufen durch die
+Textdomain und sind in Englisch/Deutsch geprüft. Die CI provisioniert `swf_wp_tests` explizit,
+nachdem der erste Lauf am fehlenden Testschema scheiterte. Frontend-, PHP-, WordPress- und
+Release-Prüfungen wurden nach den Korrekturen lokal wiederholt; GitHub-Reviewstatus wird im
+PR separat dokumentiert.

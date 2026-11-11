@@ -19,7 +19,7 @@ final class SWF_Update_Transport {
 	public static function fetch( string $url, int $limit, string $file = '' ): string|WP_Error {
 		for ( $redirect = 0; $redirect <= 4; ++$redirect ) {
 			if ( ! self::allowed( $url ) ) {
-				return new WP_Error( 'unsafe_update_url', 'Nicht erlaubte Update-Adresse.' );
+				return new WP_Error( 'unsafe_update_url', __( 'Update URL is not allowed.', 'sw-forms' ) );
 			}
 			$args = array(
 				'timeout'             => 5,
@@ -39,28 +39,29 @@ final class SWF_Update_Transport {
 			}
 			$response = wp_safe_remote_get( $url, $args );
 			if ( is_wp_error( $response ) ) {
-				return new WP_Error( 'update_network_error', 'GitHub konnte nicht erreicht werden.' );
+				return new WP_Error( 'update_network_error', __( 'GitHub could not be reached.', 'sw-forms' ) );
 			}
 			$code = wp_remote_retrieve_response_code( $response );
 			if ( in_array( $code, array( 301, 302, 303, 307, 308 ), true ) ) {
 				$location = wp_remote_retrieve_header( $response, 'location' );
 				if ( ! is_string( $location ) ) {
-					return new WP_Error( 'unsafe_update_url', 'Ungültige Weiterleitung.' );
+					return new WP_Error( 'unsafe_update_url', __( 'Invalid update redirect.', 'sw-forms' ) );
 				}
 				$url = $location;
 				continue;
 			}
 			if ( 200 !== $code ) {
-				return new WP_Error( 'update_http_error', 'GitHub-Antwort: HTTP ' . $code );
+				/* translators: %s: HTTP status code. */
+				return new WP_Error( 'update_http_error', sprintf( __( 'GitHub response: HTTP %s', 'sw-forms' ), $code ) );
 			}
 			$body  = '' === $file ? wp_remote_retrieve_body( $response ) : '';
 			$bytes = '' === $file ? strlen( $body ) : filesize( $file );
 			if ( false === $bytes || $bytes > $limit ) {
-				return new WP_Error( 'update_too_large', 'Update-Antwort überschreitet das Größenlimit.' );
+				return new WP_Error( 'update_too_large', __( 'Update response exceeds the size limit.', 'sw-forms' ) );
 			}
 			return '' === $file ? $body : $file;
 		}
-		return new WP_Error( 'update_redirect_limit', 'Zu viele Update-Weiterleitungen.' );
+		return new WP_Error( 'update_redirect_limit', __( 'Too many update redirects.', 'sw-forms' ) );
 	}
 
 	public static function allowed( string $url ): bool {

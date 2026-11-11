@@ -4,6 +4,7 @@ declare(strict_types=1);
 if (PHP_SAPI !== 'cli' || defined('ABSPATH')) {
     exit(1);
 }
+function __(string $text, string $domain): string { return $text; }
 // The verifier only needs the WordPress error value object, no running WordPress.
 final class WP_Error
 {

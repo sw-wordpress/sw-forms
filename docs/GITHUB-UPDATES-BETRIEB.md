@@ -16,7 +16,14 @@ Ein Release startet durch Push eines Tags wie `v0.5.1`, nachdem Header und `SWF_
 
 ## Copy & Paste: Schlüssel für SW Forms einrichten
 
-Diese Befehle sind für Bash/Zsh auf dem lokalen Entwicklungs-/Release-Rechner mit PHP und Sodium gedacht, nicht für den produktiven WordPress-Webserver. Der Checkout liegt hier unter `/var/www/html/wordpress_dev/wp-content/plugins/sw-forms`. Private Dateien landen ausschließlich unter `$HOME/.local/share/sw-forms-release-keys`, außerhalb dieses Checkouts und Webroots. Diesen Ordner separat verschlüsselt sichern; er gehört nicht in Git, Release-ZIPs oder öffentlich synchronisierte Ordner. Die Befehle wurden mit Wegwerfschlüsseln geprüft; produktive Schlüssel werden nicht durch die Dokumentation angelegt.
+Diese Befehle sind für Bash/Zsh auf dem lokalen Entwicklungs-/Release-Rechner mit PHP und Sodium gedacht, nicht für den produktiven WordPress-Webserver. Der Checkout liegt hier unter `/var/www/html/wordpress_dev/wp-content/plugins/sw-forms`. Private Dateien landen ausschließlich unter `$HOME/.local/share/sw-forms-release-keys-2026-11-next`, außerhalb dieses Checkouts und Webroots. Diesen Ordner separat verschlüsselt sichern; er gehört nicht in Git, Release-ZIPs oder öffentlich synchronisierte Ordner. Die Befehle wurden mit Wegwerfschlüsseln geprüft; produktive Schlüssel werden nicht durch die Dokumentation angelegt.
+
+Der Checkout enthält bereits den öffentlichen Schlüssel `sw-forms-2026-11`. Für diesen
+Schlüssel den vorhandenen privaten Schlüssel aus der gesicherten Ablage wiederherstellen;
+keinen neuen Schlüssel unter derselben ID erzeugen. Die folgenden Blöcke provisionieren
+bewusst eine zusätzliche, noch unbelegte ID `sw-forms-2026-11-next` in einem eigenen Ordner.
+Vor einem Schlüsselwechsel das Übergangsrelease mit beiden öffentlichen Schlüsseln und dem
+bisherigen Signierschlüssel ausliefern; erst danach das GitHub-Signing-Secret umstellen.
 
 **1. Einmalig Schlüssel erzeugen.** Der Block verweigert einen bereits vorhandenen Schlüsselordner, damit ein erneutes Einfügen keinen bestehenden Schlüssel ersetzt. Die Key-ID ist eine öffentliche Kennung; beim späteren Schlüsselwechsel eine neue Kennung und einen neuen Ordner verwenden.
 
@@ -24,7 +31,7 @@ Diese Befehle sind für Bash/Zsh auf dem lokalen Entwicklungs-/Release-Rechner m
 (
   set -eu
   umask 077
-  export SWF_RELEASE_KEYS_DIR="$HOME/.local/share/sw-forms-release-keys"
+  export SWF_RELEASE_KEYS_DIR="$HOME/.local/share/sw-forms-release-keys-2026-11-next"
   php <<'PHP'
 <?php
 declare(strict_types=1);
@@ -38,7 +45,7 @@ if (!$dir || file_exists($dir) || is_link($dir)) {
 if (!mkdir($dir, 0700, true)) {
     throw new RuntimeException('Schlüsselordner konnte nicht angelegt werden.');
 }
-$id = 'sw-forms-2026-11';
+$id = 'sw-forms-2026-11-next';
 $pair = sodium_crypto_sign_keypair();
 $secret = sodium_crypto_sign_secretkey($pair);
 $public = sodium_crypto_sign_publickey($pair);
@@ -67,7 +74,7 @@ PHP
 (
   set -eu
   export SWF_PLUGIN_DIR='/var/www/html/wordpress_dev/wp-content/plugins/sw-forms'
-  export SWF_RELEASE_KEYS_DIR="$HOME/.local/share/sw-forms-release-keys"
+  export SWF_RELEASE_KEYS_DIR="$HOME/.local/share/sw-forms-release-keys-2026-11-next"
   php <<'PHP'
 <?php
 declare(strict_types=1);
@@ -102,7 +109,7 @@ Die angezeigte Änderung an `includes/update/trusted-keys.php` enthält ausschli
 ```bash
 (
   set -eu
-  SWF_RELEASE_KEYS_DIR="$HOME/.local/share/sw-forms-release-keys"
+  SWF_RELEASE_KEYS_DIR="$HOME/.local/share/sw-forms-release-keys-2026-11-next"
   gh auth status
   gh secret set SW_PLUGIN_RELEASE_SIGNING_KEY \
     --repo sw-wordpress/sw-forms --env plugin-releases \
@@ -124,6 +131,7 @@ Ein erneutes Setzen des Secrets ersetzt den GitHub-Wert. Deshalb vor Ausführung
 Die Prüfschaltfläche und der lokale Status stehen ausschließlich in der SW-Forms-Zeile der nativen **Plugins**-Übersicht (bei Multisite in der Netzwerkverwaltung). Es gibt keine eigene Update-Seite.
 
 - Berechtigte Backend-Besuche können nach dem Seitenaufbau einen Prüflauf starten; höchstens einmal je 24 Stunden pro konfigurierter Quelle und WordPress-Netzwerk. Nach Netzwerk- und Verifikationsfehlern gilt dieselbe Sperrfrist.
+- Nach erfolgreicher manueller Prüfung führt „Pluginübersicht neu laden“ zur aktuellen nativen Updateanzeige; die Prüfung installiert nichts.
 - Ein manueller Klick auf „Jetzt auf Updates prüfen“ darf das Tageslimit umgehen, hat aber einen Mindestabstand von 60 Sekunden und benötigt Nonce plus `update_plugins`.
 - Das Frontend, Cron, WP-CLI und REST lösen keine GitHub-Prüfung aus. Ohne Backend-Besuch gibt es keine tägliche Anfrage.
 - Die Pluginübersicht und der Plugin-Detaildialog zeigen ausschließlich lokale Angebote. Die Installation verwendet WordPress’ normale Einzel-/AJAX-/Sammelaktualisierung. Die Auto-Update-Spalte erklärt, dass nur manuell installiert wird.

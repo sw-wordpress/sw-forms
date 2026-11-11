@@ -328,7 +328,7 @@ final class VerifiedUpdatesTest extends SWF_Update_TestCase
         $this->assertSame($original, SWF_Update_Provider::update_uri($original, array( 'UpdateURI' => 'https://evil.invalid', 'Version' => '1' ), $file));
         $this->assertSame($original, SWF_Update_Provider::details($original, 'plugin_information', (object) array( 'slug' => 'other-plugin' )));
         $this->assertCount(3, $this->requests);
-        $this->assertStringContainsString('manuelle', SWF_Update_Provider::automatic_html('', $file));
+        $this->assertSame('Manual updates only', SWF_Update_Provider::automatic_html('', $file));
         $this->assertSame('unchanged', SWF_Update_Provider::automatic_html('unchanged', 'foreign/plugin.php'));
     }
 
@@ -595,6 +595,8 @@ throw new SWF_Verified_Update_Exit();
         $this->assertCount(2, $meta);
         $this->assertStringContainsString('id="swf-verified-updates-check"', $meta[1]);
         $this->assertStringContainsString('No verified update check yet.', $meta[1]);
+        $this->assertStringContainsString('id="swf-verified-updates-reload"', $meta[1]);
+        $this->assertStringContainsString(esc_url(is_multisite() ? network_admin_url('plugins.php') : admin_url('plugins.php')), $meta[1]);
         $this->assertSame(['foreign link'], SWF_Update_Provider::row_meta(['foreign link'], 'other/other.php'));
         $this->assertIsArray(SWF_Update_Service::check());
         $state = SWF_Update_Store::read();
@@ -607,5 +609,28 @@ throw new SWF_Verified_Update_Exit();
         $this->assertCount(3, $this->requests);
         wp_set_current_user(self::factory()->user->create(['role' => 'subscriber']));
         $this->assertSame(['foreign link'], SWF_Update_Provider::row_meta(['foreign link'], $file));
+    }
+    public function test_ajax_and_verification_messages_use_the_shipped_translations(): void
+    {
+        $english = SWF_Update_Service::check();
+        $this->assertSame('Signed release information verified. Install updates manually through the Plugins page.', $english['message']);
+        $this->assertTrue(load_textdomain('swf-update-test-de', SWF_DIR . 'languages/sw-forms-de_DE.mo'));
+        $translate = static fn ($translation, $text, $domain) => $domain === 'sw-forms' ? __($text, 'swf-update-test-de') : $translation;
+        add_filter('gettext', $translate, 10, 3);
+        try {
+            delete_site_option(SWF_Update_Store::STATE);
+            $german = SWF_Update_Service::check();
+            $this->assertSame('Signierte Release-Informationen geprüft. Installation ausschließlich über die Plugin-Verwaltung.', $german['message']);
+            $error = SWF_Update_Manifest::verify($this->raw . ' ', $this->signature, $this->keys, $this->release);
+            $this->assertWPError($error);
+            $this->assertSame('Release-Verifikation fehlgeschlagen: Unbekannter Schlüssel oder ungültige Release-Signatur.', $error->get_error_message());
+            $this->keys = [];
+            $error = SWF_Update_Service::check(true);
+            $this->assertWPError($error);
+            $this->assertSame('Öffentlicher Release-Schlüssel oder Sodium fehlt. GitHub-Updates sind gesperrt.', $error->get_error_message());
+        } finally {
+            remove_filter('gettext', $translate, 10);
+            unload_textdomain('swf-update-test-de');
+        }
     }
 }

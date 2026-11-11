@@ -51,6 +51,8 @@ try {
     assert.equal(requests.length, 1);
     assert.equal(requests[0].manual, due ? '0' : '1');
     assert.equal(await page.locator('#swf-verified-updates-result').isVisible(), !due);
+    assert.equal(await page.locator('#swf-verified-updates-reload').isVisible(), !due);
+    assert.equal(new URL(await page.locator('#swf-verified-updates-reload').getAttribute('href')).pathname, '/wp-admin/plugins.php');
     if (!due) assert.match(await page.locator('#swf-verified-updates-result').textContent(), /Signed metadata/);
     assert.equal(await page.locator('a[href*="plugins.php"]').count() > 0, true);
     assert.equal(requests.some(r => /update-plugin|install-plugin/.test(r.action)), false);

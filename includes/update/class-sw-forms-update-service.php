@@ -36,25 +36,25 @@ final class SWF_Update_Service {
 	 */
 	public static function check( bool $manual = false ): array|WP_Error {
 		if ( ! self::interactive() ) {
-			return new WP_Error( 'updates_forbidden', 'Update-Prüfung nur in der berechtigten Backend-Sitzung erlaubt.' );
+			return new WP_Error( 'updates_forbidden', __( 'Update checks require an authorized backend session.', 'sw-forms' ) );
 		}
 		if ( ! self::keys() || ! function_exists( 'sodium_crypto_sign_verify_detached' ) ) {
-			return new WP_Error( 'updates_not_configured', 'Öffentlicher Release-Schlüssel oder Sodium fehlt. GitHub-Updates sind gesperrt.' );
+			return new WP_Error( 'updates_not_configured', __( 'Public release key or Sodium is missing. GitHub updates are blocked.', 'sw-forms' ) );
 		}
 		$lock = SWF_Update_Store::acquire();
 		if ( false === $lock ) {
-			return new WP_Error( 'updates_busy', 'Eine Update-Prüfung läuft bereits.' );
+			return new WP_Error( 'updates_busy', __( 'An update check is already running.', 'sw-forms' ) );
 		}
 		try {
 			$state = SWF_Update_Store::read();
 			if ( time() - ( $state['last_attempt'] ?? 0 ) < ( $manual ? 60 : DAY_IN_SECONDS ) ) {
-				return new WP_Error( 'updates_throttled', 'Die letzte Update-Prüfung liegt noch innerhalb des Prüfintervalls.' );
+				return new WP_Error( 'updates_throttled', __( 'The last update check is still within the check interval.', 'sw-forms' ) );
 			}
 			$state['last_attempt'] = time();
 			SWF_Update_Store::write( $state );
 			$result = self::retrieve( $state );
 			if ( ! SWF_Update_Store::owns( $lock ) ) {
-				return new WP_Error( 'updates_lease_expired', 'Prüfung dauerte zu lange. Ergebnis wurde nicht übernommen.' );
+				return new WP_Error( 'updates_lease_expired', __( 'The update check took too long. Its result was discarded.', 'sw-forms' ) );
 			}
 			if ( is_wp_error( $result ) ) {
 				$state['error'] = $result->get_error_message();
@@ -62,9 +62,9 @@ final class SWF_Update_Service {
 				return $result;
 			}
 			SWF_Update_Store::write( $result );
-			return array( 'message' => 'Signierte Release-Informationen geprüft. Installation ausschließlich über die Plugin-Verwaltung.' );
+			return array( 'message' => __( 'Signed release information verified. Install updates manually through the Plugins page.', 'sw-forms' ) );
 		} catch ( Throwable $error ) {
-			$state['error'] = 'Ungültige Release-Antwort.';
+			$state['error'] = __( 'Invalid release response.', 'sw-forms' );
 			if ( SWF_Update_Store::owns( $lock ) ) {
 				SWF_Update_Store::write( $state );
 			}
@@ -85,7 +85,7 @@ final class SWF_Update_Service {
 		}
 		$release = json_decode( $raw, true );
 		if ( ! is_array( $release ) || ! is_int( $release['id'] ?? null ) || ! empty( $release['draft'] ) || ! empty( $release['prerelease'] ) ) {
-			return new WP_Error( 'invalid_release', 'Keine gültige stabile Release-Antwort.' );
+			return new WP_Error( 'invalid_release', __( 'No valid stable release response.', 'sw-forms' ) );
 		}
 		$files = array();
 		foreach ( array(
@@ -94,7 +94,7 @@ final class SWF_Update_Service {
 		) as $name => $limit ) {
 			$assets = array_values( array_filter( $release['assets'] ?? array(), static fn ( $a ) => ( $a['name'] ?? '' ) === $name ) );
 			if ( count( $assets ) !== 1 || ! is_int( $assets[0]['id'] ?? null ) ) {
-				return new WP_Error( 'missing_signature_asset', 'Release-Manifest oder Signatur fehlt.' );
+				return new WP_Error( 'missing_signature_asset', __( 'Release manifest or signature is missing.', 'sw-forms' ) );
 			}
 			// Construct from locally fixed identity, never trust an API-provided download URL.
 			$url            = 'https://github.com/' . SWF_Update_Manifest::source()['repository'] . '/releases/download/' . rawurlencode( $release['tag_name'] ?? '' ) . '/' . $name;
@@ -110,7 +110,7 @@ final class SWF_Update_Service {
 		foreach ( $manifest['packages'] as $package ) {
 			$previous = $state['highest'][ $package['slug'] ] ?? '0';
 			if ( version_compare( $package['version'], $previous, '<' ) ) {
-				return new WP_Error( 'release_rollback', 'Eine bereits geprüfte neuere Version darf nicht zurückgenommen werden.' );
+				return new WP_Error( 'release_rollback', __( 'A newer verified version must not be rolled back.', 'sw-forms' ) );
 			}
 			$state['highest'][ $package['slug'] ] = $package['version'];
 		}
@@ -129,13 +129,13 @@ final class SWF_Update_Service {
 	public static function verified_snapshot() {
 		$state = SWF_Update_Store::read();
 		if ( empty( $state['last_success'] ) || time() - $state['last_success'] > 7 * DAY_IN_SECONDS ) {
-			return new WP_Error( 'stale_update', 'Bitte vor der Installation die Updates erneut prüfen.' );
+			return new WP_Error( 'stale_update', __( 'Check for updates again before installing.', 'sw-forms' ) );
 		}
 		$manifest = SWF_Update_Manifest::verify( $state['raw'] ?? '', $state['signature'] ?? '', self::keys(), $state['release'] ?? array() );
 		if ( ! is_wp_error( $manifest ) ) {
 			foreach ( $manifest['packages'] as $package ) {
 				if ( version_compare( $package['version'], $state['highest'][ $package['slug'] ] ?? '0', '<' ) ) {
-					return new WP_Error( 'release_rollback', 'Veraltetes Release-Angebot.' );
+					return new WP_Error( 'release_rollback', __( 'Stale release offer.', 'sw-forms' ) );
 				}
 			}
 		}
@@ -149,7 +149,7 @@ final class SWF_Update_Service {
 	 */
 	public static function download( string $url, array $descriptor ): string|WP_Error {
 		if ( ! self::interactive() ) {
-			return new WP_Error( 'manual_update_required', 'GitHub-Installation nur in der berechtigten Backend-Sitzung erlaubt.' );
+			return new WP_Error( 'manual_update_required', __( 'GitHub installation requires an authorized backend session.', 'sw-forms' ) );
 		}
 		$manifest = self::verified_snapshot();
 		if ( is_wp_error( $manifest ) ) {
@@ -157,14 +157,14 @@ final class SWF_Update_Service {
 		}
 		$package = SWF_Update_Manifest::package( $manifest, $descriptor['slug'] );
 		if ( null === $package || SWF_Update_Manifest::url( $manifest, $package ) !== $url || ! self::compatible( $package ) || ! version_compare( $package['version'], $descriptor['version'], '>' ) ) {
-			return new WP_Error( 'untrusted_package', 'Paket, Version oder Systemvoraussetzungen stimmen nicht.' );
+			return new WP_Error( 'untrusted_package', __( 'Package, version or system requirements do not match.', 'sw-forms' ) );
 		}
 		$file = wp_tempnam( 'swf-verified-update.zip' );
 		if ( ! $file || ! chmod( $file, 0600 ) ) {
 			if ( $file ) {
 				wp_delete_file( $file );
 			}
-			return new WP_Error( 'update_tempfile', 'Temporäre Update-Datei nicht verfügbar.' );
+			return new WP_Error( 'update_tempfile', __( 'Temporary update file is unavailable.', 'sw-forms' ) );
 		}
 		$result = SWF_Update_Transport::fetch( $url, $package['bytes'], $file );
 		if ( ! is_wp_error( $result ) ) {
