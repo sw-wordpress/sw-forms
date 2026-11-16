@@ -19,8 +19,7 @@
     "jsx": "preserve",
     "noEmit": true,
     "allowImportingTsExtensions": true,
-    "baseUrl": ".",
-    "paths": { "@/*": ["src/*"], "@shared/*": ["shared/*"] }
+    "paths": { "@/*": ["./src/*"], "@shared/*": ["./shared/*"] }
   },
   "include": [
     "src/**/*.ts",
