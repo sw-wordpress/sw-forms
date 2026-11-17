@@ -24,7 +24,7 @@ jobs:
     - uses: actions/checkout@v7
     - uses: shivammathur/setup-php@v2
       with:
-        php-version: '8.2'
+        php-version: '8.3'
         extensions: mysqli, pdo_mysql, mbstring, sodium, zip, gd
         tools: composer:v2
         coverage: xdebug
