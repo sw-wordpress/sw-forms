@@ -15,6 +15,10 @@ Cookie authentication with the `wp_rest` nonce (`X-WP-Nonce`). Errors are `WP_Er
 | DELETE | `/forms/{id}/draft` | `swf_manage_forms` | Discard the draft. |
 | POST | `/forms/{id}/duplicate` | `swf_manage_forms` | |
 | GET | `/field-types` | `swf_manage_forms` | Type definitions incl. settings schema. |
+| GET | `/importers` | `swf_manage_forms` | `{items: [{slug, name, available, imports[], omits[]}]}`; metadata only, no adapter instantiation. |
+| GET | `/importers/{adapter}/forms` | `swf_manage_forms` | `{items: [{id, title}], page}`; `page` starts at 1, 50 sources per page. |
+| GET | `/importers/{adapter}/forms/{id}` | `swf_manage_forms` | Dry run: `{title, document, imported[], skipped[], warnings[], fingerprint}`. 422 includes `data.report` for unsupported-only or invalid forms. |
+| POST | `/importers/{adapter}/forms/{id}` | `swf_manage_forms` | `{fingerprint}` from dry run → `{id, report}` (201), new inactive unpublished draft. Rereads source; 409 when report changed/missing fingerprint, 404 unavailable source, 422 invalid document. |
 | GET | `/forms/{id}/entries` | `swf_view_entries` | `filter` (inbox, unread, starred, spam, trash), `search`, `page`, `per_page` (≤ 100), `order`. Returns `items`, `total`, `pages`, `counts`, `columns`. |
 | GET | `/entries/{id}` | `swf_view_entries` | Entry, labelled `fields` tree (from its form version), `log`. |
 | PATCH | `/entries/{id}` | `swf_manage_entries` | `{status?, starred?}` |

@@ -18,6 +18,9 @@ import type {
   TemplateCategory,
   WpPage,
   WebhookTestResult,
+  ImportAdapter,
+  ImportSource,
+  ImportReport,
 } from '@/types/api';
 import { ApiClient } from './client';
 
@@ -71,6 +74,14 @@ export const formsApi = {
   remove: (id: number) => api().delete<{ deleted: boolean }>(`forms/${id}`),
   fieldTypes: () => api().get<{ items: FieldTypeDefinition[] }>('field-types').then((r) => r.items),
   testWebhook: (id: number, webhook: string) => api().post<WebhookTestResult>(`forms/${id}/webhooks/${webhook}/test`),
+};
+
+const importPath = (adapter: string) => `importers/${encodeURIComponent(adapter)}/forms`;
+export const importApi = {
+  catalog: () => api().get<{ items: ImportAdapter[] }>('importers').then((r) => r.items),
+  forms: (adapter: string, page: number) => api().get<{ items: ImportSource[] }>(importPath(adapter), { page }).then((r) => r.items),
+  preview: (adapter: string, id: number) => api().get<ImportReport>(`${importPath(adapter)}/${id}`),
+  import: (adapter: string, id: number, fingerprint: string) => api().post<{ id: number; report: ImportReport }>(`${importPath(adapter)}/${id}`, { fingerprint }),
 };
 
 export const entriesApi = {

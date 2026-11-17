@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SW Forms\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-11 22:14+0100\n"
+"POT-Creation-Date: 2026-11-17 16:54+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -301,6 +301,11 @@ msgstr ""
 
 #: src/WordPress/Admin/AdminPage.php:48
 msgid "SW Forms requires JavaScript."
+msgstr ""
+
+#: src/WordPress/Admin/AdminPage.php:50
+msgid ""
+"Open source by Stefan Warnat – free to use, free to change, better together."
 msgstr ""
 
 #: src/WordPress/Editor/Embeds.php:27 src/WordPress/Editor/Embeds.php:92
@@ -1441,6 +1446,7 @@ msgstr ""
 #: src/WordPress/Forms/Templates/GeneralTemplates.php:242
 #: src/WordPress/Forms/Templates/GeneralTemplates.php:329
 #: src/WordPress/Frontend/DesignGallery.php:105
+#: src/WordPress/Import/WPForms.php:128 src/WordPress/Import/WPForms.php:133
 msgid "First name"
 msgstr ""
 
@@ -1457,6 +1463,7 @@ msgstr ""
 #: src/WordPress/Forms/Templates/GeneralTemplates.php:250
 #: src/WordPress/Forms/Templates/GeneralTemplates.php:338
 #: src/WordPress/Frontend/DesignGallery.php:110
+#: src/WordPress/Import/WPForms.php:129 src/WordPress/Import/WPForms.php:135
 msgid "Last name"
 msgstr ""
 
@@ -2995,6 +3002,10 @@ msgid ""
 "nothing you enter is sent or stored."
 msgstr ""
 
+#: src/WordPress/Import/WPForms.php:134
+msgid "Middle name"
+msgstr ""
+
 #: src/WordPress/Rest/EntriesController.php:122
 #: src/WordPress/Rest/ExportController.php:52
 #: src/WordPress/Rest/FormToolsController.php:153
@@ -3025,6 +3036,26 @@ msgstr ""
 #: src/WordPress/Rest/FormToolsController.php:146
 #: src/WordPress/Rest/FormsController.php:160
 msgid "The form could not be saved. Please fix the marked problems."
+msgstr ""
+
+#: src/WordPress/Rest/ImportController.php:66
+msgid "The import report has changed. Review it again before importing."
+msgstr ""
+
+#: src/WordPress/Rest/ImportController.php:72
+msgid "The imported form could not be saved."
+msgstr ""
+
+#: src/WordPress/Rest/ImportController.php:100
+msgid ""
+"No valid form could be imported. The source may contain only unsupported "
+"fields."
+msgstr ""
+
+#: src/WordPress/Rest/ImportController.php:119
+msgid ""
+"Import source unavailable. Activate the source plugin and choose an existing "
+"form."
 msgstr ""
 
 #: src/WordPress/Rest/WebhooksController.php:67

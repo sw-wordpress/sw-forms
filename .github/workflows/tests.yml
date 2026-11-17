@@ -42,6 +42,9 @@ jobs:
         php /tmp/wp-cli.phar core install --path="$WP_ROOT" --url=http://localhost --title="SW Forms tests" --admin_user=swf-admin --admin_password=swf-test-admin-password --admin_email=test@example.test --skip-email
         ln -s "$GITHUB_WORKSPACE" "$WP_ROOT/wp-content/plugins/sw-forms"
         php /tmp/wp-cli.phar plugin activate sw-forms --path="$WP_ROOT"
+        php /tmp/wp-cli.phar plugin install contact-form-7 --version=6.2.5 --activate --path="$WP_ROOT"
+        php /tmp/wp-cli.phar plugin install wpforms-lite --version=2.0.4 --activate --path="$WP_ROOT"
+        php /tmp/wp-cli.phar option update wpforms_setup_wizard_disabled 1 --path="$WP_ROOT"
     - name: Install Zsh for documented operator command tests
       run: sudo apt-get update && sudo apt-get install -y zsh
     - name: Unit coverage
@@ -65,11 +68,12 @@ jobs:
         node-version: '22'
         cache: npm
         cache-dependency-path: apps/admin/package-lock.json
-    - name: Browser check of verified updates in disposable WordPress
+    - name: Browser checks of verified updates and importers in disposable WordPress
       run: |
         cd apps/admin
         npm ci
         npx playwright-core install --with-deps chromium
+        npm run build
         cd ../..
         php /tmp/wp-cli.phar option update home http://localhost:8877 --path="$WP_ROOT"
         php /tmp/wp-cli.phar option update siteurl http://localhost:8877 --path="$WP_ROOT"
@@ -77,6 +81,7 @@ jobs:
         SERVER_PID=$!
         trap 'kill "$SERVER_PID"' EXIT
         node apps/admin/scripts/e2e/verified-updates.mjs
+        node apps/admin/scripts/e2e/import.mjs
     - name: Merge and normalize Clover paths
       run: php tests/coverage/merge.php coverage/unit.xml coverage/wordpress/*.xml
     - name: Merge PHPUnit test execution
