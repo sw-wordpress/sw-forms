@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { entriesApi } from '@/api';
@@ -29,6 +29,10 @@ const loading = ref(false);
 const failed = ref('');
 const selection = ref<number[]>([]);
 let searchTimer: ReturnType<typeof setTimeout> | null = null;
+
+onBeforeUnmount(() => {
+  if (searchTimer) clearTimeout(searchTimer);
+});
 
 const FILTERS: EntryFilter[] = ['inbox', 'unread', 'starred', 'spam', 'trash'];
 
