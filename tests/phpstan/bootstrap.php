@@ -11,3 +11,5 @@ define('SWF_FILE', __DIR__ . '/../../sw-forms.php');
 define('SWF_DIR', __DIR__ . '/../../');
 define('SWF_URL', 'https://example.org/wp-content/plugins/sw-forms/');
 define('SWF_MIN_PHP', '8.2');
+
+define('DB_NAME', 'swforms');

@@ -113,3 +113,11 @@ validation-only and returns `success` with code `step`, or the current step's pa
 Normal token, honeypot and rate checks still apply. Invalid step indices return code `step`
 as an error. Omit `swf_step` for the final submission; all fields are revalidated regardless
 of previously successful step requests. No client-side "step passed" flag is trusted.
+
+Submission concurrency: final submissions serialize per form with a database connection lock
+before token/rate reads, validation, uploads and entry persistence. Success records the used token
+and rate count before releasing the lock; actions run afterward. Invalid fields, rejected CAPTCHA,
+failed storage and step validation release it without consuming the token. Preview bypasses it.
+Lock acquisition waits at most five seconds and fails closed with `busy`; retry is safe. Worker
+exit releases the connection lock automatically, with no expiring claim to steal from a live worker.
+This does not make external notification delivery transactional or retry a process crash after storage.
