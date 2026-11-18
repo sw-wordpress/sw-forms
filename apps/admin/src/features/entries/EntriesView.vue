@@ -51,16 +51,17 @@ async function load(): Promise<void> {
   }
 }
 
-watch([filter, order], () => {
-  page.value = 1;
-  void load();
-});
+function resetPageAndLoad(): void {
+  if (page.value === 1) void load();
+  else page.value = 1;
+}
+
+watch([filter, order], resetPageAndLoad);
 watch(page, load);
 watch(search, () => {
   if (searchTimer) clearTimeout(searchTimer);
   searchTimer = setTimeout(() => {
-    page.value = 1;
-    void load();
+    resetPageAndLoad();
   }, 350);
 });
 watch(() => props.formId, load, { immediate: true });
