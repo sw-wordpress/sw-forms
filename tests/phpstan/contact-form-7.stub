@@ -1,0 +1,25 @@
+<?php
+
+/** Contact Form 7 optional native parser, never loaded by SW Forms. */
+class WPCF7_ContactForm
+{
+    public static function get_instance(int $id): ?self {}
+    public function prop(string $name): mixed {}
+    /** @return list<WPCF7_FormTag> */
+    public function scan_form_tags(): array {}
+}
+
+class WPCF7_FormTag
+{
+    public string $type;
+    public string $basetype;
+    public string $name;
+    public string $raw_name;
+    public string $content;
+    /** @var list<string> */
+    public array $values;
+    /** @var list<string> */
+    public array $raw_values;
+    public function has_option(string $name): bool {}
+    public function is_required(): bool {}
+}

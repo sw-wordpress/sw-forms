@@ -8,6 +8,7 @@ All hooks use the prefix `swf_`. Unless stated otherwise exceptions of callbacks
 
 | Hook | Arguments | When | Since |
 |------|-----------|------| --- |
+| `swf_register_importers` | `Import\Registry $registry` | Once on first authorized import API use; register metadata, availability checks and lazy factories. Never load adapters in this callback. | 0.8.0 |
 | `swf_register_spam_providers` | `ProviderRegistry $registry` | Once when spam providers are built; register a `Spam\ProviderInterface` implementation. | 0.3.0 |
 | `swf_register_field_types` | `FieldRegistry $registry` | Once, when the registry is built. Call `$registry->register( new My_Type() )`. Invalid slugs are ignored, an existing slug is replaced. | 0.1.0 |
 | `swf_form_created` | `int $form_id` | After a form was created. | 0.1.0 |
