@@ -1,5 +1,7 @@
 # SW Forms
 
+*Open source by Stefan Warnat – free to use, free to change, better together.*
+
 [![Release](https://img.shields.io/github/v/release/sw-wordpress/sw-forms?sort=semver)](https://github.com/sw-wordpress/sw-forms/releases)
 [![CI](https://github.com/sw-wordpress/sw-forms/actions/workflows/tests.yml/badge.svg)](https://github.com/sw-wordpress/sw-forms/actions/workflows/tests.yml)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=sw-wordpress_sw-forms&metric=coverage)](https://sonarcloud.io/summary/overall?id=sw-wordpress_sw-forms)
@@ -111,7 +113,7 @@ full feature list: [docs/features.md](docs/features.md). The GitHub release work
 
 ## License
 
-[GPL-2.0-or-later](https://www.gnu.org/licenses/gpl-2.0.html) — see [LICENSE](LICENSE). Provided by Stefan Warnat.
+[GPL-2.0-or-later](https://www.gnu.org/licenses/gpl-2.0.html) — see [LICENSE](LICENSE).
 
 Bundled third-party components (license texts: Tom Select in `licenses/`, Action Scheduler in
 `libraries/action-scheduler/` of the release build):
