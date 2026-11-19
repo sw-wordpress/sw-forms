@@ -1,5 +1,6 @@
 /** English source messages. de.ts must mirror this structure (enforced by the type and a test). */
 const en = {
+  importer: {"subtitle": "Import forms from plugins on this WordPress installation. Source forms stay unchanged.", "supports": "Imports:", "omits": "Not imported:", "unavailable": "Activate the source plugin to use this importer.", "choose": "Choose importer", "noAdapters": "No importers registered.", "sources": "Choose a source form to review its import report.", "loading": "Loading import source", "preview": "Review import", "empty": "No forms on this page.", "previous": "Previous page", "next": "Next page", "report": "Import report", "review": "Review the transferred fields and omissions. This creates a new inactive draft. Field keys are newly assigned; check the form before publishing and activating it.", "imported": "Transferred content", "skipped": "Skipped fields or tags", "none": "None", "confirm": "Confirm import as inactive form", "saved": "Imported as a new inactive draft.", "features": {"cf7Fields": "Text, email, URL, phone, number, date, textarea, hidden and consent", "wpformsFields": "Text, email, URL, phone, number, textarea, hidden, name and GDPR consent", "basicFields": "Text, email, URL, phone, number, textarea, hidden, name (WPForms), date (CF7), consent", "choices": "Static select, checkbox and radio choices", "required": "Labels and required fields", "submitLabel": "Submit button text", "notifications": "Notifications and webhooks", "entries": "Submissions", "layout": "HTML, layout, styles and embeds", "advanced": "Conditions, advanced validation, dynamic/default choice selection, smart tags, CAPTCHA and other plugin settings; configure these again in SW Forms"}},
   m5: {"library": "Templates / import", "importNotice": "Creates a new inactive form. Review recipients, webhooks and privacy settings before activation.", "importLimit": "Choose a JSON file up to 1 MB.", "export": "Export JSON", "history": "Published versions", "historyNotice": "Save your changes before restoring. Restore loads a draft; the published form stays unchanged until you save.", "view": "View", "restore": "Restore as draft", "restored": "Version loaded as a draft. Review field keys before publishing.", "confirmRestore": "Load this version as a draft? The current draft will be replaced. Published field keys may differ.", "previousVersions": "Newer versions", "nextVersions": "Older versions", "versionDocument": "Version document", "attachFiles": "Attach uploaded files (maximum 20 MB total)", "pageBreak": "Page break", "import": "Import JSON"},
   settingsSchema: { key: 'Key', value: 'Value', addRow: 'Add row', removeRow: 'Remove row {n}' },
   app: {
@@ -10,7 +11,7 @@ const en = {
     collapseNav: 'Collapse navigation',
     expandNav: 'Expand navigation',
   },
-  nav: { forms: 'Forms', settings: 'Settings' },
+  nav: { import: 'Import', forms: 'Forms', settings: 'Settings' },
   common: {
     actions: 'Actions',
     apply: 'Apply',

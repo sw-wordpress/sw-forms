@@ -13,6 +13,7 @@ parameters:
     scanFiles:
         - vendor/woocommerce/action-scheduler/functions.php
         - tests/phpstan/stubs.php
+        - tests/phpstan/contact-form-7.stub
     dynamicConstantNames:
         - SWF_VERSION
         - SWF_FILE
