@@ -294,3 +294,10 @@ The browser check `apps/admin/scripts/e2e/verified-updates.mjs` requires `WP_ROO
 `/tmp/swf-wordpress`, a loopback HTTP server and Playwright Chromium. It verifies only the
 native plugin row, manual/silent checks and no installation requests. Production operator
 requirements and current limits: [operations](GITHUB-UPDATES-BETRIEB.md).
+
+## Concurrent submissions
+
+`SubmissionConcurrencyTest` synchronizes two PHP processes against disposable WordPress to
+check one successful entry/action per token and a rate limit of one across independent tokens.
+It also verifies lock recovery after worker exit and retry after validation/storage rejection.
+Use the normal WordPress coverage runner; no external object cache is required.
