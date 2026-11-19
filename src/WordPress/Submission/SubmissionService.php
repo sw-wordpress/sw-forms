@@ -42,6 +42,22 @@ final class SubmissionService {
 	 * @param array<string, mixed> $request honeypot, token, ip, user_id, source_url, preview (bool), wp_armour (array).
 	 */
 	public function submit( int $form_id, array $raw, array $request ): SubmissionResult {
+		$lock = empty( $request['preview'] ) ? SubmissionLock::acquire( $form_id ) : null;
+		if ( empty( $request['preview'] ) && null === $lock ) {
+			return SubmissionResult::error( 'busy', self::spam_message( 'busy' ) );
+		}
+		try {
+			return $this->submit_locked( $form_id, $raw, $request, $lock );
+		} finally {
+			$lock?->release();
+		}
+	}
+
+	/**
+	 * @param array<string, mixed> $raw     Unslashed request fields.
+	 * @param array<string, mixed> $request Submission metadata.
+	 */
+	private function submit_locked( int $form_id, array $raw, array $request, ?SubmissionLock $lock ): SubmissionResult {
 		if ( IncomingFile::request_too_large() ) {
 			return SubmissionResult::error( 'upload_size', __( 'The submission exceeds the server upload limit. Please choose fewer or smaller files.', 'sw-forms' ) );
 		}
@@ -178,6 +194,7 @@ final class SubmissionService {
 		}
 
 		$this->spam->record_success( $form_id, $token_id, $ip );
+		$lock?->release();
 
 		$submission = new Submission( $form, $form['current_version'], $document, $tree, $values, $visibility, $data, $entry_id, $this->entries, esc_url_raw( (string) ( $request['source_url'] ?? '' ) ) );
 		if ( $entry_id > 0 ) {
