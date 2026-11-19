@@ -1,7 +1,7 @@
 /** Real built-app imports from both installed source plugins; owns all fixture data. */
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { readdirSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -12,8 +12,16 @@ const php = (file, ...args) => JSON.parse(execFileSync('php', [join(here, file),
 const fixture = php('import-fixture.php');
 const auth = php('admin-auth.php');
 const cache = join(homedir(), '.cache/ms-playwright');
-const chrome = readdirSync(cache).filter((name) => /^chromium-\d+$/.test(name)).sort().pop();
-const browser = await chromium.launch({ executablePath: join(cache, chrome, 'chrome-linux/chrome'), args: ['--no-sandbox'] });
+// Prefer the binary of this Playwright version; older local caches remain usable.
+const candidates = [chromium.executablePath()];
+if (existsSync(cache)) {
+  for (const version of readdirSync(cache).filter((name) => /^chromium-\d+$/.test(name)).sort().reverse()) {
+    candidates.push(join(cache, version, 'chrome-linux64/chrome'), join(cache, version, 'chrome-linux/chrome'));
+  }
+}
+const executablePath = candidates.find(existsSync);
+assert.ok(executablePath, 'Install Chromium with npx playwright-core install chromium');
+const browser = await chromium.launch({ executablePath, args: ['--no-sandbox'] });
 try {
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
   context.setDefaultTimeout(15000);
