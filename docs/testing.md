@@ -212,6 +212,15 @@ Der Frontend-Browsertest prüft bei aktivem WP Armour auch die Ablehnung ohne Ja
 `SWF_WPA_VANILLA=1 node apps/admin/scripts/e2e/frontend.mjs` ersetzt nur im Testbrowser
 die WP-Armour-Skripte durch deren Vanilla-Varianten; die Website-Einstellungen bleiben gleich.
 
+## Import adapters
+
+Activate Contact Form 7 6.2.5 and WPForms Lite 2.0.4 in the disposable WordPress (CI installs
+these versions). `ImportTest` uses real stored sources and CF7's native parser to check mappings,
+skipped tags/options, bounds, permissions, changed-source confirmation, extension registration,
+delivery removal and inactive unpublished persistence. `import-view.test.ts` covers the report,
+confirmation, errors/retries, pagination and API routes; shell tests check restricted navigation.
+Run `node apps/admin/scripts/e2e/import.mjs` against local WordPress after building for the real UI.
+
 ## Extension API (0.4.0)
 
 `ExtensionApiTest` runs the [example add-on](../examples/sw-forms-example/) through real
@@ -285,3 +294,10 @@ The browser check `apps/admin/scripts/e2e/verified-updates.mjs` requires `WP_ROO
 `/tmp/swf-wordpress`, a loopback HTTP server and Playwright Chromium. It verifies only the
 native plugin row, manual/silent checks and no installation requests. Production operator
 requirements and current limits: [operations](GITHUB-UPDATES-BETRIEB.md).
+
+## Concurrent submissions
+
+`SubmissionConcurrencyTest` synchronizes two PHP processes against disposable WordPress to
+check one successful entry/action per token and a rate limit of one across independent tokens.
+It also verifies lock recovery after worker exit and retry after validation/storage rejection.
+Use the normal WordPress coverage runner; no external object cache is required.

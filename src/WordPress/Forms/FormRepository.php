@@ -24,7 +24,7 @@ final class FormRepository {
 	/**
 	 * @param array<string, mixed> $document
 	 */
-	public function create( string $title, array $document ): int {
+	public function create( string $title, array $document, string $status = 'active' ): int {
 		global $wpdb;
 		$document = WebhookSettings::protect( $document );
 		$now      = current_time( 'mysql', true );
@@ -32,7 +32,7 @@ final class FormRepository {
 			Schema::table( 'forms' ),
 			array(
 				'title'           => $title,
-				'status'          => 'active',
+				'status'          => in_array( $status, self::STATUSES, true ) ? $status : 'active',
 				'draft'           => (string) wp_json_encode( $document ),
 				'current_version' => 0,
 				'created_by'      => get_current_user_id(),

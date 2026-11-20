@@ -185,6 +185,20 @@ describe('EntriesView', () => {
     expect(wrapper.text()).not.toContain(en.entries.emptyText);
   });
 
+  it('cancels pending search when unmounted', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    const spy = vi.spyOn(entriesApi, 'list').mockResolvedValue(list([entry(1)]));
+    const wrapper = mountView();
+    await flushPromises();
+    await wrapper.get(`input[aria-label="${en.entries.search}"]`).setValue('Ada');
+    await vi.advanceTimersByTimeAsync(349);
+    expect(spy).toHaveBeenCalledTimes(1);
+    wrapper.unmount();
+    await vi.advanceTimersByTimeAsync(1000);
+    await flushPromises();
+    expect(spy).toHaveBeenCalledTimes(1);
+  });
+
   it('shows the empty inbox', async () => {
     vi.spyOn(entriesApi, 'list').mockResolvedValue(list([]));
     const wrapper = mountView();

@@ -18,3 +18,13 @@ Detailed feature list moved from the former README. Field types and settings: [s
 * Designs: seven variants (classic, floating labels, minimal lines, dark focus, guided card,
   animated float, surprise motion), light/dark/system scheme, own colours; interactive gallery
   ([schema](schema.md#design-060), [extending](extending.md#design-variants-060)).
+
+## Repeating groups
+
+In the builder, add a **Group**, place child fields inside it, then enable **Repeatable**
+in its properties. Set the minimum/maximum rows and add-button label there. Visitors can
+add or remove records; each row retains its own values and conditional state. Entries and
+webhooks receive a list of objects under the group's data key; see [schema.md](schema.md#data-shape).
+
+The runtime acceptance test in `apps/admin/tests/frontend-runtime.test.ts` covers add/remove,
+row limits, focus, unique input names and preserving records after deleting a preceding row.

@@ -52,6 +52,35 @@ afterEach(() => {
 });
 
 describe('actual frontend form runtime', () => {
+  it('adds and removes independent repeater records while preserving submitted values and row limits', async () => {
+    const rows = field('people', 'group', 'none', { container: 'children', settings: { repeatable: true }, children: [field('name')] });
+    const row = '<div class="swf-row" data-swf-row="__INDEX__"><div class="swf-field" data-swf-id="name" data-swf-path="people[__INDEX__].name"><input name="swf[people][__INDEX__][name]"></div><button type="button" class="swf-row-remove">Remove</button></div>';
+    await mountForm(true, { fields: [rows], html: `<fieldset class="swf-repeater" data-swf-id="people" data-swf-min="1" data-swf-max="2"><div class="swf-rows">${row.replaceAll('__INDEX__', '0')}</div><template class="swf-row-template">${row}</template><button type="button" class="swf-row-add">Add</button></fieldset>` });
+    const form = document.querySelector('form')!;
+    const add = form.querySelector<HTMLButtonElement>('.swf-row-add')!;
+    const first = form.querySelector<HTMLInputElement>('.swf-row input')!;
+    first.value = 'Ada'; change(first);
+    expect(form.querySelector<HTMLButtonElement>('.swf-row-remove')!.hidden).toBe(true);
+    add.click();
+    const inputs = [...form.querySelectorAll<HTMLInputElement>('.swf-row input')];
+    expect(inputs).toHaveLength(2);
+    expect(inputs[0]!.value).toBe('Ada');
+    expect(inputs[1]!.name).not.toBe(inputs[0]!.name);
+    expect(document.activeElement).toBe(inputs[1]);
+    inputs[1]!.value = 'Grace'; change(inputs[1]!);
+    expect(add.hidden).toBe(true);
+    expect([...new FormData(form).entries()].filter(([name]) => name.startsWith('swf[people]')).map(([, value]) => value)).toEqual(['Ada', 'Grace']);
+    form.querySelector<HTMLButtonElement>('.swf-row-remove')!.click();
+    expect([...form.querySelectorAll<HTMLInputElement>('.swf-row input')].map((input) => input.value)).toEqual(['Grace']);
+    expect(add.hidden).toBe(false);
+    expect(form.querySelector<HTMLButtonElement>('.swf-row-remove')!.hidden).toBe(true);
+    add.click();
+    const remaining = [...form.querySelectorAll<HTMLInputElement>('.swf-row input')];
+    expect(remaining[0]!.value).toBe('Grace');
+    expect(remaining[1]!.value).toBe('');
+    expect(new Set(remaining.map((input) => input.name)).size).toBe(2);
+  });
+
   it('validates pages remotely without submitting early, preserves earlier values and reveals final cross-page errors', async () => {
     const fields = [field('quantity'), field('name'), field('total', 'calculation', 'text', { settings: { operation: 'product', decimals: 2, sources: [{ field: 'quantity' }, { field: 'price' }] } }), field('price')];
     const html = '<p class="swf-step-progress" hidden></p><section class="swf-step" data-swf-step="0"><h3 tabindex="-1">First</h3>' + wrap('quantity', '<input name="swf[quantity]" value="2">') + wrap('price', '<input name="swf[price]" value="3">') + '</section><section class="swf-step" data-swf-step="1"><h3 tabindex="-1">Second</h3>' + wrap('name', '<input name="swf[name]">') + wrap('total', '<input readonly name="swf[total]">') + '</section><div class="swf-step-nav" hidden><button type="button" class="swf-step-back">Back</button><button type="button" class="swf-step-next">Next</button></div>';
