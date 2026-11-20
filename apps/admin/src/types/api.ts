@@ -243,3 +243,21 @@ export interface WpPage {
   title: { rendered: string };
   link: string;
 }
+export interface ImportAdapter {
+  slug: string;
+  name: string;
+  available: boolean;
+  imports: string[];
+  omits: string[];
+}
+
+export interface ImportSource { id: number; title: string }
+
+export interface ImportReport {
+  title: string;
+  document: FormDocument;
+  imported: string[];
+  skipped: string[];
+  warnings: string[];
+  fingerprint: string;
+}

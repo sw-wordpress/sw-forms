@@ -10,6 +10,7 @@ versions are recorded in PHP `@since` annotations and [hooks.md](hooks.md).
 - Validation: `ValidatorInterface`, `ValidatorRegistry` (0.4.0).
 - Merge tags: `MergeTagInterface`, `MergeTagRegistry` (0.4.0).
 - Spam: `ProviderInterface`, `ProviderRegistry` (0.3.0).
+- Import: `Import\AdapterInterface`, `Import\Registry` (0.8.0; see below).
 - Optional builder UI: `BuilderFieldTypeInterface` and JavaScript API version 1 (0.4.0).
 - The PHP functions and hooks listed in [hooks.md](hooks.md).
 
@@ -54,6 +55,49 @@ Append an `ActionInterface`; `run()` executes only after successful validation a
 Use `$submission->log($type, $action_id, $status, $message)` for entry logs. Exceptions are
 caught and logged as failures without changing the visitor's confirmation. Actions must
 implement their own retry/idempotency policy if they contact external systems.
+
+## Form import adapters (0.8.0)
+
+Register during bootstrap, before the first import request. The registry and its hook run
+only inside authorized import handlers. Catalog requests run cheap availability callbacks;
+the chosen adapter is instantiated once per request when listing/reading its forms. Do not
+load adapter classes, source plugins or expensive services in registration/availability callbacks.
+
+```php
+add_action( 'swf_register_importers', static function ( \SWForms\WordPress\Import\Registry $registry ): void {
+    $registry->register(
+        'my-plugin', 'My Plugin',
+        array( 'Text fields', 'Required fields' ),
+        array( 'Notifications', 'Entries', 'Conditions', 'Layout' ),
+        static fn (): bool => post_type_exists( 'my_forms' ),
+        static fn (): \SWForms\WordPress\Import\AdapterInterface => new MyFormImporter()
+    );
+} );
+```
+
+`AdapterInterface::forms(int $page): array` returns at most 50 `{id: int, title: string}`
+items in stable order (pages start at 1). `read(int $id): ?array` returns
+`{title: string, document: array, imported: list<string>, skipped: list<string>, warnings: list<string>}`,
+or null for unavailable, deleted, malformed or oversized sources. `document` follows
+[schema.md](schema.md); choose deterministic, unique ids and keys. Reports must be deterministic
+and plain text: identify transferred fields and their target keys, skipped fields, and every
+omitted feature. Warnings and catalog capabilities may use plain text or built-in codes
+`basicFields`, `cf7Fields`, `wpformsFields`, `choices`, `required`, `submitLabel`, `notifications`, `entries`, `layout`, `advanced`.
+Use plain text for adapter-specific capabilities; the built-in field summaries describe the bundled adapters.
+
+Read only: never render source markup, run shortcodes, query external services or modify source
+forms. Bound source size and field count. Importers require `swf_manage_forms`, including access
+to draft/private source forms. SW Forms normalizes/validates the document and removes all
+notifications/webhooks. The dry run's fingerprint must be supplied on confirmation; changed
+reports return 409. Imports are independent inactive, unpublished drafts; each confirmed import
+creates another form. No existing embeds are replaced and no publication hooks are fired.
+
+Bundled readers: CF7 uses its active plugin's native scanner; WPForms Lite/Pro reads the
+`wpforms` post JSON using WPForms decoding semantics. Both transfer basic fields, labels,
+required flags, static choices and submit text. WPForms split names become groups. Unsupported
+fields/options are listed; dynamic choices, payments, uploads, conditions, layout, notifications,
+entries, advanced validation, smart tags and other source settings are omitted. Configure
+these again before publishing/activating. See [testing.md](testing.md#import-adapters).
 
 ## Settings schema
 

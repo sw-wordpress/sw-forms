@@ -84,6 +84,7 @@ final class Plugin {
 	}
 
 	public function register_rest(): void {
+		( new \SWForms\WordPress\Rest\ImportController() )->register_routes();
 		foreach ( array( new FormsController(), new \SWForms\WordPress\Rest\FormToolsController(), new EntriesController(), new SubmitController(), new SettingsController(), new \SWForms\WordPress\Rest\WebhooksController(), new \SWForms\WordPress\Rest\ExportController(), new \SWForms\WordPress\Rest\EntryEditingController() ) as $controller ) {
 			$controller->register_routes();
 		}

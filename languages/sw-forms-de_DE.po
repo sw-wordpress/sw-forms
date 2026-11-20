@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SW Forms 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-11 22:14+0100\n"
+"POT-Creation-Date: 2026-11-17 16:54+0100\n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -173,7 +173,9 @@ msgstr "Update-Prüfung nur in der berechtigten Backend-Sitzung erlaubt."
 
 #: includes/update/class-sw-forms-update-service.php:42
 msgid "Public release key or Sodium is missing. GitHub updates are blocked."
-msgstr "Öffentlicher Release-Schlüssel oder Sodium fehlt. GitHub-Updates sind gesperrt."
+msgstr ""
+"Öffentlicher Release-Schlüssel oder Sodium fehlt. GitHub-Updates sind "
+"gesperrt."
 
 #: includes/update/class-sw-forms-update-service.php:46
 msgid "An update check is already running."
@@ -191,7 +193,9 @@ msgstr "Prüfung dauerte zu lange. Ergebnis wurde nicht übernommen."
 msgid ""
 "Signed release information verified. Install updates manually through the "
 "Plugins page."
-msgstr "Signierte Release-Informationen geprüft. Installation ausschließlich über die Plugin-Verwaltung."
+msgstr ""
+"Signierte Release-Informationen geprüft. Installation ausschließlich über "
+"die Plugin-Verwaltung."
 
 #: includes/update/class-sw-forms-update-service.php:67
 msgid "Invalid release response."
@@ -299,6 +303,11 @@ msgstr ""
 #: src/WordPress/Admin/AdminPage.php:48
 msgid "SW Forms requires JavaScript."
 msgstr "SW Forms benötigt JavaScript."
+
+#: src/WordPress/Admin/AdminPage.php:50
+msgid ""
+"Open source by Stefan Warnat – free to use, free to change, better together."
+msgstr "Open Source von Stefan Warnat – frei nutzbar, frei veränderbar, gemeinsam besser."
 
 #: src/WordPress/Editor/Embeds.php:27 src/WordPress/Editor/Embeds.php:92
 #: src/WordPress/Support/Privacy.php:93
@@ -1503,6 +1512,7 @@ msgstr ""
 #: src/WordPress/Forms/Templates/GeneralTemplates.php:242
 #: src/WordPress/Forms/Templates/GeneralTemplates.php:329
 #: src/WordPress/Frontend/DesignGallery.php:105
+#: src/WordPress/Import/WPForms.php:128 src/WordPress/Import/WPForms.php:133
 msgid "First name"
 msgstr "Vorname"
 
@@ -1519,6 +1529,7 @@ msgstr "Vorname"
 #: src/WordPress/Forms/Templates/GeneralTemplates.php:250
 #: src/WordPress/Forms/Templates/GeneralTemplates.php:338
 #: src/WordPress/Frontend/DesignGallery.php:110
+#: src/WordPress/Import/WPForms.php:129 src/WordPress/Import/WPForms.php:135
 msgid "Last name"
 msgstr "Nachname"
 
@@ -3148,6 +3159,10 @@ msgstr ""
 "Dies ist das echte Formular. Zum Ausprobieren inklusive Bedingungen und "
 "Validierung – Eingaben werden weder gesendet noch gespeichert."
 
+#: src/WordPress/Import/WPForms.php:134
+msgid "Middle name"
+msgstr "Zweiter Vorname"
+
 #: src/WordPress/Rest/EntriesController.php:122
 #: src/WordPress/Rest/ExportController.php:52
 #: src/WordPress/Rest/FormToolsController.php:153
@@ -3181,6 +3196,30 @@ msgid "The form could not be saved. Please fix the marked problems."
 msgstr ""
 "Das Formular konnte nicht gespeichert werden. Bitte die markierten Probleme "
 "beheben."
+
+#: src/WordPress/Rest/ImportController.php:66
+msgid "The import report has changed. Review it again before importing."
+msgstr "Der Importbericht hat sich geändert. Vor dem Import erneut prüfen."
+
+#: src/WordPress/Rest/ImportController.php:72
+msgid "The imported form could not be saved."
+msgstr "Das importierte Formular konnte nicht gespeichert werden."
+
+#: src/WordPress/Rest/ImportController.php:100
+msgid ""
+"No valid form could be imported. The source may contain only unsupported "
+"fields."
+msgstr ""
+"Es konnte kein gültiges Formular importiert werden. Die Quelle enthält "
+"möglicherweise nur nicht unterstützte Felder."
+
+#: src/WordPress/Rest/ImportController.php:119
+msgid ""
+"Import source unavailable. Activate the source plugin and choose an existing "
+"form."
+msgstr ""
+"Die Importquelle ist nicht verfügbar. Das Quellplugin aktivieren und ein "
+"vorhandenes Formular auswählen."
 
 #: src/WordPress/Rest/WebhooksController.php:67
 msgid "Webhook not found."

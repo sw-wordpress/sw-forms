@@ -20,6 +20,7 @@ import en from '@/i18n/en';
 vi.mock('@/features/forms/FormsView.vue', () => ({ default: { name: 'FormsViewMock', render: () => null } }));
 vi.mock('@/features/builder/BuilderView.vue', () => ({ default: { name: 'BuilderViewMock', render: () => null } }));
 vi.mock('@/features/settings/SettingsView.vue', () => ({ default: { name: 'SettingsViewMock', render: () => null } }));
+vi.mock('@/features/import/ImportView.vue', () => ({ default: { name: 'ImportViewMock', render: () => null } }));
 
 const ALL_CAPS: Capability[] = ['swf_manage_forms', 'swf_view_entries', 'swf_manage_entries', 'swf_settings'];
 
@@ -43,6 +44,7 @@ function testRouter() {
       { path: '/', name: 'forms', component: view('Forms') },
       { path: '/forms/:id', name: 'builder', component: view('Builder'), meta: { fullWidth: true } },
       { path: '/settings', name: 'settings', component: view('Settings') },
+      { path: '/import', name: 'import', component: view('Import') },
     ],
   });
 }
@@ -67,7 +69,8 @@ afterEach(() => {
 
 describe('router', () => {
   it('declares navigation and builder tabs', () => {
-    expect(NAV_ITEMS.map((i) => i.name)).toEqual(['forms', 'settings']);
+    expect(NAV_ITEMS.map((i) => i.name)).toEqual(['forms', 'import', 'settings']);
+    expect(NAV_ITEMS.find((i) => i.name === 'import')?.cap).toBe('swf_manage_forms');
     expect(NAV_ITEMS.find((i) => i.name === 'settings')?.cap).toBe('swf_settings');
     expect(BUILDER_TABS).toContain('entries');
   });
@@ -81,6 +84,7 @@ describe('router', () => {
     expect(router.resolve('/forms/12').name).toBe('builder');
     expect(router.resolve('/forms/abc').name).toBeUndefined();
     expect(router.resolve('/settings').name).toBe('settings');
+    expect(router.resolve('/import').name).toBe('import');
 
     const scroll = router.options.scrollBehavior!;
     const route = router.resolve('/') as unknown as Parameters<typeof scroll>[0];
@@ -110,7 +114,7 @@ describe('ShellLayout', () => {
     expect(wrapper.text()).toContain('SW Forms');
     expect(wrapper.find('.swf-num').text()).toBe('v1.2.3');
     const links = wrapper.findAll('.swf-nav-link__label');
-    expect(links.map((l) => l.text())).toEqual(['Forms', 'Settings']);
+    expect(links.map((l) => l.text())).toEqual(['Forms', 'Import', 'Settings']);
     expect(wrapper.find('.view').text()).toBe('Forms');
     expect(wrapper.find('main').classes()).not.toContain('swf-main--full');
     wrapper.unmount();
