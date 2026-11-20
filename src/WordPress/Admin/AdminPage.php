@@ -46,6 +46,9 @@ final class AdminPage {
 			return;
 		}
 		echo '<div class="wrap swf-wrap"><div id="sw-forms-app"></div><noscript>' . esc_html__( 'SW Forms requires JavaScript.', 'sw-forms' ) . '</noscript></div>';
+		echo '<p class="swf-admin-footer">';
+		esc_html_e( 'Open source by Stefan Warnat – free to use, free to change, better together.', 'sw-forms' );
+		echo '</p>';
 	}
 
 	public function enqueue( string $hook ): void {

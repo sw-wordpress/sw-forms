@@ -6,13 +6,14 @@ export interface NavItem {
   name: string;
   to: string;
   icon: string;
-  labelKey: 'nav.forms' | 'nav.settings';
+  labelKey: 'nav.forms' | 'nav.settings' | 'nav.import';
   /** UX only: hide the entry without this capability. */
   cap?: Capability;
 }
 
 export const NAV_ITEMS: NavItem[] = [
   { name: 'forms', to: '/', icon: 'r_dynamic_form', labelKey: 'nav.forms' },
+  { name: 'import', to: '/import', icon: 'r_file_download', labelKey: 'nav.import', cap: 'swf_manage_forms' },
   { name: 'settings', to: '/settings', icon: 'r_settings', labelKey: 'nav.settings', cap: 'swf_settings' },
 ];
 
@@ -20,6 +21,7 @@ export const BUILDER_TABS = ['build', 'settings', 'notifications', 'webhooks', '
 export type BuilderTab = (typeof BUILDER_TABS)[number];
 
 const routes: RouteRecordRaw[] = [
+  { path: '/import', name: 'import', component: () => import('@/features/import/ImportView.vue') },
   { path: '/', name: 'forms', component: () => import('@/features/forms/FormsView.vue') },
   {
     path: '/forms/:id(\\d+)/:tab(build|settings|notifications|webhooks|entries)?/:entryId(\\d+)?',

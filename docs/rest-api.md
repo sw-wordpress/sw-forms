@@ -15,6 +15,10 @@ Cookie authentication with the `wp_rest` nonce (`X-WP-Nonce`). Errors are `WP_Er
 | DELETE | `/forms/{id}/draft` | `swf_manage_forms` | Discard the draft. |
 | POST | `/forms/{id}/duplicate` | `swf_manage_forms` | |
 | GET | `/field-types` | `swf_manage_forms` | Type definitions incl. settings schema. |
+| GET | `/importers` | `swf_manage_forms` | `{items: [{slug, name, available, imports[], omits[]}]}`; metadata only, no adapter instantiation. |
+| GET | `/importers/{adapter}/forms` | `swf_manage_forms` | `{items: [{id, title}], page}`; `page` starts at 1, 50 sources per page. |
+| GET | `/importers/{adapter}/forms/{id}` | `swf_manage_forms` | Dry run: `{title, document, imported[], skipped[], warnings[], fingerprint}`. 422 includes `data.report` for unsupported-only or invalid forms. |
+| POST | `/importers/{adapter}/forms/{id}` | `swf_manage_forms` | `{fingerprint}` from dry run → `{id, report}` (201), new inactive unpublished draft. Rereads source; 409 when report changed/missing fingerprint, 404 unavailable source, 422 invalid document. |
 | GET | `/forms/{id}/entries` | `swf_view_entries` | `filter` (inbox, unread, starred, spam, trash), `search`, `page`, `per_page` (≤ 100), `order`. Returns `items`, `total`, `pages`, `counts`, `columns`. |
 | GET | `/entries/{id}` | `swf_view_entries` | Entry, labelled `fields` tree (from its form version), `log`. |
 | PATCH | `/entries/{id}` | `swf_manage_entries` | `{status?, starred?}` |
@@ -113,3 +117,11 @@ validation-only and returns `success` with code `step`, or the current step's pa
 Normal token, honeypot and rate checks still apply. Invalid step indices return code `step`
 as an error. Omit `swf_step` for the final submission; all fields are revalidated regardless
 of previously successful step requests. No client-side "step passed" flag is trusted.
+
+Submission concurrency: final submissions serialize per form with a database connection lock
+before token/rate reads, validation, uploads and entry persistence. Success records the used token
+and rate count before releasing the lock; actions run afterward. Invalid fields, rejected CAPTCHA,
+failed storage and step validation release it without consuming the token. Preview bypasses it.
+Lock acquisition waits at most five seconds and fails closed with `busy`; retry is safe. Worker
+exit releases the connection lock automatically, with no expiring claim to steal from a live worker.
+This does not make external notification delivery transactional or retry a process crash after storage.
