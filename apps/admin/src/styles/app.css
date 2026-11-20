@@ -321,13 +321,28 @@ body.q-body--prevent-scroll {
   border-radius: 6px;
 }
 .swf-root .q-btn:focus-visible,
-.swf-root .q-field:focus-within .q-field__control {
+.swf-root .q-field:not(.q-field--outlined):focus-within .q-field__control {
   outline: 3px solid var(--swf-focus);
   outline-offset: 1px;
+}
+/* Outlined fields already draw Quasar's own focus border; an extra outline would double it. */
+.swf-root .q-field--outlined.q-field--focused .q-field__control:after {
+  border-color: var(--swf-focus);
 }
 .swf-root .q-field__native:focus-visible,
 .swf-root .q-field__input:focus-visible {
   outline: none;
+}
+/* wp-admin styles input[type=…]:focus with its own border and shadow; the Quasar field draws the frame. */
+.swf-root .q-field__native,
+.swf-root .q-field__native:focus,
+.swf-root .q-field__input,
+.swf-root .q-field__input:focus {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  outline: none;
+  background: transparent;
 }
 
 /* ---------- Quasar tuning ---------- */

@@ -81,6 +81,19 @@ describe('FormsView', () => {
     wrapper.unmount();
   });
 
+  it('always sorts forms alphabetically and renders the shortcode as preformatted block', async () => {
+    vi.spyOn(formsApi, 'list').mockResolvedValue([
+      summary({ id: 3, title: 'zebra' }),
+      summary({ id: 1, title: 'Beta' }),
+      summary({ id: 2, title: 'alpha' }),
+    ]);
+    const wrapper = mountView();
+    await flushPromises();
+    expect(wrapper.findAll('.swf-forms__title').map((a) => a.text())).toEqual(['alpha', 'Beta', 'zebra']);
+    expect(wrapper.get('pre.swf-forms__code').text()).toBe('[sw_form id="2"]');
+    wrapper.unmount();
+  });
+
   it('shows the empty state and opens the create dialog, then routes to the builder', async () => {
     vi.spyOn(formsApi, 'list').mockResolvedValue([]);
     const create = vi.spyOn(formsApi, 'create').mockResolvedValue({ id: 9 } as FormDetail);
@@ -125,7 +138,7 @@ describe('FormsView', () => {
   });
 
   it('toggles the status and reloads; reports errors', async () => {
-    const list = vi.spyOn(formsApi, 'list').mockResolvedValue([summary(), summary({ id: 2, title: 'B', status: 'inactive' })]);
+    const list = vi.spyOn(formsApi, 'list').mockResolvedValue([summary(), summary({ id: 2, title: 'Newsletter', status: 'inactive' })]);
     const setStatus = vi.spyOn(formsApi, 'setStatus').mockResolvedValue({} as FormDetail);
     const wrapper = mountView();
     await flushPromises();
@@ -173,7 +186,7 @@ describe('FormsView', () => {
     expect(revoke).toHaveBeenCalledWith('blob:x');
     vi.useRealTimers();
 
-    await buttonByText(wrapper, '[sw_form id="1"]').trigger('click');
+    await wrapper.get('pre.swf-forms__code').trigger('click');
     await flushPromises();
     expect(writeText).toHaveBeenCalledWith('[sw_form id="1"]');
     expect(notify.success).toHaveBeenCalledWith('Copied to the clipboard');

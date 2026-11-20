@@ -407,6 +407,9 @@
   object-fit: contain;
 }
 .swf .ts-wrapper { width: 100%; }
+/* Tom Select copies the select's classes to its wrapper; the control draws the frame, so the wrapper must not draw a second one. */
+.swf .ts-wrapper.swf-select { padding: 0 !important; border: 0 !important; background: transparent !important; box-shadow: none !important; height: auto !important; }
+.swf .swf-field--error .ts-wrapper .ts-control { border-color: var(--swf-error); }
 .swf .ts-wrapper .ts-control, .swf .ts-dropdown { background: var(--swf-bg); color: var(--swf-text); border-color: var(--swf-border); font: inherit; }
 .swf .ts-wrapper .ts-control > input { padding: 0 !important; min-height: 0; box-shadow: none; }
 

@@ -27,8 +27,12 @@ const { data, loading, error, load } = useAsyncData(() => formsApi.list(), { imm
 const search = ref('');
 const forms = computed(() => {
   const q = search.value.trim().toLowerCase();
-  return (data.value ?? []).filter((f) => q === '' || f.title.toLowerCase().includes(q));
+  return (data.value ?? [])
+    .filter((f) => q === '' || f.title.toLowerCase().includes(q))
+    .sort((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: 'base', numeric: true }) || a.id - b.id);
 });
+
+const shortcode = (form: FormSummary): string => `[sw_form id="${form.id}"]`;
 
 const createOpen = ref(false);
 const newTitle = ref('');
@@ -157,9 +161,7 @@ function openCreate(): void {
               <span v-if="form.unread > 0" class="swf-chip swf-chip--primary swf-num">{{ t('forms.unread', { n: form.unread }) }}</span>
             </td>
             <td :data-label="t('forms.col.shortcode')">
-              <q-btn flat dense no-caps class="swf-mono" :label="`[sw_form id=&quot;${form.id}&quot;]`" icon-right="r_content_copy" @click="copy(`[sw_form id=&quot;${form.id}&quot;]`)">
-                <q-tooltip>{{ t('common.copy') }}</q-tooltip>
-              </q-btn>
+              <pre class="swf-mono swf-forms__code" role="button" tabindex="0" :title="t('common.copy')" @click="copy(shortcode(form))" @keydown.enter.prevent="copy(shortcode(form))">{{ shortcode(form) }}</pre>
             </td>
             <td :data-label="t('forms.col.updated')" class="swf-muted">{{ dateTime(form.updatedAt) }}</td>
             <td data-label="">
@@ -232,6 +234,16 @@ function openCreate(): void {
   flex-direction: column;
   gap: 8px;
   padding: 16px 22px 22px;
+}
+.swf-forms__code {
+  display: inline-block;
+  margin: 0;
+  padding: 4px 8px;
+  border: 1px solid var(--swf-border, rgba(0, 0, 0, 0.12));
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.04);
+  white-space: pre;
+  cursor: copy;
 }
 .swf-forms__title {
   font-weight: 650;

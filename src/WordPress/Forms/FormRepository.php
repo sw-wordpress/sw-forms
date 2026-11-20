@@ -66,7 +66,7 @@ final class FormRepository {
 				"SELECT f.id, f.title, f.status, f.current_version, f.created_at, f.updated_at, (f.draft IS NOT NULL) AS has_draft,
 					SUM(e.status IN ('unread','read')) AS entries, SUM(e.status = 'unread') AS unread
 				FROM %i f LEFT JOIN %i e ON e.form_id = f.id
-				GROUP BY f.id ORDER BY f.updated_at DESC",
+				GROUP BY f.id ORDER BY f.title ASC, f.id ASC",
 				Schema::table( 'forms' ),
 				Schema::table( 'entries' )
 			),
