@@ -162,6 +162,16 @@ try {
     await page.screenshot({ path: join(shots, file) });
   }
   check('settings tab shows shortcode', (await page.goto(page.url().replace(/entries$/, 'settings')), await eventually(async () => (await page.locator('.swf-embed code').first().textContent())?.includes('[sw_form'))));
+
+  await page.goto(auth.admin);
+  const shortcode = page.getByRole('row', { name: new RegExp(TITLE) }).getByRole('button', { name: /^\[sw_form id="\d+"\]$/ });
+  const shortcodeText = await shortcode.textContent();
+  await context.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: new URL(auth.admin).origin });
+  for (const key of ['Space', 'Enter']) {
+    await page.evaluate(() => navigator.clipboard.writeText(''));
+    await shortcode.press(key);
+    check(`${key} copies the form shortcode`, await eventually(async () => await page.evaluate(() => navigator.clipboard.readText()) === shortcodeText));
+  }
   check('no console errors', errors.length === 0, errors.join(' | '));
 } finally {
   await browser.close();

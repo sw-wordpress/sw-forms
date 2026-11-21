@@ -161,7 +161,7 @@ function openCreate(): void {
               <span v-if="form.unread > 0" class="swf-chip swf-chip--primary swf-num">{{ t('forms.unread', { n: form.unread }) }}</span>
             </td>
             <td :data-label="t('forms.col.shortcode')">
-              <pre class="swf-mono swf-forms__code" role="button" tabindex="0" :title="t('common.copy')" @click="copy(shortcode(form))" @keydown.enter.prevent="copy(shortcode(form))">{{ shortcode(form) }}</pre>
+              <button type="button" class="swf-mono swf-forms__code" :title="t('common.copy')" @click="copy(shortcode(form))">{{ shortcode(form) }}</button>
             </td>
             <td :data-label="t('forms.col.updated')" class="swf-muted">{{ dateTime(form.updatedAt) }}</td>
             <td data-label="">
@@ -242,6 +242,8 @@ function openCreate(): void {
   border: 1px solid var(--swf-border, rgba(0, 0, 0, 0.12));
   border-radius: 4px;
   background: rgba(0, 0, 0, 0.04);
+  color: inherit;
+  font-family: var(--swf-mono);
   white-space: pre;
   cursor: copy;
 }

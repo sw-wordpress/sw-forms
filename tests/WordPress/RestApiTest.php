@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SWForms\Tests\WordPress;
 
 use PHPUnit\Framework\TestCase;
+use SWForms\WordPress\Database\Schema;
 use SWForms\WordPress\Forms\FormRepository;
 use SWForms\WordPress\Support\Capabilities;
 
@@ -41,13 +42,30 @@ final class RestApiTest extends TestCase
         return rest_do_request($request);
     }
 
-    private function createForm(): int
+    private function createForm(string $title = 'REST test'): int
     {
-        $response = $this->request('POST', 'forms', ['title' => 'REST test']);
+        $response = $this->request('POST', 'forms', ['title' => $title]);
         self::assertSame(201, $response->get_status());
         $id = (int) $response->get_data()['id'];
         $this->forms[] = $id;
         return $id;
+    }
+
+    public function testFormsAreListedByTitleAndThenById(): void
+    {
+        global $wpdb;
+        $zebra = $this->createForm('Zebra');
+        $firstAlpha = $this->createForm('Alpha');
+        $secondAlpha = $this->createForm('Alpha');
+        foreach ([$firstAlpha => '01', $secondAlpha => '02', $zebra => '03'] as $id => $day) {
+            self::assertSame(1, $wpdb->update(Schema::table('forms'), ['updated_at' => '2000-01-' . $day . ' 00:00:00'], ['id' => $id]));
+        }
+
+        $response = $this->request('GET', 'forms');
+        self::assertSame(200, $response->get_status());
+        $ids = array_column($response->get_data()['items'], 'id');
+        $fixtureIds = array_values(array_intersect($ids, $this->forms));
+        self::assertSame([$firstAlpha, $secondAlpha, $zebra], $fixtureIds);
     }
 
     /** @return array<string, mixed> */
