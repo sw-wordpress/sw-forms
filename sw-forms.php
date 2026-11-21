@@ -3,7 +3,7 @@
  * Plugin Name:       SW Forms
  * Description:       Drag and drop form builder with conditional logic, entries, notifications and an extension API.
  * Update URI:        https://github.com/sw-wordpress/sw-forms
- * Version:           1.0.0
+ * Version:           1.0.1
  * Requires at least: 6.8
  * Requires PHP:      8.2
  * Author:            Stefan Warnat
@@ -18,7 +18,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'SWF_VERSION', '1.0.0' );
+define( 'SWF_VERSION', '1.0.1' );
 define( 'SWF_FILE', __FILE__ );
 define( 'SWF_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SWF_URL', plugin_dir_url( __FILE__ ) );
