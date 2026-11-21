@@ -81,7 +81,7 @@ describe('FormsView', () => {
     wrapper.unmount();
   });
 
-  it('always sorts forms alphabetically and renders the shortcode as preformatted block', async () => {
+  it('always sorts forms alphabetically and renders the shortcode as a button', async () => {
     vi.spyOn(formsApi, 'list').mockResolvedValue([
       summary({ id: 3, title: 'zebra' }),
       summary({ id: 1, title: 'Beta' }),
@@ -90,7 +90,8 @@ describe('FormsView', () => {
     const wrapper = mountView();
     await flushPromises();
     expect(wrapper.findAll('.swf-forms__title').map((a) => a.text())).toEqual(['alpha', 'Beta', 'zebra']);
-    expect(wrapper.get('pre.swf-forms__code').text()).toBe('[sw_form id="2"]');
+    const shortcode = wrapper.get('button.swf-forms__code[type="button"]');
+    expect(shortcode.text()).toBe('[sw_form id="2"]');
     wrapper.unmount();
   });
 
@@ -186,7 +187,7 @@ describe('FormsView', () => {
     expect(revoke).toHaveBeenCalledWith('blob:x');
     vi.useRealTimers();
 
-    await wrapper.get('pre.swf-forms__code').trigger('click');
+    await wrapper.get('button.swf-forms__code').trigger('click');
     await flushPromises();
     expect(writeText).toHaveBeenCalledWith('[sw_form id="1"]');
     expect(notify.success).toHaveBeenCalledWith('Copied to the clipboard');
