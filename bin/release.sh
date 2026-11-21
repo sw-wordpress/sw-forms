@@ -40,14 +40,14 @@ $header = '/^( \* Version:\s+)([0-9]+(?:\.[0-9]+){2,3})(\s*)$/m';
 $constant = "/^(define\( 'SWF_VERSION', ')([0-9]+(?:\.[0-9]+){2,3})(' \);)$/m";
 if (preg_match_all($header, $source, $headers) !== 1 || preg_match_all($constant, $source, $constants) !== 1
     || $headers[2][0] !== $constants[2][0] || version_compare($version, $headers[2][0], '<')) {
-    fwrite(STDERR, "Invalid or inconsistent plugin version, or requested downgrade.\n");
+    file_put_contents('php://stderr', "Invalid or inconsistent plugin version, or requested downgrade.\n");
     exit(1);
 }
 foreach ([$header, $constant] as $pattern) {
     $source = preg_replace_callback($pattern, static fn (array $match): string => $match[1] . $version . $match[3], $source);
 }
 if (file_put_contents($file, $source) !== strlen($source)) {
-    fwrite(STDERR, "Failed to write plugin version.\n");
+    file_put_contents('php://stderr', "Failed to write plugin version.\n");
     exit(1);
 }
 PHP

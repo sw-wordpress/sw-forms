@@ -129,6 +129,43 @@ describe('EntriesView', () => {
     expect(lastQuery(spy)).toMatchObject({ filter: 'spam', page: 1 });
   });
 
+  it.each(['filter', 'sort', 'search'] as const)('loads once when %s resets page two', async (change) => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    const spy = vi.spyOn(entriesApi, 'list').mockResolvedValue(list([entry(1)], { pages: 3 }));
+    const wrapper = mountView();
+    await flushPromises();
+    await wrapper.findAll('.q-pagination button').find((b) => b.text() === '2')!.trigger('click');
+    await flushPromises();
+    expect(lastQuery(spy)).toMatchObject({ page: 2 });
+    spy.mockClear();
+    if (change === 'filter') {
+      await wrapper.findAll('.q-tab').find((tab) => tab.text().startsWith('Spam'))!.trigger('click');
+    } else if (change === 'sort') {
+      await wrapper.get('.swf-sort').trigger('click');
+    } else {
+      await wrapper.get(`input[aria-label="${en.entries.search}"]`).setValue('Ada');
+      await vi.advanceTimersByTimeAsync(350);
+    }
+    await flushPromises();
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(lastQuery(spy)).toMatchObject({ page: 1, ...(
+      change === 'filter' ? { filter: 'spam' } : change === 'sort' ? { order: 'asc' } : { search: 'Ada' }
+    ) });
+    // The same change on page one must still reload once.
+    spy.mockClear();
+    if (change === 'filter') {
+      await wrapper.findAll('.q-tab').find((tab) => tab.text().startsWith('Trash'))!.trigger('click');
+    } else if (change === 'sort') {
+      await wrapper.get('.swf-sort').trigger('click');
+    } else {
+      await wrapper.get(`input[aria-label="${en.entries.search}"]`).setValue('Grace');
+      await vi.advanceTimersByTimeAsync(350);
+    }
+    await flushPromises();
+    expect(spy).toHaveBeenCalledTimes(1);
+    wrapper.unmount();
+  });
+
   it('debounces the search and shows the no-match state', async () => {
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
     const spy = vi.spyOn(entriesApi, 'list').mockResolvedValue(list([entry(1)]));
