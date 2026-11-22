@@ -19,6 +19,7 @@ test -f libraries/action-scheduler/action-scheduler.php
 test -f assets/admin/app.js
 test -d assets/frontend
 # An allowlist keeps local credentials, tooling and experiments out of packages.
+# Do not add pages/: documentation sources, VitePress tooling and output are not plugin assets.
 for directory in assets docs examples includes languages licenses src vendor-prefixed libraries; do
   rsync -a --exclude='*.log' --exclude='*.zip' "$directory/" "$STAGING/$directory/"
 done

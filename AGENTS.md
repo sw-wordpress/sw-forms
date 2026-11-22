@@ -25,6 +25,8 @@ Concept: `docs/schema.md` (form document), `docs/hooks.md`, `docs/rest-api.md`, 
 
 ## Dokumentation
 
+Bei jeder Änderung muss `pages/Changelog.md` im selben Arbeitsschritt aktualisiert werden. Noch nicht veröffentlichte Änderungen werden unter `Unreleased` in der passenden Kategorie `Feature`, `Bugs` oder `Other topics` eingetragen. Beschreibe die Änderung knapp und sachlich; fasse zusammengehörige Änderungen zusammen und vermeide doppelte Einträge. Kategorien und Versionsabschnitte dürfen nur erscheinen, wenn sie Einträge enthalten. Bei einer Veröffentlichung werden die zugehörigen Unreleased-Einträge der tatsächlichen Version mit Veröffentlichungsdatum zugeordnet.
+
 Bei Änderungen an der öffentlichen Plugin-API muss die zugehörige englische Dokumentation im selben Arbeitsschritt aktualisiert werden: `docs/hooks.md` (Hooks, Parameter, Zweck, Einführungsversion), `docs/extending.md` (Interfaces, Registries, Builder-API, Beispiele und Deprecation-Policy) sowie bei Bedarf `docs/rest-api.md` und `docs/schema.md`. PHP-`@since`- und gegebenenfalls `@deprecated`-Angaben mitpflegen; bestehende Einführungsversionen nicht überschreiben. Die dort festgelegten Kompatibilitäts- und Deprecation-Regeln einhalten. Betroffene Beispiele und API-Tests anpassen, damit Code und dokumentierter Vertrag übereinstimmen.
 
 Verfasse Dokumentation möglichst knapp und ohne Wiederholungen, um Tokens zu sparen. Beschränke sie auf nötige Entscheidungen, Sicherheitsdetails und Testhinweise; verlinke vorhandene Dokumentation statt Inhalte zu duplizieren.
