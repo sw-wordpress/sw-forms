@@ -28,6 +28,10 @@ Collect entries, send e-mail notifications and forward submissions to other syst
 
 English, German.
 
+## User documentation
+
+[User guide](https://sw-wordpress.github.io/sw-forms/) — installation, form building, configuration, entries, privacy and troubleshooting. Publication requires the documentation workflow to deploy after merge; the source is in [pages/](pages/). Documentation build, Pages setup and maintenance: [pages/README.md](pages/README.md).
+
 ## Usage
 
 1. Open **SW Forms → Forms**, click **New form**, enter a name and click **Create and open builder**

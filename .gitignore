@@ -21,3 +21,9 @@
 /tests/wp/vendor/
 /tests/wp/.phpunit.result.cache
 /dist/
+
+# Documentation build output and optional local dependencies
+/pages/.vitepress/cache/
+/pages/.vitepress/dist/
+/pages/node_modules/
+/pages/.vitepress/node_modules/
